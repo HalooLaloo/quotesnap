@@ -74,7 +74,7 @@ export function QuoteForm({ request, services, userId }: QuoteFormProps) {
     const validUntil = new Date()
     validUntil.setDate(validUntil.getDate() + validDays)
 
-    const { data, error: insertError } = await supabase
+    const { error: insertError } = await supabase
       .from('qs_quotes')
       .insert({
         request_id: request?.id || null,
@@ -89,8 +89,6 @@ export function QuoteForm({ request, services, userId }: QuoteFormProps) {
         status: status,
         sent_at: status === 'sent' ? new Date().toISOString() : null,
       })
-      .select()
-      .single()
 
     if (insertError) {
       setError(insertError.message)
