@@ -2,11 +2,10 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams } from 'next/navigation'
 
 export default function ClientRequestPage() {
   const params = useParams()
-  const router = useRouter()
   const contractorId = params.userId as string
   const supabase = createClient()
 
