@@ -1,161 +1,146 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useParams } from 'next/navigation'
 
-const WORK_TYPES = [
-  'Bathroom renovation',
-  'Kitchen renovation',
-  'Full apartment renovation',
-  'Painting & decorating',
-  'Flooring',
-  'Electrical work',
-  'Plumbing',
-  'Tiling',
-  'Plastering',
-  'Other',
-]
-
-const BUDGET_RANGES = [
-  'Up to 5,000 PLN',
-  '5,000 - 15,000 PLN',
-  '15,000 - 30,000 PLN',
-  '30,000 - 50,000 PLN',
-  '50,000 - 100,000 PLN',
-  'Over 100,000 PLN',
-  'Not sure yet',
-]
-
-const TIMELINE_OPTIONS = [
-  'As soon as possible',
-  'Within 1 month',
-  'Within 3 months',
-  'Within 6 months',
-  'Flexible / Not urgent',
-]
+interface Message {
+  role: 'user' | 'assistant'
+  content: string
+}
 
 export default function ClientRequestPage() {
   const params = useParams()
   const contractorId = params.userId as string
   const supabase = createClient()
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
 
-  const [formData, setFormData] = useState({
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      role: 'assistant',
+      content: 'Cześć! 👋 Jestem asystentem, który pomoże Ci opisać zakres prac remontowych.\n\nPowiedz mi, co chciałbyś zrobić? Na przykład: pomalować pokój, wyremontować łazienkę, położyć płytki...',
+    },
+  ])
+  const [input, setInput] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [summary, setSummary] = useState<string | null>(null)
+  const [showContactForm, setShowContactForm] = useState(false)
+  const [contactData, setContactData] = useState({
     client_name: '',
     client_email: '',
     client_phone: '',
-    address: '',
-    work_type: '',
-    budget_range: '',
-    timeline: '',
-    property_size: '',
-    description: '',
   })
-  const [photos, setPhotos] = useState<File[]>([])
-  const [photosPreviews, setPhotosPreviews] = useState<string[]>([])
-  const [loading, setLoading] = useState(false)
-  const [uploadProgress, setUploadProgress] = useState(0)
   const [submitted, setSubmitted] = useState(false)
-  const [error, setError] = useState('')
+  const [submitting, setSubmitting] = useState(false)
 
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || [])
+  // Auto-scroll do najnowszej wiadomości
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages])
 
-    // Limit do 5 zdjęć
-    const newPhotos = [...photos, ...files].slice(0, 5)
-    setPhotos(newPhotos)
+  // Focus na input po załadowaniu
+  useEffect(() => {
+    inputRef.current?.focus()
+  }, [])
 
-    // Generuj podglądy
-    const previews = newPhotos.map(file => URL.createObjectURL(file))
-    setPhotosPreviews(previews)
-  }
+  const sendMessage = async () => {
+    if (!input.trim() || loading) return
 
-  const removePhoto = (index: number) => {
-    const newPhotos = photos.filter((_, i) => i !== index)
-    const newPreviews = photosPreviews.filter((_, i) => i !== index)
-    setPhotos(newPhotos)
-    setPhotosPreviews(newPreviews)
-  }
-
-  const uploadPhotos = async (): Promise<string[]> => {
-    const uploadedUrls: string[] = []
-
-    for (let i = 0; i < photos.length; i++) {
-      const file = photos[i]
-      const fileExt = file.name.split('.').pop()
-      const fileName = `${contractorId}/${Date.now()}-${i}.${fileExt}`
-
-      const { error } = await supabase.storage
-        .from('quote-photos')
-        .upload(fileName, file)
-
-      if (error) {
-        console.error('Upload error:', error)
-        continue
-      }
-
-      const { data: urlData } = supabase.storage
-        .from('quote-photos')
-        .getPublicUrl(fileName)
-
-      uploadedUrls.push(urlData.publicUrl)
-      setUploadProgress(Math.round(((i + 1) / photos.length) * 100))
-    }
-
-    return uploadedUrls
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
+    const userMessage = input.trim()
+    setInput('')
     setLoading(true)
-    setUploadProgress(0)
+
+    // Dodaj wiadomość użytkownika
+    const newMessages: Message[] = [...messages, { role: 'user', content: userMessage }]
+    setMessages(newMessages)
 
     try {
-      // Upload zdjęć
-      let photoUrls: string[] = []
-      if (photos.length > 0) {
-        photoUrls = await uploadPhotos()
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: newMessages.map(m => ({ role: m.role, content: m.content })),
+          contractorId,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (data.error) {
+        setMessages([...newMessages, {
+          role: 'assistant',
+          content: 'Przepraszam, wystąpił błąd. Spróbuj ponownie.',
+        }])
+      } else {
+        setMessages([...newMessages, {
+          role: 'assistant',
+          content: data.message,
+        }])
+
+        // Sprawdź czy jest podsumowanie
+        if (data.hasSummary) {
+          // Wyciągnij podsumowanie
+          const summaryMatch = data.message.match(/---PODSUMOWANIE---([\s\S]*?)---KONIEC---/)
+          if (summaryMatch) {
+            setSummary(summaryMatch[1].trim())
+            setShowContactForm(true)
+          }
+        }
       }
-
-      // Złóż opis z dodatkowymi informacjami
-      const fullDescription = `
-WORK TYPE: ${formData.work_type || 'Not specified'}
-BUDGET: ${formData.budget_range || 'Not specified'}
-TIMELINE: ${formData.timeline || 'Not specified'}
-PROPERTY SIZE: ${formData.property_size || 'Not specified'}
-
-DESCRIPTION:
-${formData.description}
-      `.trim()
-
-      const { error } = await supabase
-        .from('qs_quote_requests')
-        .insert({
-          contractor_id: contractorId,
-          client_name: formData.client_name,
-          client_email: formData.client_email || null,
-          client_phone: formData.client_phone || null,
-          address: formData.address || null,
-          description: fullDescription,
-          photos: photoUrls,
-          status: 'new',
-        })
-
-      if (error) {
-        console.error('Error:', error)
-        setError('Failed to submit request. Please try again.')
-        setLoading(false)
-        return
-      }
-
-      setSubmitted(true)
-    } catch (err) {
-      console.error('Error:', err)
-      setError('Failed to submit request. Please try again.')
+    } catch (error) {
+      console.error('Error:', error)
+      setMessages([...newMessages, {
+        role: 'assistant',
+        content: 'Przepraszam, wystąpił błąd połączenia. Spróbuj ponownie.',
+      }])
     }
 
     setLoading(false)
+  }
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      sendMessage()
+    }
+  }
+
+  const handleSubmitRequest = async () => {
+    if (!contactData.client_name.trim()) {
+      alert('Podaj swoje imię')
+      return
+    }
+
+    setSubmitting(true)
+
+    // Przygotuj pełny opis z rozmowy i podsumowania
+    const conversationLog = messages
+      .map(m => `${m.role === 'user' ? 'Klient' : 'Asystent'}: ${m.content}`)
+      .join('\n\n')
+
+    const fullDescription = `${summary}\n\n---ROZMOWA---\n${conversationLog}`
+
+    const { error } = await supabase
+      .from('qs_quote_requests')
+      .insert({
+        contractor_id: contractorId,
+        client_name: contactData.client_name,
+        client_email: contactData.client_email || null,
+        client_phone: contactData.client_phone || null,
+        description: fullDescription,
+        photos: [],
+        status: 'new',
+      })
+
+    if (error) {
+      console.error('Error:', error)
+      alert('Wystąpił błąd. Spróbuj ponownie.')
+    } else {
+      setSubmitted(true)
+    }
+
+    setSubmitting(false)
   }
 
   if (submitted) {
@@ -167,284 +152,148 @@ ${formData.description}
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-white mb-2">Request Submitted!</h1>
+          <h1 className="text-2xl font-bold text-white mb-2">Zapytanie wysłane!</h1>
           <p className="text-slate-400 mb-6">
-            Thank you for your request. The contractor will review it and send you a quote soon.
+            Dziękujemy! Wykonawca otrzymał Twoje zapytanie i wkrótce przygotuje wycenę.
           </p>
-          <button
-            onClick={() => {
-              setSubmitted(false)
-              setFormData({
-                client_name: '',
-                client_email: '',
-                client_phone: '',
-                address: '',
-                work_type: '',
-                budget_range: '',
-                timeline: '',
-                property_size: '',
-                description: '',
-              })
-              setPhotos([])
-              setPhotosPreviews([])
-            }}
-            className="btn-secondary"
-          >
-            Submit Another Request
-          </button>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen py-12 px-4">
-      <div className="max-w-2xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center mx-auto mb-4">
-            <span className="text-white font-bold text-xl">Q</span>
+    <div className="min-h-screen flex flex-col">
+      {/* Header */}
+      <header className="bg-slate-800 border-b border-slate-700 px-4 py-4">
+        <div className="max-w-2xl mx-auto flex items-center gap-3">
+          <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
+            <span className="text-white font-bold">Q</span>
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">Request a Quote</h1>
-          <p className="text-slate-400">
-            Fill out the form below and we&apos;ll get back to you with a detailed quote.
-          </p>
+          <div>
+            <h1 className="text-white font-semibold">QuoteSnap</h1>
+            <p className="text-slate-400 text-sm">Asystent wycen</p>
+          </div>
         </div>
+      </header>
 
-        {/* Form */}
-        <div className="card">
-          <form onSubmit={handleSubmit} className="space-y-8">
-            {error && (
-              <div className="bg-red-500/10 border border-red-500/50 text-red-400 px-4 py-3 rounded-lg text-sm">
-                {error}
+      {/* Chat messages */}
+      <div className="flex-1 overflow-y-auto px-4 py-6">
+        <div className="max-w-2xl mx-auto space-y-4">
+          {messages.map((message, index) => (
+            <div
+              key={index}
+              className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+            >
+              <div
+                className={`max-w-[85%] rounded-2xl px-4 py-3 ${
+                  message.role === 'user'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-slate-700 text-slate-100'
+                }`}
+              >
+                <p className="whitespace-pre-wrap">{message.content}</p>
               </div>
-            )}
+            </div>
+          ))}
 
-            {/* Contact Info */}
-            <div>
-              <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                <span className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-sm">1</span>
-                Contact Information
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="md:col-span-2">
-                  <label htmlFor="client_name" className="label">
-                    Your Name <span className="text-red-400">*</span>
-                  </label>
-                  <input
-                    id="client_name"
-                    type="text"
-                    value={formData.client_name}
-                    onChange={(e) => setFormData({ ...formData, client_name: e.target.value })}
-                    className="input"
-                    placeholder="John Doe"
-                    required
-                  />
+          {loading && (
+            <div className="flex justify-start">
+              <div className="bg-slate-700 rounded-2xl px-4 py-3">
+                <div className="flex gap-1">
+                  <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                  <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                  <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                 </div>
+              </div>
+            </div>
+          )}
+
+          <div ref={messagesEndRef} />
+        </div>
+      </div>
+
+      {/* Contact form overlay */}
+      {showContactForm && (
+        <div className="bg-slate-800 border-t border-slate-700 px-4 py-6">
+          <div className="max-w-2xl mx-auto">
+            <div className="card bg-green-600/10 border-green-500/30 mb-4">
+              <h3 className="text-white font-semibold mb-2">✅ Zakres prac ustalony!</h3>
+              <p className="text-slate-300 text-sm">
+                Teraz podaj swoje dane kontaktowe, żeby wykonawca mógł się z Tobą skontaktować z wyceną.
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="label">Twoje imię *</label>
+                <input
+                  type="text"
+                  value={contactData.client_name}
+                  onChange={(e) => setContactData({ ...contactData, client_name: e.target.value })}
+                  className="input"
+                  placeholder="Jan Kowalski"
+                />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="client_email" className="label">Email</label>
+                  <label className="label">Email</label>
                   <input
-                    id="client_email"
                     type="email"
-                    value={formData.client_email}
-                    onChange={(e) => setFormData({ ...formData, client_email: e.target.value })}
+                    value={contactData.client_email}
+                    onChange={(e) => setContactData({ ...contactData, client_email: e.target.value })}
                     className="input"
-                    placeholder="john@example.com"
+                    placeholder="jan@email.com"
                   />
                 </div>
                 <div>
-                  <label htmlFor="client_phone" className="label">Phone</label>
+                  <label className="label">Telefon</label>
                   <input
-                    id="client_phone"
                     type="tel"
-                    value={formData.client_phone}
-                    onChange={(e) => setFormData({ ...formData, client_phone: e.target.value })}
+                    value={contactData.client_phone}
+                    onChange={(e) => setContactData({ ...contactData, client_phone: e.target.value })}
                     className="input"
                     placeholder="+48 123 456 789"
                   />
                 </div>
-                <div className="md:col-span-2">
-                  <label htmlFor="address" className="label">Project Address</label>
-                  <input
-                    id="address"
-                    type="text"
-                    value={formData.address}
-                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                    className="input"
-                    placeholder="Street, City, Postal Code"
-                  />
-                </div>
               </div>
+              <button
+                onClick={handleSubmitRequest}
+                disabled={submitting}
+                className="btn-primary w-full py-3"
+              >
+                {submitting ? 'Wysyłanie...' : 'Wyślij zapytanie o wycenę'}
+              </button>
             </div>
-
-            {/* Project Details */}
-            <div>
-              <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                <span className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-sm">2</span>
-                Project Details
-              </h2>
-              <div className="space-y-4">
-                <div>
-                  <label htmlFor="work_type" className="label">
-                    Type of Work <span className="text-red-400">*</span>
-                  </label>
-                  <select
-                    id="work_type"
-                    value={formData.work_type}
-                    onChange={(e) => setFormData({ ...formData, work_type: e.target.value })}
-                    className="input"
-                    required
-                  >
-                    <option value="">Select type of work...</option>
-                    {WORK_TYPES.map((type) => (
-                      <option key={type} value={type}>{type}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="budget_range" className="label">Estimated Budget</label>
-                    <select
-                      id="budget_range"
-                      value={formData.budget_range}
-                      onChange={(e) => setFormData({ ...formData, budget_range: e.target.value })}
-                      className="input"
-                    >
-                      <option value="">Select budget range...</option>
-                      {BUDGET_RANGES.map((range) => (
-                        <option key={range} value={range}>{range}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label htmlFor="timeline" className="label">Preferred Timeline</label>
-                    <select
-                      id="timeline"
-                      value={formData.timeline}
-                      onChange={(e) => setFormData({ ...formData, timeline: e.target.value })}
-                      className="input"
-                    >
-                      <option value="">Select timeline...</option>
-                      {TIMELINE_OPTIONS.map((option) => (
-                        <option key={option} value={option}>{option}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                <div>
-                  <label htmlFor="property_size" className="label">Property Size (m²)</label>
-                  <input
-                    id="property_size"
-                    type="text"
-                    value={formData.property_size}
-                    onChange={(e) => setFormData({ ...formData, property_size: e.target.value })}
-                    className="input"
-                    placeholder="e.g., 50 m² or 25 m² bathroom"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="description" className="label">
-                    Project Description <span className="text-red-400">*</span>
-                  </label>
-                  <textarea
-                    id="description"
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    className="input min-h-[120px] resize-y"
-                    placeholder="Please describe your project in detail. What needs to be done? Any specific requirements or preferences?"
-                    required
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Photos */}
-            <div>
-              <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                <span className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-sm">3</span>
-                Photos (Optional)
-              </h2>
-              <p className="text-slate-400 text-sm mb-4">
-                Upload up to 5 photos of the space or area that needs work. This helps us provide a more accurate quote.
-              </p>
-
-              {/* Photo previews */}
-              {photosPreviews.length > 0 && (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 mb-4">
-                  {photosPreviews.map((preview, index) => (
-                    <div key={index} className="relative aspect-square">
-                      <img
-                        src={preview}
-                        alt={`Preview ${index + 1}`}
-                        className="w-full h-full object-cover rounded-lg"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => removePhoto(index)}
-                        className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-white hover:bg-red-600 transition-colors"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Upload button */}
-              {photos.length < 5 && (
-                <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-600 rounded-lg cursor-pointer hover:border-slate-500 hover:bg-slate-800/50 transition-colors">
-                  <svg className="w-8 h-8 text-slate-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  <span className="text-slate-400 text-sm">Click to upload photos</span>
-                  <span className="text-slate-500 text-xs mt-1">{photos.length}/5 photos</span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    onChange={handlePhotoChange}
-                    className="hidden"
-                  />
-                </label>
-              )}
-            </div>
-
-            {/* Submit */}
-            {loading && uploadProgress > 0 && (
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-slate-400">Uploading photos...</span>
-                  <span className="text-white">{uploadProgress}%</span>
-                </div>
-                <div className="w-full bg-slate-700 rounded-full h-2">
-                  <div
-                    className="bg-blue-600 h-2 rounded-full transition-all"
-                    style={{ width: `${uploadProgress}%` }}
-                  />
-                </div>
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="btn-primary w-full py-3 text-lg"
-            >
-              {loading ? 'Submitting...' : 'Submit Request'}
-            </button>
-          </form>
+          </div>
         </div>
+      )}
 
-        {/* Footer */}
-        <p className="text-center text-slate-500 text-sm mt-8">
-          Powered by QuoteSnap
-        </p>
-      </div>
+      {/* Input */}
+      {!showContactForm && (
+        <div className="bg-slate-800 border-t border-slate-700 px-4 py-4">
+          <div className="max-w-2xl mx-auto flex gap-3">
+            <input
+              ref={inputRef}
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="Napisz wiadomość..."
+              disabled={loading}
+              className="input flex-1"
+            />
+            <button
+              onClick={sendMessage}
+              disabled={loading || !input.trim()}
+              className="btn-primary px-6"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
