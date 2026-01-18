@@ -1,10 +1,14 @@
 import { createClient } from '@/lib/supabase/server'
+import { headers } from 'next/headers'
 import Link from 'next/link'
 import { CopyButton } from '@/components/CopyButton'
 
 export default async function RequestsPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
+  const headersList = await headers()
+  const host = headersList.get('host') || 'localhost:3000'
+  const protocol = host.includes('localhost') ? 'http' : 'https'
 
   const { data: requests } = await supabase
     .from('qs_quote_requests')
@@ -13,7 +17,7 @@ export default async function RequestsPage() {
     .order('created_at', { ascending: false })
 
   // Generuj link do formularza zapytania dla klientów
-  const requestFormUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/request/${user?.id}`
+  const requestFormUrl = `${protocol}://${host}/request/${user?.id}`
 
   return (
     <div className="p-8">
