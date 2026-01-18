@@ -15,25 +15,26 @@ const SYSTEM_PROMPT = `Jesteś asystentem pomagającym wykonawcom remontów twor
 
 Otrzymasz:
 1. OPIS PRAC - co klient chce zrobić (z rozmowy z botem)
-2. CENNIK USŁUG - lista usług wykonawcy z cenami
+2. CENNIK USŁUG - ponumerowana lista usług wykonawcy
 
-Twoim zadaniem jest przeanalizować opis i zasugerować które usługi z cennika pasują do zlecenia oraz oszacować ilości.
+Twoim zadaniem jest przeanalizować opis i zasugerować które usługi pasują do zlecenia.
+
+WAŻNE - użyj NUMERU usługi z cennika (service_id), NIE nazwy!
 
 ZASADY:
-- Używaj TYLKO usług z podanego cennika (dokładne nazwy!)
+- Wybieraj TYLKO usługi z podanego cennika używając ich NUMERÓW
 - Szacuj ilości realistycznie na podstawie opisu
 - Jeśli klient podał metraż, użyj go
 - Jeśli nie podał, oszacuj rozsądnie (np. typowy pokój 12-15m², łazienka 5-8m²)
-- Dodaj usługi przygotowawcze jeśli są potrzebne (gruntowanie, skuwanie, etc.)
-- Nie dodawaj usług których nie ma w cenniku
+- Dodaj usługi przygotowawcze jeśli są w cenniku i są potrzebne
 
-Odpowiedz TYLKO w formacie JSON (bez markdown):
+Odpowiedz TYLKO w formacie JSON (bez markdown, bez komentarzy):
 {
   "suggestions": [
     {
-      "service_name": "dokładna nazwa z cennika",
-      "quantity": liczba,
-      "reason": "krótkie uzasadnienie"
+      "service_id": 1,
+      "quantity": 20,
+      "reason": "malowanie ścian - klient podał 20m²"
     }
   ],
   "notes": "opcjonalne uwagi dla wykonawcy"
@@ -57,15 +58,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Przygotuj cennik jako tekst
+    // Przygotuj cennik jako ponumerowaną listę
     const priceList = services
-      .map((s: Service) => `- ${s.name}: ${s.price} PLN / ${s.unit}`)
+      .map((s: Service, index: number) => `${index + 1}. ${s.name} - ${s.price} PLN / ${s.unit}`)
       .join('\n')
 
     const userMessage = `OPIS PRAC:
 ${description}
 
-CENNIK USŁUG:
+CENNIK USŁUG (użyj numeru jako service_id):
 ${priceList}`
 
     const response = await openai.chat.completions.create({
@@ -94,10 +95,15 @@ ${priceList}`
       )
     }
 
-    // Mapuj sugestie na format QuoteItem
-    const items = parsed.suggestions?.map((suggestion: { service_name: string; quantity: number; reason: string }) => {
-      const service = services.find((s: Service) => s.name === suggestion.service_name)
-      if (!service) return null
+    // Mapuj sugestie na format QuoteItem używając service_id (1-indexed)
+    const items = parsed.suggestions?.map((suggestion: { service_id: number; quantity: number; reason: string }) => {
+      const serviceIndex = suggestion.service_id - 1 // AI używa 1-indexed
+      const service = services[serviceIndex]
+
+      if (!service) {
+        console.log(`Service not found for id ${suggestion.service_id}`)
+        return null
+      }
 
       return {
         service_name: service.name,
@@ -108,6 +114,8 @@ ${priceList}`
         reason: suggestion.reason,
       }
     }).filter(Boolean) || []
+
+    console.log('AI suggestions mapped:', items.length, 'items')
 
     return NextResponse.json({
       items,
