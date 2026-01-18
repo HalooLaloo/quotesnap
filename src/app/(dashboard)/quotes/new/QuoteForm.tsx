@@ -25,6 +25,8 @@ export function QuoteForm({ request, services, userId }: QuoteFormProps) {
   const [validDays, setValidDays] = useState(30)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [aiLoading, setAiLoading] = useState(false)
+  const [aiNotes, setAiNotes] = useState<string | null>(null)
 
   // Dodaj usługę do wyceny
   const addService = (service: Service) => {
@@ -54,6 +56,55 @@ export function QuoteForm({ request, services, userId }: QuoteFormProps) {
   // Usuń pozycję
   const removeItem = (index: number) => {
     setItems(items.filter((_, i) => i !== index))
+  }
+
+  // AI sugestie
+  const handleAiSuggest = async () => {
+    if (!request?.description) return
+
+    setAiLoading(true)
+    setError('')
+    setAiNotes(null)
+
+    try {
+      const response = await fetch('/api/suggest-quote', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          description: request.description,
+          services: services.map(s => ({
+            name: s.name,
+            price: s.price,
+            unit: UNITS[s.unit as keyof typeof UNITS],
+          })),
+        }),
+      })
+
+      const data = await response.json()
+
+      if (data.error) {
+        setError(data.error)
+      } else {
+        // Dodaj sugerowane pozycje
+        const newItems: QuoteItem[] = data.items.map((item: QuoteItem & { reason?: string }) => ({
+          service_name: item.service_name,
+          quantity: item.quantity,
+          unit: item.unit,
+          unit_price: item.unit_price,
+          total: item.total,
+        }))
+        setItems(newItems)
+
+        if (data.notes) {
+          setAiNotes(data.notes)
+        }
+      }
+    } catch (err) {
+      console.error('AI suggest error:', err)
+      setError('Nie udało się wygenerować sugestii')
+    }
+
+    setAiLoading(false)
   }
 
   // Oblicz sumy
@@ -112,6 +163,54 @@ export function QuoteForm({ request, services, userId }: QuoteFormProps) {
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
       {/* Services selection */}
       <div className="lg:col-span-2 space-y-6">
+        {/* AI Suggest */}
+        {request && services.length > 0 && (
+          <div className="card bg-purple-600/10 border-purple-500/30">
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 bg-purple-600/20 rounded-lg flex items-center justify-center shrink-0">
+                <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-white font-medium mb-1">AI Assistant</h3>
+                <p className="text-slate-400 text-sm mb-3">
+                  Let AI analyze the request and suggest services with estimated quantities based on your price list.
+                </p>
+                <button
+                  onClick={handleAiSuggest}
+                  disabled={aiLoading}
+                  className="btn-primary bg-purple-600 hover:bg-purple-700"
+                >
+                  {aiLoading ? (
+                    <span className="flex items-center gap-2">
+                      <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      </svg>
+                      Analyzing...
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-2">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                      Generate Quote with AI
+                    </span>
+                  )}
+                </button>
+              </div>
+            </div>
+            {aiNotes && (
+              <div className="mt-4 p-3 bg-slate-800/50 rounded-lg">
+                <p className="text-sm text-slate-300">
+                  <span className="text-purple-400 font-medium">AI Notes:</span> {aiNotes}
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Add services */}
         <div className="card">
           <h2 className="text-lg font-semibold text-white mb-4">Add Services</h2>
