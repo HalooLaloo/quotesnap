@@ -48,7 +48,7 @@ Po podsumowaniu zapytaj czy wszystko się zgadza lub czy coś zmienić.`
 
 export async function POST(request: NextRequest) {
   try {
-    const { messages, contractorId } = await request.json()
+    const { messages } = await request.json()
 
     if (!process.env.OPENAI_API_KEY) {
       return NextResponse.json(
