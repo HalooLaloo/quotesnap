@@ -41,12 +41,6 @@ export function RequestFilters() {
     router.push(`/requests${query ? `?${query}` : ''}`)
   }
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-    const query = createQueryString({ search })
-    router.push(`/requests${query ? `?${query}` : ''}`)
-  }
-
   // Debounced search
   useEffect(() => {
     const timer = setTimeout(() => {
