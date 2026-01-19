@@ -177,14 +177,14 @@ export default function ClientRequestPage() {
             <h1 className="text-white font-semibold">QuoteSnap</h1>
             <p className="text-slate-400 text-sm">Asystent wycen</p>
           </div>
-          {/* Licznik pytań */}
+          {/* Progress indicator */}
           {!showContactForm && userMessagesCount > 0 && (
             <div className="text-right">
               <div className="text-white font-medium text-sm">
                 {userMessagesCount} / ~{estimatedTotalQuestions}
               </div>
-              <div className="text-slate-400 text-xs">odpowiedzi</div>
-              {/* Pasek postępu */}
+              <div className="text-slate-400 text-xs">answers</div>
+              {/* Progress bar */}
               <div className="w-20 h-1.5 bg-slate-700 rounded-full mt-1 overflow-hidden">
                 <div
                   className="h-full bg-blue-500 rounded-full transition-all duration-300"

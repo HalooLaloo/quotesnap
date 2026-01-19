@@ -68,7 +68,7 @@ export default async function RequestDetailPage({
         <div className="lg:col-span-2 space-y-6">
           {/* Description */}
           <div className="card">
-            <h2 className="text-lg font-semibold text-white mb-4">Opis projektu</h2>
+            <h2 className="text-lg font-semibold text-white mb-4">Project Description</h2>
             <CollapsibleDescription description={request.description} />
           </div>
 
@@ -133,27 +133,27 @@ export default async function RequestDetailPage({
 
           {/* Actions */}
           <div className="card">
-            <h2 className="text-lg font-semibold text-white mb-4">Akcje</h2>
+            <h2 className="text-lg font-semibold text-white mb-4">Actions</h2>
             <div className="space-y-3">
               {(request.status === 'new' || request.status === 'quoted' || request.status === 'reviewing') && (
                 <Link
                   href={`/quotes/new?request=${request.id}`}
                   className="btn-primary w-full text-center block"
                 >
-                  {request.status === 'new' ? 'Utwórz wycenę' : 'Utwórz nową wycenę'}
+                  {request.status === 'new' ? 'Create Quote' : 'Create New Quote'}
                 </Link>
               )}
               {request.status === 'quoted' && (
-                <p className="text-slate-400 text-sm text-center">Wycena wysłana - oczekiwanie na odpowiedź klienta</p>
+                <p className="text-slate-400 text-sm text-center">Quote sent - waiting for client response</p>
               )}
               {request.status === 'accepted' && (
                 <>
-                  <p className="text-green-400 text-sm text-center mb-2">Wycena zaakceptowana!</p>
+                  <p className="text-green-400 text-sm text-center mb-2">Quote accepted!</p>
                   <Link
                     href={`/quotes/new?request=${request.id}`}
                     className="btn-secondary w-full text-center block"
                   >
-                    Utwórz kolejną wycenę
+                    Create Another Quote
                   </Link>
                 </>
               )}

@@ -64,52 +64,52 @@ export default async function RequestsPage() {
 
         {requests && requests.length > 0 ? (
           <div className="space-y-4">
-            {requests.map((request) => (
-              <div
-                key={request.id}
-                className="flex items-center justify-between p-4 bg-slate-700/50 rounded-lg hover:bg-slate-700 transition-colors"
-              >
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-3 mb-1">
-                    <p className="text-white font-medium">{request.client_name}</p>
-                    <span className={`px-2 py-0.5 text-xs rounded-full ${
-                      request.status === 'new' ? 'bg-yellow-500/20 text-yellow-400' :
-                      request.status === 'reviewing' ? 'bg-blue-500/20 text-blue-400' :
-                      request.status === 'quoted' ? 'bg-purple-500/20 text-purple-400' :
-                      request.status === 'accepted' ? 'bg-green-500/20 text-green-400' :
-                      'bg-red-500/20 text-red-400'
-                    }`}>
-                      {request.status}
+            {requests.map((request) => {
+              // Extract work type from description (RODZAJ PRAC: xxx)
+              const workTypeMatch = request.description.match(/RODZAJ PRAC:\s*([^\n]+)/i)
+              const workType = workTypeMatch ? workTypeMatch[1].trim() : request.description.slice(0, 100)
+
+              return (
+                <Link
+                  key={request.id}
+                  href={`/requests/${request.id}`}
+                  className="flex items-center justify-between p-4 bg-slate-700/50 rounded-lg hover:bg-slate-700 transition-colors block"
+                >
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-3 mb-1">
+                      <p className="text-white font-medium">{request.client_name}</p>
+                      <span className={`px-2 py-0.5 text-xs rounded-full ${
+                        request.status === 'new' ? 'bg-yellow-500/20 text-yellow-400' :
+                        request.status === 'reviewing' ? 'bg-blue-500/20 text-blue-400' :
+                        request.status === 'quoted' ? 'bg-purple-500/20 text-purple-400' :
+                        request.status === 'accepted' ? 'bg-green-500/20 text-green-400' :
+                        'bg-red-500/20 text-red-400'
+                      }`}>
+                        {request.status}
+                      </span>
+                    </div>
+                    <p className="text-slate-400 text-sm truncate">{workType}</p>
+                    <div className="flex items-center gap-4 mt-2 text-xs text-slate-500">
+                      {request.client_email && <span>{request.client_email}</span>}
+                      {request.client_phone && <span>{request.client_phone}</span>}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 ml-4">
+                    <span className="text-slate-500 text-sm">
+                      {new Date(request.created_at).toLocaleDateString()}
                     </span>
+                    {request.status === 'new' && (
+                      <span className="btn-primary text-sm">
+                        Create Quote
+                      </span>
+                    )}
+                    <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
                   </div>
-                  <p className="text-slate-400 text-sm truncate">{request.description}</p>
-                  <div className="flex items-center gap-4 mt-2 text-xs text-slate-500">
-                    {request.client_email && <span>{request.client_email}</span>}
-                    {request.client_phone && <span>{request.client_phone}</span>}
-                    {request.address && <span>{request.address}</span>}
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 ml-4">
-                  <span className="text-slate-500 text-sm">
-                    {new Date(request.created_at).toLocaleDateString()}
-                  </span>
-                  <Link
-                    href={`/requests/${request.id}`}
-                    className="btn-secondary text-sm"
-                  >
-                    View
-                  </Link>
-                  {request.status === 'new' && (
-                    <Link
-                      href={`/quotes/new?request=${request.id}`}
-                      className="btn-primary text-sm"
-                    >
-                      Create Quote
-                    </Link>
-                  )}
-                </div>
-              </div>
-            ))}
+                </Link>
+              )
+            })}
           </div>
         ) : (
           <div className="text-center py-12">
