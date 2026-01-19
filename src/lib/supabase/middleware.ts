@@ -46,10 +46,10 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // Przekierowanie zalogowanych z loginu na dashboard
+  // Przekierowanie zalogowanych z loginu na requests
   if (user && (request.nextUrl.pathname === '/login' || request.nextUrl.pathname === '/register')) {
     const url = request.nextUrl.clone()
-    url.pathname = '/dashboard'
+    url.pathname = '/requests'
     return NextResponse.redirect(url)
   }
 

@@ -8,7 +8,7 @@ export default async function Home() {
 
   // Jeśli zalogowany - przekieruj na dashboard
   if (user) {
-    redirect('/dashboard')
+    redirect('/requests')
   }
 
   return (

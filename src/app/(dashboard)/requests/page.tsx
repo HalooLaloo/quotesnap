@@ -10,6 +10,30 @@ export default async function RequestsPage() {
   const host = headersList.get('host') || 'localhost:3000'
   const protocol = host.includes('localhost') ? 'http' : 'https'
 
+  // Stats
+  const { count: servicesCount } = await supabase
+    .from('qs_services')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', user?.id)
+
+  const { count: newRequestsCount } = await supabase
+    .from('qs_quote_requests')
+    .select('*', { count: 'exact', head: true })
+    .eq('contractor_id', user?.id)
+    .eq('status', 'new')
+
+  const { count: pendingQuotesCount } = await supabase
+    .from('qs_quotes')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', user?.id)
+    .eq('status', 'sent')
+
+  const { count: acceptedQuotesCount } = await supabase
+    .from('qs_quotes')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', user?.id)
+    .eq('status', 'accepted')
+
   const { data: requests } = await supabase
     .from('qs_quote_requests')
     .select('*')
@@ -27,6 +51,71 @@ export default async function RequestsPage() {
           <p className="text-slate-400 mt-1">
             Manage incoming quote requests from your clients.
           </p>
+        </div>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="card">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-slate-400 text-sm">My Services</p>
+              <p className="text-3xl font-bold text-white mt-1">{servicesCount || 0}</p>
+            </div>
+            <div className="w-12 h-12 bg-blue-600/20 rounded-lg flex items-center justify-center">
+              <svg className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+              </svg>
+            </div>
+          </div>
+          <Link href="/services" className="text-blue-500 text-sm mt-4 inline-block hover:text-blue-400">
+            Manage services →
+          </Link>
+        </div>
+
+        <div className="card">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-slate-400 text-sm">New Requests</p>
+              <p className="text-3xl font-bold text-white mt-1">{newRequestsCount || 0}</p>
+            </div>
+            <div className="w-12 h-12 bg-yellow-600/20 rounded-lg flex items-center justify-center">
+              <svg className="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div className="card">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-slate-400 text-sm">Pending Quotes</p>
+              <p className="text-3xl font-bold text-white mt-1">{pendingQuotesCount || 0}</p>
+            </div>
+            <div className="w-12 h-12 bg-purple-600/20 rounded-lg flex items-center justify-center">
+              <svg className="w-6 h-6 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+          </div>
+          <Link href="/quotes" className="text-blue-500 text-sm mt-4 inline-block hover:text-blue-400">
+            View quotes →
+          </Link>
+        </div>
+
+        <div className="card">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-slate-400 text-sm">Accepted</p>
+              <p className="text-3xl font-bold text-white mt-1">{acceptedQuotesCount || 0}</p>
+            </div>
+            <div className="w-12 h-12 bg-green-600/20 rounded-lg flex items-center justify-center">
+              <svg className="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+          </div>
         </div>
       </div>
 
