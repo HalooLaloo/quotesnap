@@ -17,24 +17,31 @@ Otrzymasz:
 1. OPIS PRAC - co klient chce zrobić (z rozmowy z botem)
 2. CENNIK USŁUG - ponumerowana lista usług wykonawcy
 
-Twoim zadaniem jest przeanalizować opis i zasugerować które usługi pasują do zlecenia.
-
-WAŻNE - użyj NUMERU usługi z cennika (service_id), NIE nazwy!
+Twoim zadaniem jest:
+1. Zasugerować usługi Z CENNIKA które pasują do zlecenia (użyj numerów)
+2. Zasugerować DODATKOWE prace które mogą być potrzebne, ale NIE MA ich w cenniku
 
 ZASADY:
-- Wybieraj TYLKO usługi z podanego cennika używając ich NUMERÓW
-- Szacuj ilości realistycznie na podstawie opisu
-- Jeśli klient podał metraż, użyj go
-- Jeśli nie podał, oszacuj rozsądnie (np. typowy pokój 12-15m², łazienka 5-8m²)
-- Dodaj usługi przygotowawcze jeśli są w cenniku i są potrzebne
+- Dla usług z cennika: użyj ich NUMERÓW (service_id)
+- Szacuj ilości realistycznie (jeśli klient podał metraż - użyj go, jeśli nie - oszacuj)
+- Dla dodatkowych prac: opisz co trzeba zrobić, podaj jednostkę i szacowaną ilość
+- Pomyśl co może być potrzebne: przygotowanie podłoża, transport materiałów, wywóz gruzu, drobne naprawy, etc.
 
-Odpowiedz TYLKO w formacie JSON (bez markdown, bez komentarzy):
+Odpowiedz TYLKO w formacie JSON (bez markdown):
 {
   "suggestions": [
     {
       "service_id": 1,
       "quantity": 20,
       "reason": "malowanie ścian - klient podał 20m²"
+    }
+  ],
+  "custom_suggestions": [
+    {
+      "name": "Naprawa pęknięć w ścianie",
+      "quantity": 3,
+      "unit": "szt",
+      "reason": "klient wspomniał o pęknięciach"
     }
   ],
   "notes": "opcjonalne uwagi dla wykonawcy"
@@ -115,10 +122,22 @@ ${priceList}`
       }
     }).filter(Boolean) || []
 
-    console.log('AI suggestions mapped:', items.length, 'items')
+    // Mapuj custom suggestions (bez ceny - worker wpisze)
+    const customItems = parsed.custom_suggestions?.map((suggestion: { name: string; quantity: number; unit: string; reason: string }) => ({
+      service_name: suggestion.name,
+      quantity: suggestion.quantity,
+      unit: suggestion.unit,
+      unit_price: 0, // Worker wpisze cenę
+      total: 0,
+      reason: suggestion.reason,
+      isCustom: true,
+    })) || []
+
+    console.log('AI suggestions mapped:', items.length, 'from pricelist,', customItems.length, 'custom')
 
     return NextResponse.json({
       items,
+      customItems,
       notes: parsed.notes || null,
     })
   } catch (error) {

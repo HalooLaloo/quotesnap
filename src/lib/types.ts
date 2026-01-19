@@ -29,6 +29,8 @@ export interface QuoteItem {
   unit: string
   unit_price: number
   total: number
+  isCustom?: boolean
+  reason?: string
 }
 
 export interface QuoteMaterial {
