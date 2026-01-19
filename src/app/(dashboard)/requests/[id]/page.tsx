@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { CollapsibleDescription } from '@/app/(dashboard)/quotes/[id]/CollapsibleDescription'
+import { ArchiveButton } from '@/components/ArchiveButton'
 
 export default async function RequestDetailPage({
   params,
@@ -29,6 +30,7 @@ export default async function RequestDetailPage({
     quoted: 'bg-purple-500/20 text-purple-400',
     accepted: 'bg-green-500/20 text-green-400',
     rejected: 'bg-red-500/20 text-red-400',
+    archived: 'bg-slate-500/20 text-slate-400',
   }
 
   return (
@@ -157,6 +159,16 @@ export default async function RequestDetailPage({
                   </Link>
                 </>
               )}
+              {request.status === 'archived' && (
+                <p className="text-slate-400 text-sm text-center mb-2">This request is archived</p>
+              )}
+
+              <div className="pt-3 border-t border-slate-700">
+                <ArchiveButton
+                  requestId={request.id}
+                  isArchived={request.status === 'archived'}
+                />
+              </div>
             </div>
           </div>
         </div>

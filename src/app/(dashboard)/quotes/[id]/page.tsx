@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { QuoteItem } from '@/lib/types'
 import { CollapsibleDescription } from './CollapsibleDescription'
+import { ExportPDFButton } from '@/components/ExportPDFButton'
 
 export default async function QuoteDetailPage({
   params,
@@ -31,6 +32,15 @@ export default async function QuoteDetailPage({
   if (!quote) {
     notFound()
   }
+
+  // Get contractor profile
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('full_name, company_name')
+    .eq('id', user?.id)
+    .single()
+
+  const contractorName = profile?.company_name || profile?.full_name || ''
 
   const statusColors: Record<string, string> = {
     draft: 'bg-slate-500/20 text-slate-400',
@@ -69,12 +79,15 @@ export default async function QuoteDetailPage({
               })}
             </p>
           </div>
-          <span className={`px-3 py-1 rounded-full text-sm font-medium ${statusColors[quote.status] || 'bg-slate-500/20 text-slate-400'}`}>
-            {quote.status === 'draft' ? 'Szkic' :
-             quote.status === 'sent' ? 'Wysłana' :
-             quote.status === 'accepted' ? 'Zaakceptowana' :
-             quote.status === 'rejected' ? 'Odrzucona' : quote.status}
-          </span>
+          <div className="flex items-center gap-3">
+            <ExportPDFButton quote={quote} contractorName={contractorName} />
+            <span className={`px-3 py-1 rounded-full text-sm font-medium ${statusColors[quote.status] || 'bg-slate-500/20 text-slate-400'}`}>
+              {quote.status === 'draft' ? 'Szkic' :
+               quote.status === 'sent' ? 'Wysłana' :
+               quote.status === 'accepted' ? 'Zaakceptowana' :
+               quote.status === 'rejected' ? 'Odrzucona' : quote.status}
+            </span>
+          </div>
         </div>
       </div>
 

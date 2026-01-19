@@ -1,0 +1,153 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { Resend } from 'resend'
+import { createClient } from '@supabase/supabase-js'
+
+const resend = new Resend(process.env.RESEND_API_KEY)
+
+// Use service role for public access
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
+
+export async function POST(request: NextRequest) {
+  try {
+    const { token, action } = await request.json()
+
+    if (!token || !action) {
+      return NextResponse.json(
+        { error: 'Token and action are required' },
+        { status: 400 }
+      )
+    }
+
+    if (action !== 'accept' && action !== 'reject') {
+      return NextResponse.json(
+        { error: 'Invalid action' },
+        { status: 400 }
+      )
+    }
+
+    // Find quote by token
+    const { data: quote, error: quoteError } = await supabase
+      .from('qs_quotes')
+      .select(`
+        *,
+        qs_quote_requests (
+          client_name,
+          client_email,
+          description
+        )
+      `)
+      .eq('token', token)
+      .single()
+
+    if (quoteError || !quote) {
+      return NextResponse.json(
+        { error: 'Quote not found' },
+        { status: 404 }
+      )
+    }
+
+    if (quote.status !== 'sent') {
+      return NextResponse.json(
+        { error: 'Quote cannot be modified' },
+        { status: 400 }
+      )
+    }
+
+    // Update quote status
+    const newStatus = action === 'accept' ? 'accepted' : 'rejected'
+    const { error: updateError } = await supabase
+      .from('qs_quotes')
+      .update({
+        status: newStatus,
+        accepted_at: action === 'accept' ? new Date().toISOString() : null,
+      })
+      .eq('id', quote.id)
+
+    if (updateError) {
+      return NextResponse.json(
+        { error: 'Failed to update quote' },
+        { status: 500 }
+      )
+    }
+
+    // Update request status
+    await supabase
+      .from('qs_quote_requests')
+      .update({ status: newStatus })
+      .eq('id', quote.request_id)
+
+    // Get contractor email using admin API
+    let contractorEmail: string | undefined
+    try {
+      const { data: userData } = await supabase.auth.admin.getUserById(quote.user_id)
+      contractorEmail = userData?.user?.email
+    } catch {
+      // If admin API fails, try profiles table
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('email')
+        .eq('id', quote.user_id)
+        .single()
+      contractorEmail = profile?.email
+    }
+
+    // Send notification email to contractor
+    if (process.env.RESEND_API_KEY && contractorEmail) {
+      const clientName = quote.qs_quote_requests?.client_name || 'Client'
+      const statusText = action === 'accept' ? 'accepted' : 'rejected'
+      const statusColor = action === 'accept' ? '#22c55e' : '#ef4444'
+
+      await resend.emails.send({
+        from: 'QuoteSnap <onboarding@resend.dev>',
+        to: contractorEmail,
+        subject: `Quote ${statusText} by ${clientName}`,
+        html: `
+          <!DOCTYPE html>
+          <html>
+          <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f3f4f6; margin: 0; padding: 20px;">
+            <div style="max-width: 500px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+              <div style="background: ${statusColor}; padding: 24px; text-align: center;">
+                <h1 style="color: white; margin: 0; font-size: 24px;">Quote ${statusText.charAt(0).toUpperCase() + statusText.slice(1)}!</h1>
+              </div>
+              <div style="padding: 32px;">
+                <p style="color: #374151; font-size: 16px; margin: 0 0 16px 0;">
+                  <strong>${clientName}</strong> has ${statusText} your quote.
+                </p>
+                <p style="color: #6b7280; font-size: 14px; margin: 0 0 24px 0;">
+                  Quote total: <strong>${quote.total.toFixed(2)} PLN</strong>
+                </p>
+                ${action === 'accept' ? `
+                  <p style="color: #166534; font-size: 14px; margin: 0; background: #f0fdf4; padding: 16px; border-radius: 8px;">
+                    Great news! You can now proceed with the project. Contact your client to discuss next steps.
+                  </p>
+                ` : `
+                  <p style="color: #991b1b; font-size: 14px; margin: 0; background: #fef2f2; padding: 16px; border-radius: 8px;">
+                    The client has declined this quote. Consider reaching out to discuss their concerns.
+                  </p>
+                `}
+              </div>
+              <div style="background: #f9fafb; padding: 16px; text-align: center; border-top: 1px solid #e5e7eb;">
+                <p style="color: #9ca3af; font-size: 12px; margin: 0;">QuoteSnap Notification</p>
+              </div>
+            </div>
+          </body>
+          </html>
+        `,
+      })
+    }
+
+    return NextResponse.json({
+      success: true,
+      status: newStatus,
+    })
+  } catch (error) {
+    console.error('Accept quote API error:', error)
+    return NextResponse.json(
+      { error: 'Failed to process quote' },
+      { status: 500 }
+    )
+  }
+}

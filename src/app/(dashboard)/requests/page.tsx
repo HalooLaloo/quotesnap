@@ -2,8 +2,14 @@ import { createClient } from '@/lib/supabase/server'
 import { headers } from 'next/headers'
 import Link from 'next/link'
 import { CopyButton } from '@/components/CopyButton'
+import { RequestFilters } from '@/components/RequestFilters'
 
-export default async function RequestsPage() {
+export default async function RequestsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ status?: string; search?: string }>
+}) {
+  const { status, search } = await searchParams
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   const headersList = await headers()
@@ -34,11 +40,28 @@ export default async function RequestsPage() {
     .eq('user_id', user?.id)
     .eq('status', 'accepted')
 
-  const { data: requests } = await supabase
+  // Build query with filters
+  let query = supabase
     .from('qs_quote_requests')
     .select('*')
     .eq('contractor_id', user?.id)
-    .order('created_at', { ascending: false })
+
+  if (status === 'all') {
+    // Show all including archived
+  } else if (status === 'archived') {
+    query = query.eq('status', 'archived')
+  } else if (status) {
+    query = query.eq('status', status)
+  } else {
+    // Default: hide archived
+    query = query.neq('status', 'archived')
+  }
+
+  if (search) {
+    query = query.or(`client_name.ilike.%${search}%,description.ilike.%${search}%`)
+  }
+
+  const { data: requests } = await query.order('created_at', { ascending: false })
 
   // Generuj link do formularza zapytania dla klientów
   const requestFormUrl = `${protocol}://${host}/request/${user?.id}`
@@ -148,8 +171,10 @@ export default async function RequestsPage() {
       {/* Requests list */}
       <div className="card">
         <h2 className="text-xl font-semibold text-white mb-6">
-          All Requests ({requests?.length || 0})
+          Requests {status ? `(${status})` : ''} ({requests?.length || 0})
         </h2>
+
+        <RequestFilters />
 
         {requests && requests.length > 0 ? (
           <div className="space-y-4">
@@ -172,6 +197,7 @@ export default async function RequestsPage() {
                         request.status === 'reviewing' ? 'bg-blue-500/20 text-blue-400' :
                         request.status === 'quoted' ? 'bg-purple-500/20 text-purple-400' :
                         request.status === 'accepted' ? 'bg-green-500/20 text-green-400' :
+                        request.status === 'archived' ? 'bg-slate-500/20 text-slate-400' :
                         'bg-red-500/20 text-red-400'
                       }`}>
                         {request.status}
@@ -205,8 +231,14 @@ export default async function RequestsPage() {
             <svg className="w-16 h-16 text-slate-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
             </svg>
-            <h3 className="text-lg font-medium text-white mb-2">No requests yet</h3>
-            <p className="text-slate-400 mb-4">Share your request link with clients to start receiving quote requests.</p>
+            <h3 className="text-lg font-medium text-white mb-2">
+              {status || search ? 'No matching requests' : 'No requests yet'}
+            </h3>
+            <p className="text-slate-400 mb-4">
+              {status || search
+                ? 'Try adjusting your filters or search terms.'
+                : 'Share your request link with clients to start receiving quote requests.'}
+            </p>
           </div>
         )}
       </div>

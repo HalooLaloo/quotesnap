@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { createClient } from '@/lib/supabase/server'
+import { headers } from 'next/headers'
 import { QuoteItem } from '@/lib/types'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
@@ -8,6 +9,9 @@ const resend = new Resend(process.env.RESEND_API_KEY)
 export async function POST(request: NextRequest) {
   try {
     const { quoteId } = await request.json()
+    const headersList = await headers()
+    const host = headersList.get('host') || 'localhost:3000'
+    const protocol = host.includes('localhost') ? 'http' : 'https'
 
     if (!process.env.RESEND_API_KEY) {
       return NextResponse.json(
@@ -60,6 +64,9 @@ export async function POST(request: NextRequest) {
     const contractorName = profile?.company_name || profile?.full_name || 'Wykonawca'
     const items = (quote.items || []) as QuoteItem[]
 
+    // Generate quote view URL
+    const quoteUrl = `${protocol}://${host}/quote/${quote.token}`
+
     // Generuj HTML emaila
     const emailHtml = generateQuoteEmailHtml({
       clientName: quote.qs_quote_requests?.client_name || 'Kliencie',
@@ -75,6 +82,7 @@ export async function POST(request: NextRequest) {
       validUntil: quote.valid_until,
       availableFrom: quote.available_from,
       notes: quote.notes,
+      quoteUrl,
     })
 
     // Wyślij email
@@ -117,6 +125,7 @@ interface QuoteEmailData {
   validUntil?: string
   availableFrom?: string
   notes?: string
+  quoteUrl?: string
 }
 
 function generateQuoteEmailHtml(data: QuoteEmailData): string {
@@ -239,10 +248,16 @@ function generateQuoteEmailHtml(data: QuoteEmailData): string {
 
       <!-- CTA -->
       <div style="text-align: center; margin: 32px 0;">
-        <p style="color: #374151; margin: 0 0 16px 0;">Masz pytania? Skontaktuj się:</p>
+        ${data.quoteUrl ? `
+          <a href="${data.quoteUrl}" style="display: inline-block; background: #22c55e; color: white; padding: 16px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px; margin-bottom: 16px;">
+            View &amp; Accept Quote
+          </a>
+          <p style="color: #6b7280; font-size: 13px; margin: 16px 0;">Or copy this link: ${data.quoteUrl}</p>
+        ` : ''}
+        <p style="color: #374151; margin: 16px 0 16px 0;">Questions? Contact us:</p>
         ${data.contractorPhone ? `
           <a href="tel:${data.contractorPhone}" style="display: inline-block; background: #3b82f6; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600;">
-            Zadzwoń: ${data.contractorPhone}
+            Call: ${data.contractorPhone}
           </a>
         ` : ''}
       </div>
