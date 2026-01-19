@@ -256,7 +256,8 @@ export function QuoteForm({ request, services, userId }: QuoteFormProps) {
     const validUntil = new Date()
     validUntil.setDate(validUntil.getDate() + validDays)
 
-    const { error: insertError } = await supabase
+    // Zapisz wycenę i pobierz jej ID
+    const { data: insertedQuote, error: insertError } = await supabase
       .from('qs_quotes')
       .insert({
         request_id: request?.id || null,
@@ -271,6 +272,8 @@ export function QuoteForm({ request, services, userId }: QuoteFormProps) {
         status: status,
         sent_at: status === 'sent' ? new Date().toISOString() : null,
       })
+      .select('id')
+      .single()
 
     if (insertError) {
       setError(insertError.message)
@@ -278,12 +281,29 @@ export function QuoteForm({ request, services, userId }: QuoteFormProps) {
       return
     }
 
-    // Aktualizuj status zapytania
+    // Aktualizuj status zapytania i wyślij email jeśli status = sent
     if (request && status === 'sent') {
       await supabase
         .from('qs_quote_requests')
         .update({ status: 'quoted' })
         .eq('id', request.id)
+
+      // Wyślij email do klienta
+      try {
+        const emailResponse = await fetch('/api/send-quote', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ quoteId: insertedQuote.id }),
+        })
+
+        if (!emailResponse.ok) {
+          const emailData = await emailResponse.json()
+          console.error('Email send error:', emailData.error)
+          // Nie przerywamy - wycena jest zapisana, tylko mail nie doszedł
+        }
+      } catch (emailError) {
+        console.error('Email send error:', emailError)
+      }
     }
 
     router.push('/quotes')
