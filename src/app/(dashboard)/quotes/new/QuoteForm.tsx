@@ -41,7 +41,10 @@ export function QuoteForm({ request, services, userId }: QuoteFormProps) {
 
   const [notes, setNotes] = useState('')
   const [discountPercent, setDiscountPercent] = useState(0)
+  const [vatPercent, setVatPercent] = useState(23)
+  const [showVat, setShowVat] = useState(true)
   const [validDays, setValidDays] = useState(30)
+  const [availableFrom, setAvailableFrom] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -239,7 +242,10 @@ export function QuoteForm({ request, services, userId }: QuoteFormProps) {
   // Oblicz sumy
   const subtotal = items.reduce((sum, item) => sum + item.total, 0)
   const discount = subtotal * (discountPercent / 100)
-  const total = subtotal - discount
+  const totalNet = subtotal - discount
+  const vatAmount = showVat ? totalNet * (vatPercent / 100) : 0
+  const totalGross = totalNet + vatAmount
+  const total = showVat ? totalGross : totalNet
 
   // Zapisz wycenę
   const handleSubmit = async (status: 'draft' | 'sent') => {
@@ -271,9 +277,13 @@ export function QuoteForm({ request, services, userId }: QuoteFormProps) {
         materials: [],
         subtotal: subtotal,
         discount_percent: discountPercent,
+        vat_percent: showVat ? vatPercent : 0,
+        total_net: totalNet,
+        total_gross: totalGross,
         total: total,
         notes: notes || null,
         valid_until: validUntil.toISOString().split('T')[0],
+        available_from: availableFrom || null,
         status: status,
         sent_at: status === 'sent' ? new Date().toISOString() : null,
       })
@@ -722,15 +732,68 @@ export function QuoteForm({ request, services, userId }: QuoteFormProps) {
             )}
 
             <div className="border-t border-slate-700 pt-3">
+              <div className="flex justify-between text-slate-300">
+                <span>Netto</span>
+                <span>{totalNet.toFixed(2)} PLN</span>
+              </div>
+            </div>
+
+            {/* VAT */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="showVat"
+                  checked={showVat}
+                  onChange={(e) => setShowVat(e.target.checked)}
+                  className="w-4 h-4 rounded border-slate-600 bg-slate-700 text-blue-500 focus:ring-blue-500"
+                />
+                <label htmlFor="showVat" className="text-slate-300">VAT</label>
+              </div>
+              {showVat && (
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={vatPercent}
+                    onChange={(e) => setVatPercent(parseFloat(e.target.value) || 0)}
+                    className="input w-20 text-center text-sm"
+                  />
+                  <span className="text-slate-400">%</span>
+                </div>
+              )}
+            </div>
+
+            {showVat && vatPercent > 0 && (
+              <div className="flex justify-between text-slate-400">
+                <span>VAT ({vatPercent}%)</span>
+                <span>+{vatAmount.toFixed(2)} PLN</span>
+              </div>
+            )}
+
+            <div className="border-t border-slate-700 pt-3">
               <div className="flex justify-between text-xl font-bold text-white">
-                <span>Razem</span>
+                <span>{showVat ? 'Brutto' : 'Razem'}</span>
                 <span>{total.toFixed(2)} PLN</span>
               </div>
             </div>
           </div>
 
-          {/* Valid until */}
+          {/* Available from */}
           <div className="mt-6">
+            <label className="label">Możliwy termin rozpoczęcia</label>
+            <input
+              type="date"
+              value={availableFrom}
+              onChange={(e) => setAvailableFrom(e.target.value)}
+              min={new Date().toISOString().split('T')[0]}
+              className="input"
+            />
+          </div>
+
+          {/* Valid until */}
+          <div className="mt-4">
             <label className="label">Ważność wyceny (dni)</label>
             <input
               type="number"

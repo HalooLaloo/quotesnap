@@ -68,8 +68,12 @@ export async function POST(request: NextRequest) {
       items,
       subtotal: quote.subtotal,
       discountPercent: quote.discount_percent,
+      vatPercent: quote.vat_percent || 0,
+      totalNet: quote.total_net || quote.total,
+      totalGross: quote.total_gross || quote.total,
       total: quote.total,
       validUntil: quote.valid_until,
+      availableFrom: quote.available_from,
       notes: quote.notes,
     })
 
@@ -106,8 +110,12 @@ interface QuoteEmailData {
   items: QuoteItem[]
   subtotal: number
   discountPercent: number
+  vatPercent: number
+  totalNet: number
+  totalGross: number
   total: number
   validUntil?: string
+  availableFrom?: string
   notes?: string
 }
 
@@ -116,7 +124,6 @@ function generateQuoteEmailHtml(data: QuoteEmailData): string {
     <tr>
       <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">
         <strong>${item.service_name}</strong>
-        ${item.isCustom ? '<span style="color: #d97706; font-size: 12px;"> (dodatkowa)</span>' : ''}
         ${item.reason ? `<br><span style="color: #6b7280; font-size: 13px;">${item.reason}</span>` : ''}
       </td>
       <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: center;">
@@ -135,6 +142,17 @@ function generateQuoteEmailHtml(data: QuoteEmailData): string {
     <tr>
       <td colspan="3" style="padding: 8px 12px; text-align: right;">Rabat (${data.discountPercent}%):</td>
       <td style="padding: 8px 12px; text-align: right; color: #dc2626;">-${(data.subtotal * data.discountPercent / 100).toFixed(2)} PLN</td>
+    </tr>
+  ` : ''
+
+  const vatHtml = data.vatPercent > 0 ? `
+    <tr>
+      <td colspan="3" style="padding: 8px 12px; text-align: right;">Netto:</td>
+      <td style="padding: 8px 12px; text-align: right;">${data.totalNet.toFixed(2)} PLN</td>
+    </tr>
+    <tr>
+      <td colspan="3" style="padding: 8px 12px; text-align: right;">VAT (${data.vatPercent}%):</td>
+      <td style="padding: 8px 12px; text-align: right;">+${(data.totalNet * data.vatPercent / 100).toFixed(2)} PLN</td>
     </tr>
   ` : ''
 
@@ -182,8 +200,9 @@ function generateQuoteEmailHtml(data: QuoteEmailData): string {
             <td style="padding: 8px 12px; text-align: right;">${data.subtotal.toFixed(2)} PLN</td>
           </tr>
           ${discountHtml}
+          ${vatHtml}
           <tr style="background: #f0fdf4;">
-            <td colspan="3" style="padding: 16px 12px; text-align: right; font-size: 18px; font-weight: 700; color: #166534;">DO ZAPŁATY:</td>
+            <td colspan="3" style="padding: 16px 12px; text-align: right; font-size: 18px; font-weight: 700; color: #166534;">${data.vatPercent > 0 ? 'BRUTTO' : 'DO ZAPŁATY'}:</td>
             <td style="padding: 16px 12px; text-align: right; font-size: 18px; font-weight: 700; color: #166534;">${data.total.toFixed(2)} PLN</td>
           </tr>
         </tfoot>
@@ -198,11 +217,25 @@ function generateQuoteEmailHtml(data: QuoteEmailData): string {
         </div>
       ` : ''}
 
+      ${data.availableFrom ? `
+        <p style="color: #6b7280; font-size: 14px; margin: 0 0 12px 0;">
+          Możliwy termin rozpoczęcia prac: <strong>${new Date(data.availableFrom).toLocaleDateString('pl-PL')}</strong>
+        </p>
+      ` : ''}
+
       ${data.validUntil ? `
         <p style="color: #6b7280; font-size: 14px; margin: 0 0 24px 0;">
           Wycena ważna do: <strong>${new Date(data.validUntil).toLocaleDateString('pl-PL')}</strong>
         </p>
       ` : ''}
+
+      <!-- Info o cenie orientacyjnej -->
+      <div style="background: #eff6ff; border-left: 4px solid #3b82f6; padding: 16px; margin-bottom: 24px; border-radius: 0 8px 8px 0;">
+        <p style="margin: 0; color: #1e40af; font-size: 13px;">
+          <strong>Informacja:</strong> Powyższa wycena ma charakter orientacyjny i została przygotowana na podstawie przekazanego opisu.
+          Ostateczna cena może nieznacznie różnić się po osobistej wizji i dokładnej ocenie zakresu prac na miejscu.
+        </p>
+      </div>
 
       <!-- CTA -->
       <div style="text-align: center; margin: 32px 0;">

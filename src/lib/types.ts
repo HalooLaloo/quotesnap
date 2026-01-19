@@ -48,9 +48,13 @@ export interface Quote {
   materials: QuoteMaterial[]
   subtotal: number
   discount_percent: number
+  vat_percent: number
+  total_net: number
+  total_gross: number
   total: number
   notes: string | null
   valid_until: string | null
+  available_from: string | null
   status: 'draft' | 'sent' | 'accepted' | 'rejected'
   token: string
   sent_at: string | null
