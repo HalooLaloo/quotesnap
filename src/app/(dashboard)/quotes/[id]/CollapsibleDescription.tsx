@@ -112,7 +112,7 @@ export function CollapsibleDescription({ description }: CollapsibleDescriptionPr
                 <ul className="space-y-1">
                   {parsed.scope.map((item, i) => (
                     <li key={i} className="text-slate-300 text-sm flex items-start gap-2">
-                      <span className="text-blue-400 mt-1">•</span>
+                      <span className="text-blue-400">•</span>
                       {item}
                     </li>
                   ))}
@@ -127,7 +127,7 @@ export function CollapsibleDescription({ description }: CollapsibleDescriptionPr
                 <ul className="space-y-1">
                   {parsed.dimensions.map((item, i) => (
                     <li key={i} className="text-slate-300 text-sm flex items-start gap-2">
-                      <span className="text-green-400 mt-1">•</span>
+                      <span className="text-green-400">•</span>
                       {item}
                     </li>
                   ))}
@@ -142,7 +142,7 @@ export function CollapsibleDescription({ description }: CollapsibleDescriptionPr
                 <ul className="space-y-1">
                   {parsed.currentState.map((item, i) => (
                     <li key={i} className="text-slate-300 text-sm flex items-start gap-2">
-                      <span className="text-yellow-400 mt-1">•</span>
+                      <span className="text-yellow-400">•</span>
                       {item}
                     </li>
                   ))}
@@ -157,7 +157,7 @@ export function CollapsibleDescription({ description }: CollapsibleDescriptionPr
                 <ul className="space-y-1">
                   {parsed.preparation.map((item, i) => (
                     <li key={i} className="text-slate-300 text-sm flex items-start gap-2">
-                      <span className="text-purple-400 mt-1">•</span>
+                      <span className="text-purple-400">•</span>
                       {item}
                     </li>
                   ))}
@@ -201,7 +201,7 @@ export function CollapsibleDescription({ description }: CollapsibleDescriptionPr
               <ul className="space-y-1">
                 {parsed.notes.map((item, i) => (
                   <li key={i} className="text-slate-300 text-sm flex items-start gap-2">
-                    <span className="text-amber-400 mt-1">•</span>
+                    <span className="text-amber-400">•</span>
                     {item}
                   </li>
                 ))}
