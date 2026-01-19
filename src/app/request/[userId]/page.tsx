@@ -34,6 +34,10 @@ export default function ClientRequestPage() {
   const [submitted, setSubmitted] = useState(false)
   const [submitting, setSubmitting] = useState(false)
 
+  // Licznik pytań (ile odpowiedzi dał użytkownik)
+  const userMessagesCount = messages.filter(m => m.role === 'user').length
+  const estimatedTotalQuestions = 8 // Szacowana liczba pytań do zebrania pełnych informacji
+
   // Auto-scroll do najnowszej wiadomości
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -169,10 +173,26 @@ export default function ClientRequestPage() {
           <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
             <span className="text-white font-bold">Q</span>
           </div>
-          <div>
+          <div className="flex-1">
             <h1 className="text-white font-semibold">QuoteSnap</h1>
             <p className="text-slate-400 text-sm">Asystent wycen</p>
           </div>
+          {/* Licznik pytań */}
+          {!showContactForm && userMessagesCount > 0 && (
+            <div className="text-right">
+              <div className="text-white font-medium text-sm">
+                {userMessagesCount} / ~{estimatedTotalQuestions}
+              </div>
+              <div className="text-slate-400 text-xs">odpowiedzi</div>
+              {/* Pasek postępu */}
+              <div className="w-20 h-1.5 bg-slate-700 rounded-full mt-1 overflow-hidden">
+                <div
+                  className="h-full bg-blue-500 rounded-full transition-all duration-300"
+                  style={{ width: `${Math.min((userMessagesCount / estimatedTotalQuestions) * 100, 100)}%` }}
+                />
+              </div>
+            </div>
+          )}
         </div>
       </header>
 

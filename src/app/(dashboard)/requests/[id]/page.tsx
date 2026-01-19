@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import { CollapsibleDescription } from '@/app/(dashboard)/quotes/[id]/CollapsibleDescription'
 
 export default async function RequestDetailPage({
   params,
@@ -67,8 +68,8 @@ export default async function RequestDetailPage({
         <div className="lg:col-span-2 space-y-6">
           {/* Description */}
           <div className="card">
-            <h2 className="text-lg font-semibold text-white mb-4">Project Description</h2>
-            <p className="text-slate-300 whitespace-pre-wrap">{request.description}</p>
+            <h2 className="text-lg font-semibold text-white mb-4">Opis projektu</h2>
+            <CollapsibleDescription description={request.description} />
           </div>
 
           {/* Photos */}
@@ -132,21 +133,29 @@ export default async function RequestDetailPage({
 
           {/* Actions */}
           <div className="card">
-            <h2 className="text-lg font-semibold text-white mb-4">Actions</h2>
+            <h2 className="text-lg font-semibold text-white mb-4">Akcje</h2>
             <div className="space-y-3">
-              {request.status === 'new' && (
+              {(request.status === 'new' || request.status === 'quoted' || request.status === 'reviewing') && (
                 <Link
                   href={`/quotes/new?request=${request.id}`}
                   className="btn-primary w-full text-center block"
                 >
-                  Create Quote
+                  {request.status === 'new' ? 'Utwórz wycenę' : 'Utwórz nową wycenę'}
                 </Link>
               )}
               {request.status === 'quoted' && (
-                <p className="text-slate-400 text-sm text-center">Quote sent - waiting for client response</p>
+                <p className="text-slate-400 text-sm text-center">Wycena wysłana - oczekiwanie na odpowiedź klienta</p>
               )}
               {request.status === 'accepted' && (
-                <p className="text-green-400 text-sm text-center">Quote accepted by client!</p>
+                <>
+                  <p className="text-green-400 text-sm text-center mb-2">Wycena zaakceptowana!</p>
+                  <Link
+                    href={`/quotes/new?request=${request.id}`}
+                    className="btn-secondary w-full text-center block"
+                  >
+                    Utwórz kolejną wycenę
+                  </Link>
+                </>
               )}
             </div>
           </div>
