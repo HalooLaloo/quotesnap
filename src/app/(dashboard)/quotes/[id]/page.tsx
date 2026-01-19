@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { QuoteItem } from '@/lib/types'
+import { CollapsibleDescription } from './CollapsibleDescription'
 
 export default async function QuoteDetailPage({
   params,
@@ -137,10 +138,8 @@ export default async function QuoteDetailPage({
           {/* Original request */}
           {quote.qs_quote_requests?.description && (
             <div className="card">
-              <h2 className="text-lg font-semibold text-white mb-4">Oryginalne zapytanie</h2>
-              <p className="text-slate-300 whitespace-pre-wrap text-sm">
-                {quote.qs_quote_requests.description}
-              </p>
+              <h2 className="text-lg font-semibold text-white mb-4">Opis zlecenia</h2>
+              <CollapsibleDescription description={quote.qs_quote_requests.description} />
             </div>
           )}
         </div>
