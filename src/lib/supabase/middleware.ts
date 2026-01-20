@@ -34,7 +34,7 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser()
 
   // Publiczne ścieżki - nie wymagają logowania
-  const publicPaths = ['/login', '/register', '/request', '/quote']
+  const publicPaths = ['/login', '/register', '/request', '/quote', '/pricing']
   const isPublicPath = publicPaths.some(path =>
     request.nextUrl.pathname.startsWith(path)
   )
