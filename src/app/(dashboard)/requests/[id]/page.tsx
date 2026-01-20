@@ -77,15 +77,24 @@ export default async function RequestDetailPage({
           {/* Photos */}
           {request.photos && request.photos.length > 0 && (
             <div className="card">
-              <h2 className="text-lg font-semibold text-white mb-4">Photos</h2>
+              <h2 className="text-lg font-semibold text-white mb-4">
+                Photos ({request.photos.length})
+              </h2>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {request.photos.map((photo: string, index: number) => (
-                  <img
+                  <a
                     key={index}
-                    src={photo}
-                    alt={`Photo ${index + 1}`}
-                    className="rounded-lg object-cover aspect-square"
-                  />
+                    href={photo}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block hover:opacity-90 transition-opacity"
+                  >
+                    <img
+                      src={photo}
+                      alt={`Photo ${index + 1}`}
+                      className="rounded-lg object-cover aspect-square w-full"
+                    />
+                  </a>
                 ))}
               </div>
             </div>

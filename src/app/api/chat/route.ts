@@ -5,7 +5,9 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 })
 
-const SYSTEM_PROMPT = `Jesteś asystentem pomagającym klientom opisać zakres prac remontowych. Twoim zadaniem jest:
+const SYSTEM_PROMPT = `Jesteś asystentem pomagającym klientom opisać zakres prac remontowych. Masz zdolność analizy zdjęć - gdy klient wyśle zdjęcie, dokładnie je opisz i wyciągnij przydatne informacje do wyceny.
+
+Twoim zadaniem jest:
 
 1. Zrozumieć co klient chce zrobić
 2. Zadawać pytania doprecyzowujące (jedno lub dwa na raz, nie więcej)
@@ -43,6 +45,16 @@ DODATKOWE (jeśli dotyczy):
 - Czy potrzebny wywóz gruzu/odpadów?
 - Czy są elementy do zachowania/ochrony?
 - Czy wykonawca ma zrobić zakupy materiałów?
+
+ANALIZA ZDJĘĆ:
+Gdy klient wyśle zdjęcie, ZAWSZE:
+1. Opisz co widzisz na zdjęciu (pomieszczenie, stan, materiały, problemy)
+2. Oceń stan techniczny (dobry, wymaga napraw, do remontu)
+3. Zidentyfikuj potencjalny zakres prac widoczny na zdjęciu
+4. Zadaj pytania uzupełniające na podstawie tego co widzisz
+5. Oszacuj przybliżoną powierzchnię jeśli to możliwe
+
+Na przykład: "Na zdjęciu widzę łazienkę o powierzchni ok. 4-5m². Płytki na ścianach wyglądają na stare i miejscami pęknięte. Widzę wannę do wymiany i starą armaturę. Czy chcesz wymienić wszystkie płytki czy tylko część?"
 
 ZASADY:
 - Mów po polsku, przyjaźnie ale konkretnie
@@ -89,9 +101,18 @@ UWAGI DODATKOWE:
 
 Po podsumowaniu zapytaj czy wszystko się zgadza lub czy coś zmienić.`
 
+interface ChatMessage {
+  role: 'user' | 'assistant'
+  content: string
+  image?: string
+}
+
 export async function POST(request: NextRequest) {
   try {
-    const { messages } = await request.json()
+    const { messages, currentImage } = await request.json() as {
+      messages: ChatMessage[]
+      currentImage?: string
+    }
 
     if (!process.env.OPENAI_API_KEY) {
       return NextResponse.json(
@@ -100,14 +121,61 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Buduj wiadomości dla OpenAI API z obsługą zdjęć (vision)
+    const openaiMessages: OpenAI.Chat.ChatCompletionMessageParam[] = [
+      { role: 'system', content: SYSTEM_PROMPT },
+    ]
+
+    for (const msg of messages) {
+      if (msg.role === 'assistant') {
+        openaiMessages.push({
+          role: 'assistant',
+          content: msg.content,
+        })
+      } else {
+        // Wiadomość użytkownika - może zawierać zdjęcie
+        if (msg.image) {
+          // Wiadomość ze zdjęciem - użyj content array
+          const content: OpenAI.Chat.ChatCompletionContentPart[] = []
+
+          if (msg.content && msg.content !== '[Zdjęcie]') {
+            content.push({
+              type: 'text',
+              text: msg.content,
+            })
+          }
+
+          content.push({
+            type: 'image_url',
+            image_url: {
+              url: msg.image,
+              detail: 'high', // Wysoka jakość analizy
+            },
+          })
+
+          openaiMessages.push({
+            role: 'user',
+            content,
+          })
+        } else {
+          // Zwykła wiadomość tekstowa
+          openaiMessages.push({
+            role: 'user',
+            content: msg.content,
+          })
+        }
+      }
+    }
+
+    // Użyj GPT-4o dla lepszej analizy zdjęć, fallback do mini jeśli brak zdjęć
+    const hasImages = messages.some(m => m.image)
+    const model = hasImages ? 'gpt-4o' : 'gpt-4o-mini'
+
     const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
-        ...messages,
-      ],
+      model,
+      messages: openaiMessages,
       temperature: 0.7,
-      max_tokens: 500,
+      max_tokens: 800, // Więcej tokenów dla opisów zdjęć
     })
 
     const assistantMessage = response.choices[0]?.message?.content || 'Przepraszam, wystąpił błąd.'
