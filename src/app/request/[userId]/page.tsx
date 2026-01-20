@@ -305,6 +305,17 @@ export default function ClientRequestPage() {
       console.error('Error:', error)
       alert('Wystąpił błąd. Spróbuj ponownie.')
     } else {
+      // Wyślij powiadomienie email do wykonawcy (nie blokujemy na tym)
+      fetch('/api/notify-request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contractorId,
+          clientName: contactData.client_name,
+          description: summary || fullDescription.substring(0, 500),
+        }),
+      }).catch(err => console.error('Notification failed:', err))
+
       setSubmitted(true)
     }
 
