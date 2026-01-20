@@ -109,9 +109,8 @@ interface ChatMessage {
 
 export async function POST(request: NextRequest) {
   try {
-    const { messages, currentImage } = await request.json() as {
+    const { messages } = await request.json() as {
       messages: ChatMessage[]
-      currentImage?: string
     }
 
     if (!process.env.OPENAI_API_KEY) {
