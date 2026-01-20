@@ -2,16 +2,25 @@ import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { createClient } from '@supabase/supabase-js'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-
-// Use service role for public access
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
-
 export async function POST(request: NextRequest) {
   try {
+    // Check if required env vars are configured
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY || !process.env.NEXT_PUBLIC_SUPABASE_URL) {
+      console.error('Missing required environment variables')
+      return NextResponse.json(
+        { error: 'Błąd konfiguracji serwera' },
+        { status: 500 }
+      )
+    }
+
+    // Create Supabase client with service role (for public access)
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE_KEY
+    )
+
+    const resend = new Resend(process.env.RESEND_API_KEY)
+
     const { token, action } = await request.json()
 
     if (!token || !action) {
@@ -43,8 +52,9 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (quoteError || !quote) {
+      console.error('Quote not found:', quoteError)
       return NextResponse.json(
-        { error: 'Quote not found' },
+        { error: 'Nie znaleziono wyceny' },
         { status: 404 }
       )
     }
@@ -67,8 +77,9 @@ export async function POST(request: NextRequest) {
       .eq('id', quote.id)
 
     if (updateError) {
+      console.error('Update quote error:', updateError)
       return NextResponse.json(
-        { error: 'Failed to update quote' },
+        { error: 'Nie udało się zaktualizować wyceny' },
         { status: 500 }
       )
     }
