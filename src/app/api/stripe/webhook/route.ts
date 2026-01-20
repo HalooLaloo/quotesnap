@@ -77,9 +77,11 @@ export async function POST(request: NextRequest) {
 
       case 'invoice.payment_succeeded': {
         const invoice = event.data.object as Stripe.Invoice
-        if (invoice.subscription) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const invoiceSubscription = (invoice as any).subscription as string | null
+        if (invoiceSubscription) {
           const sub = await stripe.subscriptions.retrieve(
-            invoice.subscription as string
+            invoiceSubscription
           )
           const userId = sub.metadata?.userId
 
@@ -98,9 +100,11 @@ export async function POST(request: NextRequest) {
 
       case 'invoice.payment_failed': {
         const invoice = event.data.object as Stripe.Invoice
-        if (invoice.subscription) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const invoiceSubscription = (invoice as any).subscription as string | null
+        if (invoiceSubscription) {
           const sub = await stripe.subscriptions.retrieve(
-            invoice.subscription as string
+            invoiceSubscription
           )
           const userId = sub.metadata?.userId
 
