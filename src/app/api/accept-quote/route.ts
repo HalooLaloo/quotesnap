@@ -3,8 +3,14 @@ import { Resend } from 'resend'
 import { createClient } from '@supabase/supabase-js'
 
 export async function POST(request: NextRequest) {
+  console.log('=== ACCEPT-QUOTE API CALLED ===')
+
   try {
     // Check if required env vars are configured
+    console.log('Checking env vars...')
+    console.log('SUPABASE_URL exists:', !!process.env.NEXT_PUBLIC_SUPABASE_URL)
+    console.log('SERVICE_ROLE_KEY exists:', !!process.env.SUPABASE_SERVICE_ROLE_KEY)
+
     if (!process.env.SUPABASE_SERVICE_ROLE_KEY || !process.env.NEXT_PUBLIC_SUPABASE_URL) {
       console.error('Missing required environment variables')
       return NextResponse.json(
@@ -21,7 +27,10 @@ export async function POST(request: NextRequest) {
 
     const resend = new Resend(process.env.RESEND_API_KEY)
 
-    const { token, action } = await request.json()
+    console.log('Parsing request body...')
+    const body = await request.json()
+    const { token, action } = body
+    console.log('Token:', token ? 'exists' : 'missing', 'Action:', action)
 
     if (!token || !action) {
       return NextResponse.json(
@@ -37,6 +46,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    console.log('Finding quote by token...')
     // Find quote by token
     const { data: quote, error: quoteError } = await supabase
       .from('qs_quotes')
@@ -51,6 +61,8 @@ export async function POST(request: NextRequest) {
       .eq('token', token)
       .single()
 
+    console.log('Quote query result:', quote ? 'found' : 'not found', 'Error:', quoteError?.message || 'none')
+
     if (quoteError || !quote) {
       console.error('Quote not found:', quoteError)
       return NextResponse.json(
@@ -58,6 +70,8 @@ export async function POST(request: NextRequest) {
         { status: 404 }
       )
     }
+
+    console.log('Quote status:', quote.status, 'Quote ID:', quote.id)
 
     if (quote.status !== 'sent') {
       return NextResponse.json(
