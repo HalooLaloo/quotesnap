@@ -9,6 +9,13 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
 
+// Helper to safely get subscription end date
+function getSubscriptionEndDate(sub: Stripe.Subscription): string {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const endTimestamp = (sub as any).current_period_end as number
+  return new Date(endTimestamp * 1000).toISOString()
+}
+
 export async function POST(request: NextRequest) {
   const body = await request.text()
   const signature = request.headers.get('stripe-signature')!
@@ -35,7 +42,7 @@ export async function POST(request: NextRequest) {
         if (userId && session.subscription) {
           const sub = await stripe.subscriptions.retrieve(
             session.subscription as string
-          ) as Stripe.Subscription
+          )
 
           await supabase
             .from('profiles')
@@ -43,9 +50,7 @@ export async function POST(request: NextRequest) {
               stripe_subscription_id: sub.id,
               stripe_price_id: sub.items.data[0].price.id,
               subscription_status: sub.status,
-              subscription_current_period_end: new Date(
-                sub.current_period_end * 1000
-              ).toISOString(),
+              subscription_current_period_end: getSubscriptionEndDate(sub),
             })
             .eq('id', userId)
         }
@@ -63,9 +68,7 @@ export async function POST(request: NextRequest) {
             .update({
               subscription_status: sub.status,
               stripe_price_id: sub.items.data[0]?.price.id || null,
-              subscription_current_period_end: new Date(
-                sub.current_period_end * 1000
-              ).toISOString(),
+              subscription_current_period_end: getSubscriptionEndDate(sub),
             })
             .eq('id', userId)
         }
@@ -77,7 +80,7 @@ export async function POST(request: NextRequest) {
         if (invoice.subscription) {
           const sub = await stripe.subscriptions.retrieve(
             invoice.subscription as string
-          ) as Stripe.Subscription
+          )
           const userId = sub.metadata?.userId
 
           if (userId) {
@@ -85,9 +88,7 @@ export async function POST(request: NextRequest) {
               .from('profiles')
               .update({
                 subscription_status: 'active',
-                subscription_current_period_end: new Date(
-                  sub.current_period_end * 1000
-                ).toISOString(),
+                subscription_current_period_end: getSubscriptionEndDate(sub),
               })
               .eq('id', userId)
           }
@@ -100,7 +101,7 @@ export async function POST(request: NextRequest) {
         if (invoice.subscription) {
           const sub = await stripe.subscriptions.retrieve(
             invoice.subscription as string
-          ) as Stripe.Subscription
+          )
           const userId = sub.metadata?.userId
 
           if (userId) {
