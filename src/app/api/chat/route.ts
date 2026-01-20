@@ -10,7 +10,7 @@ const SYSTEM_PROMPT = `Jesteś asystentem pomagającym klientom opisać zakres p
 Twoim zadaniem jest:
 
 1. Zrozumieć co klient chce zrobić
-2. Zadawać pytania doprecyzowujące (jedno lub dwa na raz, nie więcej)
+2. Zadawać pytania doprecyzowujące - ZAWSZE TYLKO JEDNO PYTANIE NA RAZ (nigdy więcej!)
 3. Zebrać WSZYSTKIE potrzebne informacje do dokładnej wyceny
 
 PYTANIA które MUSISZ zadać (w zależności od rodzaju prac):
@@ -58,7 +58,7 @@ Na przykład: "Na zdjęciu widzę łazienkę o powierzchni ok. 4-5m². Płytki n
 
 ZASADY:
 - Mów po polsku, przyjaźnie ale konkretnie
-- Zadawaj 1-2 pytania na raz, nie bombarduj klienta
+- KRYTYCZNE: Zadawaj TYLKO JEDNO pytanie na raz! Nigdy nie zadawaj dwóch pytań w jednej wiadomości. Poczekaj na odpowiedź przed zadaniem kolejnego pytania.
 - Jeśli klient nie zna metrażu, zaproponuj że wykonawca zmierzy na miejscu
 - Bądź pomocny - jeśli klient mówi "chcę odświeżyć łazienkę", dopytaj o szczegóły
 - Zbieraj jak najwięcej szczegółów - im więcej info, tym dokładniejsza wycena
@@ -104,7 +104,7 @@ Po podsumowaniu zapytaj czy wszystko się zgadza lub czy coś zmienić.`
 interface ChatMessage {
   role: 'user' | 'assistant'
   content: string
-  image?: string
+  images?: string[]
 }
 
 export async function POST(request: NextRequest) {
@@ -132,25 +132,28 @@ export async function POST(request: NextRequest) {
           content: msg.content,
         })
       } else {
-        // Wiadomość użytkownika - może zawierać zdjęcie
-        if (msg.image) {
-          // Wiadomość ze zdjęciem - użyj content array
+        // Wiadomość użytkownika - może zawierać zdjęcia
+        if (msg.images && msg.images.length > 0) {
+          // Wiadomość ze zdjęciami - użyj content array
           const content: OpenAI.Chat.ChatCompletionContentPart[] = []
 
-          if (msg.content && msg.content !== '[Zdjęcie]') {
+          if (msg.content && !msg.content.startsWith('[')) {
             content.push({
               type: 'text',
               text: msg.content,
             })
           }
 
-          content.push({
-            type: 'image_url',
-            image_url: {
-              url: msg.image,
-              detail: 'high', // Wysoka jakość analizy
-            },
-          })
+          // Dodaj wszystkie zdjęcia
+          for (const imageUrl of msg.images) {
+            content.push({
+              type: 'image_url',
+              image_url: {
+                url: imageUrl,
+                detail: 'high', // Wysoka jakość analizy
+              },
+            })
+          }
 
           openaiMessages.push({
             role: 'user',
@@ -167,7 +170,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Użyj GPT-4o dla lepszej analizy zdjęć, fallback do mini jeśli brak zdjęć
-    const hasImages = messages.some(m => m.image)
+    const hasImages = messages.some(m => m.images && m.images.length > 0)
     const model = hasImages ? 'gpt-4o' : 'gpt-4o-mini'
 
     const response = await openai.chat.completions.create({

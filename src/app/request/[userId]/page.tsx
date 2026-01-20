@@ -7,7 +7,7 @@ import { useParams } from 'next/navigation'
 interface Message {
   role: 'user' | 'assistant'
   content: string
-  image?: string // URL zdjęcia (jeśli wiadomość zawiera zdjęcie)
+  images?: string[] // URLs zdjęć (jeśli wiadomość zawiera zdjęcia)
 }
 
 export default function ClientRequestPage() {
@@ -36,7 +36,7 @@ export default function ClientRequestPage() {
   const [submitting, setSubmitting] = useState(false)
 
   // Zdjęcia w chacie
-  const [pendingImage, setPendingImage] = useState<string | null>(null) // base64 preview
+  const [pendingImages, setPendingImages] = useState<string[]>([]) // base64 previews (multiple)
   const [uploadedPhotos, setUploadedPhotos] = useState<string[]>([]) // URLs wszystkich zdjęć
   const [uploadingImage, setUploadingImage] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -122,24 +122,27 @@ export default function ClientRequestPage() {
     }
   }
 
-  // Obsługa wyboru zdjęcia w chacie
+  // Obsługa wyboru zdjęć w chacie (multiple)
   const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    if (!file.type.startsWith('image/')) {
-      alert('Proszę wybrać plik graficzny (JPG, PNG, etc.)')
-      return
-    }
+    const files = e.target.files
+    if (!files || files.length === 0) return
 
     setUploadingImage(true)
 
-    try {
-      const compressed = await compressImage(file)
-      setPendingImage(compressed)
-    } catch (error) {
-      console.error('Error compressing image:', error)
-      alert('Nie udało się przetworzyć zdjęcia')
+    const newImages: string[] = []
+    for (const file of Array.from(files)) {
+      if (!file.type.startsWith('image/')) continue
+
+      try {
+        const compressed = await compressImage(file)
+        newImages.push(compressed)
+      } catch (error) {
+        console.error('Error compressing image:', error)
+      }
+    }
+
+    if (newImages.length > 0) {
+      setPendingImages(prev => [...prev, ...newImages])
     }
 
     setUploadingImage(false)
@@ -148,8 +151,8 @@ export default function ClientRequestPage() {
   }
 
   // Usunięcie pending zdjęcia
-  const removePendingImage = () => {
-    setPendingImage(null)
+  const removePendingImage = (index: number) => {
+    setPendingImages(prev => prev.filter((_, i) => i !== index))
   }
 
   // Obsługa wyboru zdjęć w formularzu kontaktowym
@@ -183,28 +186,29 @@ export default function ClientRequestPage() {
   }
 
   const sendMessage = async () => {
-    if ((!input.trim() && !pendingImage) || loading) return
+    if ((!input.trim() && pendingImages.length === 0) || loading) return
 
     const userMessage = input.trim()
-    const imageToSend = pendingImage
+    const imagesToSend = [...pendingImages]
     setInput('')
-    setPendingImage(null)
+    setPendingImages([])
     setLoading(true)
 
-    // Upload zdjęcia do storage jeśli jest
-    let imageUrl: string | null = null
-    if (imageToSend) {
-      imageUrl = await uploadToStorage(imageToSend)
-      if (imageUrl) {
-        setUploadedPhotos(prev => [...prev, imageUrl!])
+    // Upload zdjęć do storage
+    const imageUrls: string[] = []
+    for (const img of imagesToSend) {
+      const url = await uploadToStorage(img)
+      if (url) {
+        imageUrls.push(url)
+        setUploadedPhotos(prev => [...prev, url])
       }
     }
 
     // Dodaj wiadomość użytkownika
     const newMessage: Message = {
       role: 'user',
-      content: userMessage || (imageUrl ? '[Zdjęcie]' : ''),
-      image: imageUrl || undefined,
+      content: userMessage || (imageUrls.length > 0 ? `[${imageUrls.length} zdjęć]` : ''),
+      images: imageUrls.length > 0 ? imageUrls : undefined,
     }
     const newMessages: Message[] = [...messages, newMessage]
     setMessages(newMessages)
@@ -214,7 +218,7 @@ export default function ClientRequestPage() {
       const apiMessages = newMessages.map(m => ({
         role: m.role,
         content: m.content,
-        image: m.image,
+        images: m.images,
       }))
 
       const response = await fetch('/api/chat', {
@@ -223,7 +227,6 @@ export default function ClientRequestPage() {
         body: JSON.stringify({
           messages: apiMessages,
           contractorId,
-          currentImage: imageUrl, // Aktualne zdjęcie do analizy
         }),
       })
 
@@ -372,15 +375,20 @@ export default function ClientRequestPage() {
                     : 'bg-slate-700 text-slate-100'
                 }`}
               >
-                {message.image && (
-                  <img
-                    src={message.image}
-                    alt="Zdjęcie od klienta"
-                    className="rounded-lg mb-2 max-h-48 object-cover cursor-pointer hover:opacity-90"
-                    onClick={() => window.open(message.image, '_blank')}
-                  />
+                {message.images && message.images.length > 0 && (
+                  <div className={`flex flex-wrap gap-2 ${message.content && !message.content.startsWith('[') ? 'mb-2' : ''}`}>
+                    {message.images.map((img, imgIndex) => (
+                      <img
+                        key={imgIndex}
+                        src={img}
+                        alt={`Zdjęcie ${imgIndex + 1}`}
+                        className="rounded-lg max-h-32 object-cover cursor-pointer hover:opacity-90"
+                        onClick={() => window.open(img, '_blank')}
+                      />
+                    ))}
+                  </div>
                 )}
-                {message.content && message.content !== '[Zdjęcie]' && (
+                {message.content && !message.content.startsWith('[') && (
                   <p className="whitespace-pre-wrap">{message.content}</p>
                 )}
               </div>
@@ -540,31 +548,36 @@ export default function ClientRequestPage() {
       {!showContactForm && (
         <div className="bg-slate-800 border-t border-slate-700 px-4 py-4">
           <div className="max-w-2xl mx-auto">
-            {/* Podgląd pending zdjęcia */}
-            {pendingImage && (
-              <div className="mb-3 relative inline-block">
-                <img
-                  src={pendingImage}
-                  alt="Podgląd zdjęcia"
-                  className="h-24 rounded-lg object-cover"
-                />
-                <button
-                  onClick={removePendingImage}
-                  className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-white hover:bg-red-600"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
+            {/* Podgląd pending zdjęć */}
+            {pendingImages.length > 0 && (
+              <div className="mb-3 flex flex-wrap gap-2">
+                {pendingImages.map((img, index) => (
+                  <div key={index} className="relative">
+                    <img
+                      src={img}
+                      alt={`Podgląd ${index + 1}`}
+                      className="h-20 rounded-lg object-cover"
+                    />
+                    <button
+                      onClick={() => removePendingImage(index)}
+                      className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-white hover:bg-red-600"
+                    >
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                ))}
               </div>
             )}
 
             <div className="flex gap-3">
-              {/* Hidden file input */}
+              {/* Hidden file input (multiple) */}
               <input
                 ref={fileInputRef}
                 type="file"
                 accept="image/*"
+                multiple
                 onChange={handleImageSelect}
                 className="hidden"
               />
@@ -600,7 +613,7 @@ export default function ClientRequestPage() {
               />
               <button
                 onClick={sendMessage}
-                disabled={loading || (!input.trim() && !pendingImage)}
+                disabled={loading || (!input.trim() && pendingImages.length === 0)}
                 className="btn-primary px-6"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
