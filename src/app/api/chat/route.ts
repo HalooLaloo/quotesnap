@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import OpenAI from 'openai'
+import { chatRateLimiter, getClientIP } from '@/lib/ratelimit'
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -123,6 +124,19 @@ interface ChatMessage {
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting - max 20 wiadomości na godzinę per IP
+    if (chatRateLimiter) {
+      const ip = getClientIP(request)
+      const { success, remaining } = await chatRateLimiter.limit(ip)
+
+      if (!success) {
+        return NextResponse.json(
+          { error: 'Zbyt wiele wiadomości. Spróbuj ponownie za chwilę.' },
+          { status: 429 }
+        )
+      }
+    }
+
     const { messages } = await request.json() as {
       messages: ChatMessage[]
     }
