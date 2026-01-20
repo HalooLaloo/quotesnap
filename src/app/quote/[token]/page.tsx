@@ -204,15 +204,26 @@ export default async function PublicQuotePage({
           </div>
         )}
 
+        {/* Info box - przed akcjami */}
+        <div className="card mb-6 bg-blue-600/10 border-blue-500/30">
+          <div className="flex gap-3">
+            <svg className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p className="text-slate-300 text-sm">
+              <strong className="text-blue-400">Informacja:</strong> Powyższa wycena ma charakter orientacyjny i została przygotowana na podstawie przekazanego opisu. Ostateczna cena może nieznacznie różnić się po osobistej wizji i dokładnej ocenie zakresu prac na miejscu.
+            </p>
+          </div>
+        </div>
+
         {/* Actions */}
         {quote.status === 'sent' && (
           <QuoteActions token={token} />
         )}
 
-        {/* Disclaimer */}
+        {/* Footer */}
         <p className="text-center text-slate-500 text-sm mt-8">
-          This quote is an estimate based on the provided description.
-          Final price may vary after on-site assessment.
+          Wycena wygenerowana przez QuoteSnap
         </p>
       </div>
     </div>

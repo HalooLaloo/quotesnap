@@ -23,15 +23,21 @@ export function QuoteActions({ token }: QuoteActionsProps) {
         body: JSON.stringify({ token, action }),
       })
 
+      // Check if response is JSON
+      const contentType = response.headers.get('content-type')
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error('Wystąpił błąd serwera. Spróbuj ponownie.')
+      }
+
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to process')
+        throw new Error(data.error || 'Nie udało się przetworzyć')
       }
 
       router.refresh()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong')
+      setError(err instanceof Error ? err.message : 'Coś poszło nie tak')
     } finally {
       setLoading(null)
     }
@@ -39,7 +45,7 @@ export function QuoteActions({ token }: QuoteActionsProps) {
 
   return (
     <div className="card">
-      <h3 className="font-medium text-white mb-4 text-center">Your Decision</h3>
+      <h3 className="font-medium text-white mb-4 text-center">Twoja decyzja</h3>
 
       {error && (
         <div className="bg-red-500/10 border border-red-500/50 text-red-400 px-4 py-3 rounded-lg text-sm mb-4">
@@ -60,7 +66,7 @@ export function QuoteActions({ token }: QuoteActionsProps) {
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
-              Decline
+              Odrzuć
             </>
           )}
         </button>
@@ -77,14 +83,14 @@ export function QuoteActions({ token }: QuoteActionsProps) {
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
-              Accept Quote
+              Akceptuję wycenę
             </>
           )}
         </button>
       </div>
 
       <p className="text-slate-500 text-xs text-center mt-4">
-        By accepting, you agree to proceed with this quote. The contractor will be notified.
+        Akceptując, wyrażasz zgodę na realizację prac. Wykonawca zostanie powiadomiony.
       </p>
     </div>
   )
