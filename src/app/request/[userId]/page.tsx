@@ -20,7 +20,7 @@ export default function ClientRequestPage() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
-      content: 'Cześć! 👋 Jestem asystentem, który pomoże Ci opisać zakres prac remontowych.\n\nPowiedz mi, co chciałbyś zrobić? Na przykład: pomalować pokój, wyremontować łazienkę, położyć płytki...',
+      content: 'Cześć! 👋 Jestem asystentem, który pomoże Ci opisać zakres prac remontowych.\n\n📸 Możesz wysłać zdjęcia - przeanalizuję je i pomogę dokładniej określić zakres prac oraz przygotować lepszą wycenę.\n\nPowiedz mi, co chciałbyś zrobić? Na przykład: pomalować pokój, wyremontować łazienkę, położyć płytki...',
     },
   ])
   const [input, setInput] = useState('')
@@ -587,7 +587,7 @@ export default function ClientRequestPage() {
                 onClick={() => fileInputRef.current?.click()}
                 disabled={loading || uploadingImage}
                 className="p-3 rounded-xl bg-slate-700 text-slate-300 hover:bg-slate-600 hover:text-white transition-colors disabled:opacity-50"
-                title="Dodaj zdjęcie"
+                title="Dodaj zdjęcia - AI przeanalizuje i pomoże w wycenie"
               >
                 {uploadingImage ? (
                   <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
