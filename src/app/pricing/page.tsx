@@ -1,9 +1,15 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { User } from '@supabase/supabase-js'
+
+interface Subscription {
+  subscription_status: string | null
+  stripe_price_id: string | null
+}
 
 const PLANS = [
   {
@@ -39,31 +45,32 @@ const PLANS = [
 
 export default function PricingPage() {
   const [loading, setLoading] = useState<string | null>(null)
-  const [user, setUser] = useState<any>(null)
-  const [subscription, setSubscription] = useState<any>(null)
+  const [user, setUser] = useState<User | null>(null)
+  const [subscription, setSubscription] = useState<Subscription | null>(null)
   const router = useRouter()
   const searchParams = useSearchParams()
   const canceled = searchParams.get('canceled')
 
-  const supabase = createClient()
+  const supabase = useMemo(() => createClient(), [])
+
+  const getUser = useCallback(async () => {
+    const { data: { user } } = await supabase.auth.getUser()
+    setUser(user)
+
+    if (user) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('subscription_status, stripe_price_id')
+        .eq('id', user.id)
+        .single()
+
+      setSubscription(profile)
+    }
+  }, [supabase])
 
   useEffect(() => {
-    const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      setUser(user)
-
-      if (user) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('subscription_status, stripe_price_id')
-          .eq('id', user.id)
-          .single()
-
-        setSubscription(profile)
-      }
-    }
     getUser()
-  }, [])
+  }, [getUser])
 
   const handleSubscribe = async (priceId: string, planName: string) => {
     if (!user) {
