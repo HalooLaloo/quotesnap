@@ -31,6 +31,7 @@ export default function ClientRequestPage() {
     client_name: '',
     client_email: '',
     client_phone: '',
+    client_question: '',
   })
   const [submitted, setSubmitted] = useState(false)
   const [submitting, setSubmitting] = useState(false)
@@ -284,7 +285,12 @@ export default function ClientRequestPage() {
       .map(m => `${m.role === 'user' ? 'Klient' : 'Asystent'}: ${m.content}`)
       .join('\n\n')
 
-    const fullDescription = `${summary}\n\n---ROZMOWA---\n${conversationLog}`
+    // Dodaj pytanie klienta do opisu jeśli zostało podane
+    const clientQuestion = contactData.client_question.trim()
+      ? `\n\nPYTANIE DO WYKONAWCY: ${contactData.client_question.trim()}`
+      : ''
+
+    const fullDescription = `${summary}${clientQuestion}\n\n---ROZMOWA---\n${conversationLog}`
 
     // Połącz zdjęcia z chatu i formularza kontaktowego
     const allPhotos = [...uploadedPhotos, ...contactPhotos]
@@ -352,22 +358,6 @@ export default function ClientRequestPage() {
             <h1 className="text-white font-semibold">QuoteSnap</h1>
             <p className="text-slate-400 text-sm">Asystent wycen</p>
           </div>
-          {/* Progress indicator */}
-          {!showContactForm && userMessagesCount > 0 && (
-            <div className="text-right">
-              <div className="text-white font-medium text-sm">
-                {userMessagesCount} / ~{estimatedTotalQuestions}
-              </div>
-              <div className="text-slate-400 text-xs">answers</div>
-              {/* Progress bar */}
-              <div className="w-20 h-1.5 bg-slate-700 rounded-full mt-1 overflow-hidden">
-                <div
-                  className="h-full bg-blue-500 rounded-full transition-all duration-300"
-                  style={{ width: `${Math.min((userMessagesCount / estimatedTotalQuestions) * 100, 100)}%` }}
-                />
-              </div>
-            </div>
-          )}
         </div>
       </header>
 
@@ -467,6 +457,18 @@ export default function ClientRequestPage() {
                 </div>
               </div>
 
+              {/* Pytanie do wykonawcy */}
+              <div>
+                <label className="label">Masz pytanie do wykonawcy? (opcjonalne)</label>
+                <textarea
+                  value={contactData.client_question}
+                  onChange={(e) => setContactData({ ...contactData, client_question: e.target.value })}
+                  className="input min-h-[80px] resize-none"
+                  placeholder="Np. Czy macie doświadczenie z takimi pracami? Jaki jest orientacyjny czas realizacji?"
+                  rows={3}
+                />
+              </div>
+
               {/* Opcjonalne zdjęcia */}
               <div>
                 <label className="label">Dodatkowe zdjęcia (opcjonalne)</label>
@@ -559,6 +561,23 @@ export default function ClientRequestPage() {
       {!showContactForm && (
         <div className="bg-slate-800 border-t border-slate-700 px-4 py-4">
           <div className="max-w-2xl mx-auto">
+            {/* Progress indicator */}
+            {userMessagesCount > 0 && (
+              <div className="mb-3 flex items-center gap-3">
+                <div className="flex-1 h-2 bg-slate-700 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-blue-500 rounded-full transition-all duration-300"
+                    style={{ width: `${Math.min((userMessagesCount / estimatedTotalQuestions) * 100, 100)}%` }}
+                  />
+                </div>
+                <div className="text-slate-400 text-sm whitespace-nowrap">
+                  {userMessagesCount >= estimatedTotalQuestions
+                    ? 'Prawie gotowe!'
+                    : `Pytanie ${userMessagesCount} z ~${estimatedTotalQuestions}`}
+                </div>
+              </div>
+            )}
+
             {/* Podgląd pending zdjęć */}
             {pendingImages.length > 0 && (
               <div className="mb-3 flex flex-wrap gap-2">

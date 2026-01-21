@@ -33,7 +33,6 @@ PRACE PRZYGOTOWAWCZE:
 
 MATERIAŁY I WYKOŃCZENIE:
 - Materiały dostarcza klient czy wykonawca ma wycenić?
-- Jaki standard wykończenia? (ekonomiczny, średni, premium?)
 - Czy są konkretne preferencje? (kolor farby, rodzaj płytek, typ paneli?)
 
 LOGISTYKA:
@@ -104,8 +103,6 @@ PRACE PRZYGOTOWAWCZE:
 
 MATERIAŁY: [klient dostarcza / wykonawca wycenia / częściowo]
 
-STANDARD: [ekonomiczny/średni/premium]
-
 LOKALIZACJA: [adres/piętro/dostęp]
 
 TERMIN: [kiedy rozpocząć]
@@ -114,7 +111,11 @@ UWAGI DODATKOWE:
 - [wszystko inne istotne]
 ---KONIEC---
 
-Po podsumowaniu zapytaj czy wszystko się zgadza lub czy coś zmienić.`
+Po podsumowaniu zapytaj:
+1. Czy wszystko się zgadza lub czy coś zmienić?
+2. Czy klient ma jakieś pytania do wykonawcy? (np. o dostępność, doświadczenie, gwarancję)
+
+Jeśli klient ma pytanie, zapisz je w UWAGACH DODATKOWYCH jako "PYTANIE DO WYKONAWCY: [treść pytania]"`
 
 interface ChatMessage {
   role: 'user' | 'assistant'

@@ -13,10 +13,10 @@ interface ParsedSummary {
   currentState?: string[]
   preparation?: string[]
   materials?: string
-  standard?: string
   location?: string
   timeline?: string
   notes?: string[]
+  clientQuestion?: string
 }
 
 // Usuń markdown formatting (**, *, etc.)
@@ -67,10 +67,6 @@ function parseSummary(text: string): ParsedSummary {
   const materialsMatch = cleanText.match(/MATERIA[ŁL]Y:\s*([^\n]+)/i)
   if (materialsMatch) result.materials = materialsMatch[1].trim()
 
-  // Extract STANDARD
-  const standardMatch = cleanText.match(/STANDARD:\s*([^\n]+)/i)
-  if (standardMatch) result.standard = standardMatch[1].trim()
-
   // Extract LOKALIZACJA
   const locationMatch = cleanText.match(/LOKALIZACJA:\s*([^\n]+)/i)
   if (locationMatch) result.location = locationMatch[1].trim()
@@ -84,6 +80,10 @@ function parseSummary(text: string): ParsedSummary {
   if (notesMatch) {
     result.notes = notesMatch[1].split('\n').filter(l => l.startsWith('-')).map(l => l.replace(/^-\s*/, '').trim())
   }
+
+  // Extract PYTANIE DO WYKONAWCY
+  const questionMatch = cleanText.match(/PYTANIE DO WYKONAWCY:\s*([^\n]+(?:\n(?!---|[A-ZŻŹĆĄŚĘŁÓŃ]+:)[^\n]+)*)/i)
+  if (questionMatch) result.clientQuestion = questionMatch[1].trim()
 
   return result
 }
@@ -187,12 +187,6 @@ export function CollapsibleDescription({ description }: CollapsibleDescriptionPr
                 <span className="text-slate-300 text-sm">{parsed.materials}</span>
               </div>
             )}
-            {parsed.standard && (
-              <div className="bg-slate-800/50 rounded-lg px-3 py-2">
-                <span className="text-xs text-slate-400">Standard: </span>
-                <span className="text-slate-300 text-sm">{parsed.standard}</span>
-              </div>
-            )}
             {parsed.location && (
               <div className="bg-slate-800/50 rounded-lg px-3 py-2">
                 <span className="text-xs text-slate-400">Location: </span>
@@ -206,6 +200,14 @@ export function CollapsibleDescription({ description }: CollapsibleDescriptionPr
               </div>
             )}
           </div>
+
+          {/* Client Question - highlighted */}
+          {parsed.clientQuestion && (
+            <div className="bg-purple-600/10 border border-purple-500/30 rounded-lg p-4">
+              <div className="text-xs text-purple-400 uppercase tracking-wide mb-2">Client Question</div>
+              <p className="text-white text-sm">{parsed.clientQuestion}</p>
+            </div>
+          )}
 
           {/* Additional Notes */}
           {parsed.notes && parsed.notes.length > 0 && (
