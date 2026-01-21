@@ -19,55 +19,68 @@ interface ParsedSummary {
   notes?: string[]
 }
 
+// Usuń markdown formatting (**, *, etc.)
+function cleanMarkdown(text: string): string {
+  return text
+    .replace(/\*\*/g, '')  // Remove **
+    .replace(/\*/g, '')    // Remove *
+    .replace(/__/g, '')    // Remove __
+    .replace(/_/g, ' ')    // Replace _ with space
+    .trim()
+}
+
 function parseSummary(text: string): ParsedSummary {
   const result: ParsedSummary = {}
 
+  // Najpierw oczyść cały tekst z markdown
+  const cleanText = cleanMarkdown(text)
+
   // Extract RODZAJ PRAC
-  const workTypeMatch = text.match(/RODZAJ PRAC:\s*([^\n]+)/i)
+  const workTypeMatch = cleanText.match(/RODZAJ PRAC:\s*([^\n]+)/i)
   if (workTypeMatch) result.workType = workTypeMatch[1].trim()
 
   // Extract ZAKRES PRAC (bullet points)
-  const scopeMatch = text.match(/ZAKRES PRAC:\s*\n((?:- [^\n]+\n?)+)/i)
+  const scopeMatch = cleanText.match(/ZAKRES PRAC:\s*\n((?:- [^\n]+\n?)+)/i)
   if (scopeMatch) {
     result.scope = scopeMatch[1].split('\n').filter(l => l.startsWith('-')).map(l => l.replace(/^-\s*/, '').trim())
   }
 
   // Extract WYMIARY
-  const dimensionsMatch = text.match(/WYMIARY:\s*\n((?:- [^\n]+\n?)+)/i)
+  const dimensionsMatch = cleanText.match(/WYMIARY:\s*\n((?:- [^\n]+\n?)+)/i)
   if (dimensionsMatch) {
     result.dimensions = dimensionsMatch[1].split('\n').filter(l => l.startsWith('-')).map(l => l.replace(/^-\s*/, '').trim())
   }
 
   // Extract STAN OBECNY
-  const stateMatch = text.match(/STAN OBECNY:\s*\n((?:- [^\n]+\n?)+)/i)
+  const stateMatch = cleanText.match(/STAN OBECNY:\s*\n((?:- [^\n]+\n?)+)/i)
   if (stateMatch) {
     result.currentState = stateMatch[1].split('\n').filter(l => l.startsWith('-')).map(l => l.replace(/^-\s*/, '').trim())
   }
 
   // Extract PRACE PRZYGOTOWAWCZE
-  const prepMatch = text.match(/PRACE PRZYGOTOWAWCZE:\s*\n((?:- [^\n]+\n?)+)/i)
+  const prepMatch = cleanText.match(/PRACE PRZYGOTOWAWCZE:\s*\n((?:- [^\n]+\n?)+)/i)
   if (prepMatch) {
     result.preparation = prepMatch[1].split('\n').filter(l => l.startsWith('-')).map(l => l.replace(/^-\s*/, '').trim())
   }
 
   // Extract MATERIAŁY
-  const materialsMatch = text.match(/MATERIA[ŁL]Y:\s*([^\n]+)/i)
+  const materialsMatch = cleanText.match(/MATERIA[ŁL]Y:\s*([^\n]+)/i)
   if (materialsMatch) result.materials = materialsMatch[1].trim()
 
   // Extract STANDARD
-  const standardMatch = text.match(/STANDARD:\s*([^\n]+)/i)
+  const standardMatch = cleanText.match(/STANDARD:\s*([^\n]+)/i)
   if (standardMatch) result.standard = standardMatch[1].trim()
 
   // Extract LOKALIZACJA
-  const locationMatch = text.match(/LOKALIZACJA:\s*([^\n]+)/i)
+  const locationMatch = cleanText.match(/LOKALIZACJA:\s*([^\n]+)/i)
   if (locationMatch) result.location = locationMatch[1].trim()
 
   // Extract TERMIN
-  const timelineMatch = text.match(/TERMIN:\s*([^\n]+)/i)
+  const timelineMatch = cleanText.match(/TERMIN:\s*([^\n]+)/i)
   if (timelineMatch) result.timeline = timelineMatch[1].trim()
 
   // Extract UWAGI DODATKOWE
-  const notesMatch = text.match(/UWAGI DODATKOWE:\s*\n((?:- [^\n]+\n?)+)/i)
+  const notesMatch = cleanText.match(/UWAGI DODATKOWE:\s*\n((?:- [^\n]+\n?)+)/i)
   if (notesMatch) {
     result.notes = notesMatch[1].split('\n').filter(l => l.startsWith('-')).map(l => l.replace(/^-\s*/, '').trim())
   }
@@ -211,7 +224,7 @@ export function CollapsibleDescription({ description }: CollapsibleDescriptionPr
         </div>
       ) : summaryText ? (
         <div className="text-slate-300 whitespace-pre-wrap text-sm">
-          {summaryText}
+          {cleanMarkdown(summaryText)}
         </div>
       ) : null}
 
