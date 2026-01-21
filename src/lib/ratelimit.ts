@@ -35,7 +35,7 @@ function createChatRateLimiter() {
 
   return new Ratelimit({
     redis,
-    limiter: Ratelimit.slidingWindow(20, '1 h'), // 20 wiadomości na godzinę per IP
+    limiter: Ratelimit.slidingWindow(50, '1 h'), // 50 wiadomości na godzinę per IP
     analytics: true,
   })
 }
