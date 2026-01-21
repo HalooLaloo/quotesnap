@@ -233,7 +233,12 @@ export default function ClientRequestPage() {
 
       const data = await response.json()
 
-      if (data.error) {
+      if (response.status === 429) {
+        setMessages([...newMessages, {
+          role: 'assistant',
+          content: '⚠️ Przekroczono limit wiadomości. Ze względów bezpieczeństwa ograniczamy liczbę wiadomości. Spróbuj ponownie za godzinę lub skontaktuj się bezpośrednio z wykonawcą.',
+        }])
+      } else if (data.error) {
         setMessages([...newMessages, {
           role: 'assistant',
           content: 'Przepraszam, wystąpił błąd. Spróbuj ponownie.',
