@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
 
     // Wyślij email
     const { error: sendError } = await resend.emails.send({
-      from: 'QuoteSnap <onboarding@resend.dev>',
+      from: 'BrickQuote <onboarding@resend.dev>',
       to: contractorEmail,
       subject: `New quote request from ${clientName}`,
       html: `
@@ -92,12 +92,12 @@ export async function POST(request: NextRequest) {
                 <p style="color: #374151; font-size: 14px; margin: 0; white-space: pre-wrap;">${shortDescription}</p>
               </div>
 
-              <a href="https://quotesnap.vercel.app/requests" style="display: block; background: #3b82f6; color: white; padding: 14px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; text-align: center;">
-                View Request
+              <a href="https://brickquote.app/requests" style="display: block; background: #ea580c; color: white; padding: 14px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; text-align: center;">
+                Zobacz zapytanie
               </a>
             </div>
             <div style="background: #f9fafb; padding: 16px; text-align: center; border-top: 1px solid #e5e7eb;">
-              <p style="color: #9ca3af; font-size: 12px; margin: 0;">QuoteSnap Notification</p>
+              <p style="color: #9ca3af; font-size: 12px; margin: 0;">BrickQuote</p>
             </div>
           </div>
         </body>

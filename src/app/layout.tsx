@@ -5,8 +5,8 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin', 'latin-ext'] })
 
 export const metadata: Metadata = {
-  title: 'QuoteSnap - Professional Quotes for Contractors',
-  description: 'Create and manage professional quotes for your construction business',
+  title: 'BrickQuote - Profesjonalne wyceny dla wykonawców',
+  description: 'Twórz i zarządzaj profesjonalnymi wycenami dla swojego biznesu budowlanego',
 }
 
 export default function RootLayout({

@@ -134,10 +134,16 @@ function PricingContent() {
         {/* Header */}
         <div className="text-center mb-12">
           <Link href="/" className="inline-flex items-center gap-2 mb-8">
-            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
-              <span className="text-white font-bold text-xl">Q</span>
+            <div className="w-10 h-10 bg-orange-600 rounded-xl flex items-center justify-center">
+              <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
+                <rect x="2" y="6" width="9" height="5" rx="0.5" />
+                <rect x="13" y="6" width="9" height="5" rx="0.5" />
+                <rect x="6" y="13" width="9" height="5" rx="0.5" />
+                <rect x="17" y="13" width="5" height="5" rx="0.5" />
+                <rect x="2" y="13" width="2" height="5" rx="0.5" />
+              </svg>
             </div>
-            <span className="text-white font-bold text-xl">QuoteSnap</span>
+            <span className="text-white font-bold text-xl">BrickQuote</span>
           </Link>
 
           <h1 className="text-4xl font-bold text-white mb-4">
@@ -252,8 +258,8 @@ function PricingContent() {
         <div className="mt-12 text-center">
           <p className="text-slate-400">
             Questions?{' '}
-            <a href="mailto:support@quotesnap.com" className="text-blue-400 hover:text-blue-300">
-              Contact us
+            <a href="mailto:support@brickquote.app" className="text-orange-400 hover:text-orange-300">
+              Kontakt
             </a>
           </p>
         </div>

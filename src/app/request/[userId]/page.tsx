@@ -360,7 +360,7 @@ export default function ClientRequestPage() {
             <span className="text-white font-bold">Q</span>
           </div>
           <div className="flex-1">
-            <h1 className="text-white font-semibold">QuoteSnap</h1>
+            <h1 className="text-white font-semibold">BrickQuote</h1>
             <p className="text-slate-400 text-sm">Asystent wycen</p>
           </div>
         </div>

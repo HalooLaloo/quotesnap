@@ -80,10 +80,16 @@ export function Sidebar({ userEmail }: SidebarProps) {
         {/* Logo */}
         <div className="p-4 border-b border-slate-700 flex items-center justify-between">
           <Link href="/requests" className="flex items-center gap-2" onClick={() => setIsMobileOpen(false)}>
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold">Q</span>
+            <div className="w-8 h-8 bg-orange-600 rounded-lg flex items-center justify-center">
+              <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
+                <rect x="2" y="6" width="9" height="5" rx="0.5" />
+                <rect x="13" y="6" width="9" height="5" rx="0.5" />
+                <rect x="6" y="13" width="9" height="5" rx="0.5" />
+                <rect x="17" y="13" width="5" height="5" rx="0.5" />
+                <rect x="2" y="13" width="2" height="5" rx="0.5" />
+              </svg>
             </div>
-            <span className="text-xl font-bold text-white">QuoteSnap</span>
+            <span className="text-xl font-bold text-white">BrickQuote</span>
           </Link>
           {/* Mobile close button */}
           <button

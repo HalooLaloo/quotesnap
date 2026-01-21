@@ -3,18 +3,18 @@ import { notFound } from 'next/navigation'
 import { QuoteItem } from '@/lib/types'
 import { QuoteActions } from './QuoteActions'
 
-// Use service role for public access
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
-
 export default async function PublicQuotePage({
   params,
 }: {
   params: Promise<{ token: string }>
 }) {
   const { token } = await params
+
+  // Use service role for public access
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
 
   const { data: quote, error } = await supabase
     .from('qs_quotes')
@@ -59,10 +59,16 @@ export default async function PublicQuotePage({
         {/* Header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 mb-4">
-            <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-xl">Q</span>
+            <div className="w-10 h-10 bg-orange-600 rounded-lg flex items-center justify-center">
+              <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
+                <rect x="2" y="6" width="9" height="5" rx="0.5" />
+                <rect x="13" y="6" width="9" height="5" rx="0.5" />
+                <rect x="6" y="13" width="9" height="5" rx="0.5" />
+                <rect x="17" y="13" width="5" height="5" rx="0.5" />
+                <rect x="2" y="13" width="2" height="5" rx="0.5" />
+              </svg>
             </div>
-            <span className="text-2xl font-bold text-white">QuoteSnap</span>
+            <span className="text-2xl font-bold text-white">BrickQuote</span>
           </div>
           <h1 className="text-3xl font-bold text-white">Quote from {contractorName}</h1>
           <p className="text-slate-400 mt-2">
@@ -237,7 +243,7 @@ export default async function PublicQuotePage({
 
         {/* Footer */}
         <p className="text-center text-slate-500 text-sm mt-8">
-          Wycena wygenerowana przez QuoteSnap
+          Wycena wygenerowana przez BrickQuote
         </p>
       </div>
     </div>

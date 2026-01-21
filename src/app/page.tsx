@@ -17,17 +17,23 @@ export default async function Home() {
       <header className="border-b border-slate-700 bg-slate-900/50 backdrop-blur-sm">
         <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold">Q</span>
+            <div className="w-8 h-8 bg-orange-600 rounded-lg flex items-center justify-center">
+              <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
+                <rect x="2" y="6" width="9" height="5" rx="0.5" />
+                <rect x="13" y="6" width="9" height="5" rx="0.5" />
+                <rect x="6" y="13" width="9" height="5" rx="0.5" />
+                <rect x="17" y="13" width="5" height="5" rx="0.5" />
+                <rect x="2" y="13" width="2" height="5" rx="0.5" />
+              </svg>
             </div>
-            <span className="text-xl font-bold text-white">QuoteSnap</span>
+            <span className="text-xl font-bold text-white">BrickQuote</span>
           </div>
           <div className="flex gap-3">
             <Link href="/login" className="btn-ghost">
-              Log in
+              Zaloguj
             </Link>
             <Link href="/register" className="btn-primary">
-              Get Started
+              Rejestracja
             </Link>
           </div>
         </div>
@@ -37,19 +43,19 @@ export default async function Home() {
       <main className="flex-1 flex items-center justify-center px-4">
         <div className="max-w-3xl text-center">
           <h1 className="text-5xl font-bold text-white mb-6">
-            Professional Quotes
-            <span className="text-blue-500"> in Minutes</span>
+            Profesjonalne wyceny
+            <span className="text-orange-500"> w kilka minut</span>
           </h1>
           <p className="text-xl text-slate-400 mb-8 max-w-2xl mx-auto">
-            Create, send, and manage professional quotes for your construction business.
-            Your prices, your services, your way.
+            Twórz, wysyłaj i zarządzaj wycenami dla swojego biznesu budowlanego.
+            Twoje ceny, Twoje usługi, Twój sposób.
           </p>
           <div className="flex gap-4 justify-center">
             <Link href="/register" className="btn-primary text-lg px-8 py-3">
-              Start Free Trial
+              Rozpocznij za darmo
             </Link>
             <Link href="/login" className="btn-secondary text-lg px-8 py-3">
-              Log in
+              Zaloguj się
             </Link>
           </div>
 
@@ -61,9 +67,9 @@ export default async function Home() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-white mb-2">Your Price List</h3>
+              <h3 className="text-lg font-semibold text-white mb-2">Twój cennik</h3>
               <p className="text-slate-400 text-sm">
-                Create your own service catalog with custom prices. Update anytime.
+                Stwórz własny katalog usług z cenami. Aktualizuj kiedy chcesz.
               </p>
             </div>
 
@@ -73,9 +79,9 @@ export default async function Home() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-white mb-2">Client Requests</h3>
+              <h3 className="text-lg font-semibold text-white mb-2">Zapytania klientów</h3>
               <p className="text-slate-400 text-sm">
-                Receive quote requests with photos and descriptions from clients.
+                Otrzymuj zapytania o wycenę ze zdjęciami i opisami od klientów.
               </p>
             </div>
 
@@ -85,9 +91,9 @@ export default async function Home() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-white mb-2">Quick Acceptance</h3>
+              <h3 className="text-lg font-semibold text-white mb-2">Szybka akceptacja</h3>
               <p className="text-slate-400 text-sm">
-                Clients can view and accept quotes online. No more back-and-forth.
+                Klienci mogą przeglądać i akceptować wyceny online. Koniec z wymianą maili.
               </p>
             </div>
           </div>
@@ -97,7 +103,7 @@ export default async function Home() {
       {/* Footer */}
       <footer className="border-t border-slate-700 py-6">
         <div className="max-w-6xl mx-auto px-4 text-center text-slate-500 text-sm">
-          © 2024 QuoteSnap. All rights reserved.
+          © 2025 BrickQuote. Wszelkie prawa zastrzeżone.
         </div>
       </footer>
     </div>

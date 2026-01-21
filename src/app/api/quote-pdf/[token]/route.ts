@@ -11,17 +11,17 @@ declare module 'jspdf' {
   }
 }
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
-
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ token: string }> }
 ) {
   try {
     const { token } = await params
+
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
 
     // Fetch quote data
     const { data: quote, error } = await supabase
@@ -57,13 +57,13 @@ export async function GET(
     const doc = new jsPDF()
 
     // Header
-    doc.setFillColor(30, 41, 59) // slate-800
+    doc.setFillColor(234, 88, 12) // orange-600
     doc.rect(0, 0, 210, 40, 'F')
 
     doc.setTextColor(255, 255, 255)
     doc.setFontSize(24)
     doc.setFont('helvetica', 'bold')
-    doc.text('QuoteSnap', 20, 25)
+    doc.text('BrickQuote', 20, 25)
 
     doc.setFontSize(12)
     doc.setFont('helvetica', 'normal')
@@ -203,7 +203,7 @@ export async function GET(
     // Footer
     doc.setFontSize(8)
     doc.setTextColor(150, 150, 150)
-    doc.text('Wycena wygenerowana przez QuoteSnap', 105, 285, { align: 'center' })
+    doc.text('Wycena wygenerowana przez BrickQuote', 105, 285, { align: 'center' })
     doc.text('Wycena ma charakter orientacyjny. Ostateczna cena moze roznic sie po ocenie zakresu prac na miejscu.', 105, 290, { align: 'center' })
 
     // Generate PDF buffer

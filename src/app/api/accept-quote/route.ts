@@ -126,7 +126,7 @@ export async function POST(request: NextRequest) {
       const statusColor = action === 'accept' ? '#22c55e' : '#ef4444'
 
       await resend.emails.send({
-        from: 'QuoteSnap <onboarding@resend.dev>',
+        from: 'BrickQuote <onboarding@resend.dev>',
         to: contractorEmail,
         subject: `Quote ${statusText} by ${clientName}`,
         html: `
@@ -155,7 +155,7 @@ export async function POST(request: NextRequest) {
                 `}
               </div>
               <div style="background: #f9fafb; padding: 16px; text-align: center; border-top: 1px solid #e5e7eb;">
-                <p style="color: #9ca3af; font-size: 12px; margin: 0;">QuoteSnap Notification</p>
+                <p style="color: #9ca3af; font-size: 12px; margin: 0;">BrickQuote Notification</p>
               </div>
             </div>
           </body>

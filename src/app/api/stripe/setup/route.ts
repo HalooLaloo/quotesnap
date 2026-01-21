@@ -8,7 +8,7 @@ export async function GET() {
     // Check if products already exist
     const existingProducts = await stripe.products.list({ limit: 10 })
     const quoteSnapProducts = existingProducts.data.filter(p =>
-      p.name.includes('QuoteSnap')
+      p.name.includes('BrickQuote')
     )
 
     if (quoteSnapProducts.length > 0) {
@@ -32,7 +32,7 @@ export async function GET() {
 
     // Create Starter plan
     const starterProduct = await stripe.products.create({
-      name: 'QuoteSnap Starter',
+      name: 'BrickQuote Starter',
       description: 'AI-powered quotes for contractors - 30 quotes/month',
     })
 
@@ -45,7 +45,7 @@ export async function GET() {
 
     // Create Pro plan
     const proProduct = await stripe.products.create({
-      name: 'QuoteSnap Pro',
+      name: 'BrickQuote Pro',
       description: 'Unlimited AI-powered quotes with premium features',
     })
 

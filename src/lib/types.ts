@@ -1,4 +1,4 @@
-// Typy dla QuoteSnap
+// Typy dla BrickQuote
 
 export interface Service {
   id: string
