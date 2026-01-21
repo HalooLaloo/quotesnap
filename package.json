@@ -9,6 +9,9 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@capacitor/android": "^8.0.1",
+    "@capacitor/cli": "^8.0.1",
+    "@capacitor/core": "^8.0.1",
     "@stripe/stripe-js": "^8.6.3",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.90.1",
