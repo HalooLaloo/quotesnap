@@ -145,11 +145,25 @@ export function QuoteForm({ request, services, userId }: QuoteFormProps) {
     setAiSuggestions(newSuggestions)
   }
 
-  // Update AI suggestion price (for custom items)
+  // Update AI suggestion price
   const updateSuggestionPrice = (index: number, price: number) => {
     const newSuggestions = [...aiSuggestions]
     newSuggestions[index].unit_price = price
     newSuggestions[index].total = newSuggestions[index].quantity * price
+    setAiSuggestions(newSuggestions)
+  }
+
+  // Update AI suggestion service name
+  const updateSuggestionName = (index: number, name: string) => {
+    const newSuggestions = [...aiSuggestions]
+    newSuggestions[index].service_name = name
+    setAiSuggestions(newSuggestions)
+  }
+
+  // Update AI suggestion unit
+  const updateSuggestionUnit = (index: number, unit: string) => {
+    const newSuggestions = [...aiSuggestions]
+    newSuggestions[index].unit = unit
     setAiSuggestions(newSuggestions)
   }
 
@@ -195,6 +209,20 @@ export function QuoteForm({ request, services, userId }: QuoteFormProps) {
   // Usuń ręczną pozycję
   const removeManualItem = (index: number) => {
     setManualItems(manualItems.filter((_, i) => i !== index))
+  }
+
+  // Aktualizuj nazwę ręcznej pozycji
+  const updateManualName = (index: number, name: string) => {
+    const newItems = [...manualItems]
+    newItems[index].service_name = name
+    setManualItems(newItems)
+  }
+
+  // Aktualizuj jednostkę ręcznej pozycji
+  const updateManualUnit = (index: number, unit: string) => {
+    const newItems = [...manualItems]
+    newItems[index].unit = unit
+    setManualItems(newItems)
   }
 
   // Dodaj własną usługę (custom)
@@ -406,7 +434,13 @@ export function QuoteForm({ request, services, userId }: QuoteFormProps) {
                       {/* Service info */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-medium text-white">{suggestion.service_name}</span>
+                          <input
+                            type="text"
+                            value={suggestion.service_name}
+                            onChange={(e) => updateSuggestionName(index, e.target.value)}
+                            disabled={!suggestion.selected}
+                            className="input font-medium text-white bg-transparent border-transparent hover:border-slate-600 focus:border-blue-500 px-2 py-1 -ml-2"
+                          />
                           {suggestion.isCustom && (
                             <span className="px-2 py-0.5 text-xs bg-amber-500/20 text-amber-400 rounded">
                               Spoza cennika
@@ -429,29 +463,35 @@ export function QuoteForm({ request, services, userId }: QuoteFormProps) {
                           disabled={!suggestion.selected}
                           className="input w-20 text-center text-sm"
                         />
-                        <span className="text-slate-400 text-sm w-12">{suggestion.unit}</span>
+                        <select
+                          value={suggestion.unit}
+                          onChange={(e) => updateSuggestionUnit(index, e.target.value)}
+                          disabled={!suggestion.selected}
+                          className="input w-20 text-sm text-slate-400"
+                        >
+                          <option value="m²">m²</option>
+                          <option value="mb">mb</option>
+                          <option value="szt.">szt.</option>
+                          <option value="godz.">godz.</option>
+                          <option value="ryczałt">ryczałt</option>
+                        </select>
                       </div>
 
                       <div className="flex items-center gap-1 shrink-0">
                         <span className="text-slate-500 text-sm">×</span>
-                        {suggestion.isCustom ? (
-                          <input
-                            type="number"
-                            min="0"
-                            step="1"
-                            value={suggestion.unit_price}
-                            onChange={(e) => updateSuggestionPrice(index, parseFloat(e.target.value) || 0)}
-                            disabled={!suggestion.selected}
-                            placeholder="Cena"
-                            className={`input w-24 text-center text-sm ${
-                              suggestion.unit_price === 0 && suggestion.selected ? 'border-amber-500 bg-amber-500/10' : ''
-                            }`}
-                          />
-                        ) : (
-                          <span className="text-slate-300 w-24 text-center text-sm">
-                            {suggestion.unit_price.toFixed(0)} PLN
-                          </span>
-                        )}
+                        <input
+                          type="number"
+                          min="0"
+                          step="1"
+                          value={suggestion.unit_price}
+                          onChange={(e) => updateSuggestionPrice(index, parseFloat(e.target.value) || 0)}
+                          disabled={!suggestion.selected}
+                          placeholder="Cena"
+                          className={`input w-24 text-center text-sm ${
+                            suggestion.unit_price === 0 && suggestion.selected ? 'border-amber-500 bg-amber-500/10' : ''
+                          }`}
+                        />
+                        <span className="text-slate-500 text-xs">PLN</span>
                       </div>
 
                       <div className="text-right w-28 shrink-0">
@@ -512,7 +552,12 @@ export function QuoteForm({ request, services, userId }: QuoteFormProps) {
                   <div className="flex items-center gap-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
-                        <span className="font-medium text-white">{item.service_name}</span>
+                        <input
+                          type="text"
+                          value={item.service_name}
+                          onChange={(e) => updateManualName(index, e.target.value)}
+                          className="input font-medium text-white bg-transparent border-transparent hover:border-slate-600 focus:border-blue-500 px-2 py-1 -ml-2"
+                        />
                         {item.isCustom && (
                           <span className="px-2 py-0.5 text-xs bg-amber-500/20 text-amber-400 rounded">
                             Custom
@@ -529,28 +574,33 @@ export function QuoteForm({ request, services, userId }: QuoteFormProps) {
                         onChange={(e) => updateManualQuantity(index, parseFloat(e.target.value) || 0)}
                         className="input w-20 text-center text-sm"
                       />
-                      <span className="text-slate-400 w-12 text-sm">{item.unit}</span>
+                      <select
+                        value={item.unit}
+                        onChange={(e) => updateManualUnit(index, e.target.value)}
+                        className="input w-20 text-sm text-slate-400"
+                      >
+                        <option value="m²">m²</option>
+                        <option value="mb">mb</option>
+                        <option value="szt.">szt.</option>
+                        <option value="godz.">godz.</option>
+                        <option value="ryczałt">ryczałt</option>
+                      </select>
                     </div>
                     <div className="flex items-center gap-1">
                       <span className="text-slate-400 text-sm">×</span>
-                      {item.isCustom ? (
-                        <input
-                          type="number"
-                          min="0"
-                          step="1"
-                          value={item.unit_price}
-                          onChange={(e) => updateManualPrice(index, parseFloat(e.target.value) || 0)}
-                          className={`input w-24 text-center text-sm ${
-                            item.unit_price === 0 ? 'border-amber-500 bg-amber-500/10' : ''
-                          }`}
-                        />
-                      ) : (
-                        <span className="text-slate-300 w-24 text-center text-sm">
-                          {item.unit_price.toFixed(0)} PLN
-                        </span>
-                      )}
+                      <input
+                        type="number"
+                        min="0"
+                        step="1"
+                        value={item.unit_price}
+                        onChange={(e) => updateManualPrice(index, parseFloat(e.target.value) || 0)}
+                        className={`input w-24 text-center text-sm ${
+                          item.unit_price === 0 ? 'border-amber-500 bg-amber-500/10' : ''
+                        }`}
+                      />
+                      <span className="text-slate-500 text-xs">PLN</span>
                     </div>
-                    <div className="text-right w-28">
+                    <div className="text-right w-24">
                       <div className="font-semibold text-white">
                         {item.total.toFixed(2)} PLN
                       </div>

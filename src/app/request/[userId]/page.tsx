@@ -48,7 +48,7 @@ export default function ClientRequestPage() {
 
   // Licznik pytań (ile odpowiedzi dał użytkownik)
   const userMessagesCount = messages.filter(m => m.role === 'user').length
-  const estimatedTotalQuestions = 8 // Szacowana liczba pytań do zebrania pełnych informacji
+  const estimatedTotalQuestions = 7 // Szacowana liczba pytań do zebrania pełnych informacji
 
   // Auto-scroll do najnowszej wiadomości
   useEffect(() => {
