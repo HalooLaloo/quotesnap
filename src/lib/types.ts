@@ -70,3 +70,38 @@ export const UNITS: Record<Service['unit'], string> = {
   godz: 'godz.',
   ryczalt: 'ryczałt',
 }
+
+// Invoice types
+export interface InvoiceItem {
+  description: string
+  quantity: number
+  unit: string
+  unit_price: number
+  total: number
+}
+
+export interface Invoice {
+  id: string
+  user_id: string
+  quote_id: string | null
+  invoice_number: string
+  items: InvoiceItem[]
+  subtotal: number
+  discount_percent: number
+  vat_percent: number
+  total_net: number
+  total_gross: number
+  notes: string | null
+  due_date: string | null
+  payment_terms: string | null
+  status: 'draft' | 'sent' | 'paid'
+  token: string
+  sent_at: string | null
+  paid_at: string | null
+  created_at: string
+  // Client info (copied from quote or entered manually)
+  client_name: string
+  client_email: string | null
+  client_phone: string | null
+  client_address: string | null
+}
