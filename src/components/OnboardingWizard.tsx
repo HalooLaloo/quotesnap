@@ -241,40 +241,46 @@ export function OnboardingWizard({ onClose, userId }: OnboardingWizardProps) {
                 {services.map((service, index) => (
                   <div
                     key={index}
-                    className={`flex items-center gap-3 p-3 rounded-lg border transition-colors ${
+                    className={`p-3 rounded-lg border transition-colors ${
                       service.selected
                         ? 'bg-orange-600/10 border-orange-500/30'
                         : 'bg-slate-700/30 border-slate-600/30'
                     }`}
                   >
-                    <button
-                      onClick={() => toggleService(index)}
-                      className={`w-5 h-5 rounded flex items-center justify-center shrink-0 ${
-                        service.selected
-                          ? 'bg-orange-500 text-white'
-                          : 'bg-slate-600'
-                      }`}
-                    >
-                      {service.selected && (
-                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                        </svg>
-                      )}
-                    </button>
-                    <span className={`flex-1 text-sm ${service.selected ? 'text-white' : 'text-slate-400'}`}>
-                      {service.name}
-                    </span>
-                    <span className="text-slate-500 text-xs w-12">
-                      {UNITS[service.unit]}
-                    </span>
-                    <input
-                      type="number"
-                      value={service.price || ''}
-                      onChange={(e) => updateServicePrice(index, e.target.value)}
-                      className="w-20 bg-slate-700 border border-slate-600 rounded px-2 py-1.5 text-white text-sm text-right focus:border-orange-500 focus:outline-none"
-                      placeholder="0"
-                    />
-                    <span className="text-slate-500 text-xs">zł</span>
+                    <div className="flex items-start gap-3">
+                      <button
+                        onClick={() => toggleService(index)}
+                        className={`w-5 h-5 rounded flex items-center justify-center shrink-0 mt-0.5 ${
+                          service.selected
+                            ? 'bg-orange-500 text-white'
+                            : 'bg-slate-600'
+                        }`}
+                      >
+                        {service.selected && (
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                          </svg>
+                        )}
+                      </button>
+                      <div className="flex-1 min-w-0">
+                        <p className={`text-sm leading-snug ${service.selected ? 'text-white' : 'text-slate-400'}`}>
+                          {service.name}
+                        </p>
+                        <div className="flex items-center gap-2 mt-2">
+                          <span className="text-slate-500 text-xs">
+                            {UNITS[service.unit]}
+                          </span>
+                          <input
+                            type="number"
+                            value={service.price || ''}
+                            onChange={(e) => updateServicePrice(index, e.target.value)}
+                            className="w-20 bg-slate-700 border border-slate-600 rounded px-2 py-1 text-white text-sm text-right focus:border-orange-500 focus:outline-none"
+                            placeholder="0"
+                          />
+                          <span className="text-slate-500 text-xs">zł</span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -320,22 +326,43 @@ export function OnboardingWizard({ onClose, userId }: OnboardingWizardProps) {
 
           {/* Step 4: Share Link */}
           {currentStep === 'share' && (
-            <div className="text-center py-4">
-              <div className="w-16 h-16 bg-green-600/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
+            <div className="py-4">
+              <div className="text-center mb-6">
+                <div className="w-16 h-16 bg-green-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <h2 className="text-xl font-bold text-white mb-2">
+                  Cennik zapisany!
+                </h2>
               </div>
 
-              <h2 className="text-xl font-bold text-white mb-2">
-                Cennik zapisany!
-              </h2>
-              <p className="text-slate-400 text-sm mb-8">
-                Oto Twój link dla klientów. Wyślij go, a oni opiszą czego potrzebują.
-              </p>
+              {/* How it works */}
+              <div className="bg-slate-700/30 rounded-xl p-4 mb-6">
+                <p className="text-slate-300 text-sm font-medium mb-3">Jak to działa?</p>
+                <div className="space-y-2 text-sm">
+                  <div className="flex items-start gap-3">
+                    <span className="w-5 h-5 rounded-full bg-orange-500/20 text-orange-400 flex items-center justify-center text-xs shrink-0">1</span>
+                    <p className="text-slate-400">Wysyłasz link klientowi</p>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <span className="w-5 h-5 rounded-full bg-orange-500/20 text-orange-400 flex items-center justify-center text-xs shrink-0">2</span>
+                    <p className="text-slate-400">Klient opisuje czego potrzebuje (zdjęcia, opis, wymiary)</p>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <span className="w-5 h-5 rounded-full bg-orange-500/20 text-orange-400 flex items-center justify-center text-xs shrink-0">3</span>
+                    <p className="text-slate-400">Zapytanie trafia do Ciebie w panelu</p>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <span className="w-5 h-5 rounded-full bg-orange-500/20 text-orange-400 flex items-center justify-center text-xs shrink-0">4</span>
+                    <p className="text-slate-400">Tworzysz wycenę i wysyłasz do klienta</p>
+                  </div>
+                </div>
+              </div>
 
               {/* Share URL */}
-              <div className="bg-slate-900 rounded-xl p-4 mb-6">
+              <div className="bg-slate-900 rounded-xl p-4 mb-4">
                 <div className="flex items-center gap-2 mb-4">
                   <input
                     type="text"
@@ -379,8 +406,8 @@ export function OnboardingWizard({ onClose, userId }: OnboardingWizardProps) {
                 </div>
               </div>
 
-              <p className="text-slate-500 text-xs">
-                Możesz też znaleźć ten link w panelu, w sekcji "Udostępnij link"
+              <p className="text-slate-500 text-xs text-center">
+                Link znajdziesz też w panelu, w zakładce "Zapytania"
               </p>
             </div>
           )}
