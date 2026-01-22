@@ -33,7 +33,7 @@ export default async function DashboardLayout({
       </main>
 
       {/* Onboarding modal for new users */}
-      <OnboardingWrapper servicesCount={servicesCount || 0} />
+      <OnboardingWrapper servicesCount={servicesCount || 0} userId={user.id} />
     </div>
   )
 }

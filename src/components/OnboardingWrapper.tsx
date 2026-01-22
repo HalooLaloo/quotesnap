@@ -1,13 +1,14 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { OnboardingModal } from './OnboardingModal'
+import { OnboardingWizard } from './OnboardingWizard'
 
 interface OnboardingWrapperProps {
   servicesCount: number
+  userId: string
 }
 
-export function OnboardingWrapper({ servicesCount }: OnboardingWrapperProps) {
+export function OnboardingWrapper({ servicesCount, userId }: OnboardingWrapperProps) {
   const [showOnboarding, setShowOnboarding] = useState(false)
 
   useEffect(() => {
@@ -26,5 +27,5 @@ export function OnboardingWrapper({ servicesCount }: OnboardingWrapperProps) {
 
   if (!showOnboarding) return null
 
-  return <OnboardingModal onClose={handleClose} />
+  return <OnboardingWizard onClose={handleClose} userId={userId} />
 }
