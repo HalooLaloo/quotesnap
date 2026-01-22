@@ -4,10 +4,10 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useCallback, useState, useEffect } from 'react'
 
 const statuses = [
-  { value: '', label: 'Aktywne' },
-  { value: 'new', label: 'Nowe' },
-  { value: 'archived', label: 'Archiwum' },
-  { value: 'all', label: 'Wszystkie' },
+  { value: '', label: 'Active' },
+  { value: 'new', label: 'New' },
+  { value: 'archived', label: 'Archived' },
+  { value: 'all', label: 'All' },
 ]
 
 export function RequestFilters() {
@@ -68,7 +68,7 @@ export function RequestFilters() {
           </svg>
           <input
             type="text"
-            placeholder="Szukaj po nazwie klienta..."
+            placeholder="Search by client name..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="input pl-10 w-full"

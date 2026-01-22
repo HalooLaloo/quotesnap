@@ -29,7 +29,7 @@ export function ShareLinkButton({ url, variant = 'default' }: ShareLinkButtonPro
         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
         </svg>
-        <span>Wyślij link</span>
+        <span>Share</span>
       </button>
 
       {/* Modal */}
@@ -37,7 +37,7 @@ export function ShareLinkButton({ url, variant = 'default' }: ShareLinkButtonPro
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4" onClick={() => setShowModal(false)}>
           <div className="bg-slate-800 rounded-xl max-w-md w-full p-6" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-white">Udostępnij link</h3>
+              <h3 className="text-lg font-semibold text-white">Share Link</h3>
               <button onClick={() => setShowModal(false)} className="text-slate-400 hover:text-white">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -46,7 +46,7 @@ export function ShareLinkButton({ url, variant = 'default' }: ShareLinkButtonPro
             </div>
 
             <p className="text-slate-400 text-sm mb-4">
-              Wyślij ten link klientom - będą mogli przesłać zapytanie ze zdjęciami i opisem.
+              Send this link to clients - they can submit quote requests with photos.
             </p>
 
             <div className="flex gap-2 mb-4">
@@ -64,13 +64,13 @@ export function ShareLinkButton({ url, variant = 'default' }: ShareLinkButtonPro
                     : 'bg-blue-600 hover:bg-blue-500 text-white'
                 }`}
               >
-                {copied ? 'Skopiowano!' : 'Kopiuj'}
+                {copied ? 'Copied!' : 'Copy'}
               </button>
             </div>
 
             <div className="flex gap-2">
               <a
-                href={`https://wa.me/?text=${encodeURIComponent('Wyślij zapytanie o wycenę: ' + url)}`}
+                href={`https://wa.me/?text=${encodeURIComponent('Request a quote: ' + url)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex-1 flex items-center justify-center gap-2 py-2 bg-green-600 hover:bg-green-500 text-white rounded-lg transition-colors"
@@ -81,7 +81,7 @@ export function ShareLinkButton({ url, variant = 'default' }: ShareLinkButtonPro
                 WhatsApp
               </a>
               <a
-                href={`sms:?body=${encodeURIComponent('Wyślij zapytanie o wycenę: ' + url)}`}
+                href={`sms:?body=${encodeURIComponent('Request a quote: ' + url)}`}
                 className="flex-1 flex items-center justify-center gap-2 py-2 bg-slate-600 hover:bg-slate-500 text-white rounded-lg transition-colors"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

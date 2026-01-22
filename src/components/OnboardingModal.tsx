@@ -28,7 +28,7 @@ export function OnboardingModal({ onClose }: OnboardingModalProps) {
 
   const handleAnalyze = async () => {
     if (description.trim().length < 10) {
-      setError('Napisz trochę więcej o swojej działalności')
+      setError('Please write a bit more about your work')
       return
     }
 
@@ -45,7 +45,7 @@ export function OnboardingModal({ onClose }: OnboardingModalProps) {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || 'Wystąpił błąd')
+        throw new Error(data.error || 'An error occurred')
       }
 
       setServices(
@@ -56,7 +56,7 @@ export function OnboardingModal({ onClose }: OnboardingModalProps) {
       )
       setStep('select')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Wystąpił błąd')
+      setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {
       setLoading(false)
     }
@@ -93,7 +93,7 @@ export function OnboardingModal({ onClose }: OnboardingModalProps) {
     const selectedServices = services.filter(s => s.selected)
 
     if (selectedServices.length === 0) {
-      setError('Wybierz przynajmniej jedną usługę')
+      setError('Please select at least one service')
       return
     }
 
@@ -104,7 +104,7 @@ export function OnboardingModal({ onClose }: OnboardingModalProps) {
       const { data: { user } } = await supabase.auth.getUser()
 
       if (!user) {
-        throw new Error('Nie jesteś zalogowany')
+        throw new Error('Not logged in')
       }
 
       // Insert all selected services
@@ -124,7 +124,7 @@ export function OnboardingModal({ onClose }: OnboardingModalProps) {
       router.refresh()
       onClose()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Wystąpił błąd')
+      setError(err instanceof Error ? err.message : 'An error occurred')
       setStep('select')
     }
   }
@@ -135,14 +135,14 @@ export function OnboardingModal({ onClose }: OnboardingModalProps) {
         {/* Header */}
         <div className="p-6 border-b border-slate-700">
           <h2 className="text-xl font-bold text-white">
-            {step === 'describe' && '👋 Witaj w BrickQuote!'}
-            {step === 'select' && '✨ Twoje usługi'}
-            {step === 'saving' && '💾 Zapisywanie...'}
+            {step === 'describe' && '👋 Welcome to BrickQuote!'}
+            {step === 'select' && '✨ Your Services'}
+            {step === 'saving' && '💾 Saving...'}
           </h2>
           <p className="text-slate-400 text-sm mt-1">
-            {step === 'describe' && 'Opisz czym się zajmujesz, a pomożemy Ci stworzyć cennik'}
-            {step === 'select' && 'Sprawdź i dostosuj listę usług, możesz zmieniać ceny'}
-            {step === 'saving' && 'Trwa zapisywanie Twoich usług...'}
+            {step === 'describe' && 'Describe your work and we\'ll help create your price list'}
+            {step === 'select' && 'Review and adjust your services, you can change prices'}
+            {step === 'saving' && 'Saving your services...'}
           </p>
         </div>
 
@@ -157,25 +157,25 @@ export function OnboardingModal({ onClose }: OnboardingModalProps) {
           {step === 'describe' && (
             <div className="space-y-4">
               <div>
-                <label className="label">Opisz swoją działalność</label>
+                <label className="label">Describe your business</label>
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Np. Jestem glazurnikiem z 10-letnim doświadczeniem. Zajmuję się układaniem płytek w łazienkach i kuchniach, robię też hydroizolacje i drobne prace wykończeniowe..."
+                  placeholder="E.g. I'm a tiler with 10 years of experience. I install tiles in bathrooms and kitchens, also do waterproofing and finishing work..."
                   className="input min-h-[150px] resize-none"
                   autoFocus
                 />
                 <p className="text-slate-500 text-xs mt-2">
-                  Im więcej napiszesz, tym lepiej dobierzemy usługi
+                  The more you write, the better we can suggest services
                 </p>
               </div>
 
               <div className="bg-slate-700/50 rounded-lg p-4">
-                <p className="text-slate-300 text-sm font-medium mb-2">💡 Podpowiedź</p>
+                <p className="text-slate-300 text-sm font-medium mb-2">💡 Tip</p>
                 <p className="text-slate-400 text-sm">
-                  Napisz o: swoich specjalizacjach, rodzajach prac które wykonujesz,
-                  czy pracujesz z klientami indywidualnymi czy firmami,
-                  jakie masz doświadczenie.
+                  Write about: your specializations, types of work you do,
+                  whether you work with individual clients or companies,
+                  your experience level.
                 </p>
               </div>
             </div>
@@ -228,13 +228,13 @@ export function OnboardingModal({ onClose }: OnboardingModalProps) {
 
               {/* Add custom service */}
               <div className="border-t border-slate-700 pt-4 mt-4">
-                <p className="text-slate-300 text-sm font-medium mb-3">Dodaj własną usługę</p>
+                <p className="text-slate-300 text-sm font-medium mb-3">Add custom service</p>
                 <div className="flex gap-2 flex-wrap">
                   <input
                     type="text"
                     value={customService.name}
                     onChange={(e) => setCustomService(prev => ({ ...prev, name: e.target.value }))}
-                    placeholder="Nazwa usługi"
+                    placeholder="Service name"
                     className="input flex-1 min-w-[150px]"
                   />
                   <select
@@ -250,7 +250,7 @@ export function OnboardingModal({ onClose }: OnboardingModalProps) {
                     type="number"
                     value={customService.price}
                     onChange={(e) => setCustomService(prev => ({ ...prev, price: e.target.value }))}
-                    placeholder="Cena"
+                    placeholder="Price"
                     className="input w-20"
                   />
                   <button
@@ -280,7 +280,7 @@ export function OnboardingModal({ onClose }: OnboardingModalProps) {
                 onClick={onClose}
                 className="text-slate-400 hover:text-white transition-colors"
               >
-                Pomiń na razie
+                Skip for now
               </button>
               <button
                 onClick={handleAnalyze}
@@ -290,10 +290,10 @@ export function OnboardingModal({ onClose }: OnboardingModalProps) {
                 {loading ? (
                   <span className="flex items-center gap-2">
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    Analizuję...
+                    Analyzing...
                   </span>
                 ) : (
-                  'Zaproponuj usługi →'
+                  'Suggest Services →'
                 )}
               </button>
             </>
@@ -305,20 +305,20 @@ export function OnboardingModal({ onClose }: OnboardingModalProps) {
                 onClick={() => setStep('describe')}
                 className="text-slate-400 hover:text-white transition-colors"
               >
-                ← Wróć
+                ← Back
               </button>
               <div className="flex gap-3">
                 <button
                   onClick={onClose}
                   className="text-slate-400 hover:text-white transition-colors"
                 >
-                  Pomiń
+                  Skip
                 </button>
                 <button
                   onClick={handleSave}
                   className="btn-primary"
                 >
-                  Zapisz {services.filter(s => s.selected).length} usług
+                  Save {services.filter(s => s.selected).length} services
                 </button>
               </div>
             </>

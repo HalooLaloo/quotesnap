@@ -72,9 +72,9 @@ export default async function RequestsPage({
       {/* Header */}
       <div className="flex items-start justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-white">Zapytania</h1>
+          <h1 className="text-2xl font-bold text-white">Requests</h1>
           <p className="text-slate-400 text-sm mt-1">
-            Zarządzaj zapytaniami od klientów
+            Manage quote requests from your clients
           </p>
         </div>
         <ShareLinkButton url={requestFormUrl} />
@@ -84,11 +84,11 @@ export default async function RequestsPage({
       <div className="card mb-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-white">
-            Lista zapytań
+            Request List
           </h2>
           {(newRequestsCount || 0) > 0 && (
             <span className="bg-yellow-500 text-yellow-900 text-xs font-bold px-2 py-1 rounded-full">
-              {newRequestsCount} nowe
+              {newRequestsCount} new
             </span>
           )}
         </div>
@@ -102,14 +102,14 @@ export default async function RequestsPage({
               const workTypeMatch = request.description.match(/RODZAJ PRAC:\s*([^\n]+)/i)
               const workType = workTypeMatch ? workTypeMatch[1].trim() : request.description.slice(0, 80)
 
-              // Translate status to Polish
+              // Status labels
               const statusLabels: Record<string, string> = {
-                'new': 'Nowe',
-                'reviewing': 'W trakcie',
-                'quoted': 'Wycenione',
-                'accepted': 'Zaakceptowane',
-                'rejected': 'Odrzucone',
-                'archived': 'Archiwum'
+                'new': 'New',
+                'reviewing': 'Reviewing',
+                'quoted': 'Quoted',
+                'accepted': 'Accepted',
+                'rejected': 'Rejected',
+                'archived': 'Archived'
               }
               const statusLabel = statusLabels[request.status] || request.status
 
@@ -140,14 +140,14 @@ export default async function RequestsPage({
                       </div>
                       <p className="text-slate-400 text-sm truncate">{workType}</p>
                       <p className="text-slate-500 text-xs mt-1">
-                        {new Date(request.created_at).toLocaleDateString('pl-PL')}
+                        {new Date(request.created_at).toLocaleDateString('en-US')}
                         {request.client_phone && ` • ${request.client_phone}`}
                       </p>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
                       {request.status === 'new' && (
                         <span className="btn-primary text-sm py-1.5 px-3">
-                          Wyceń
+                          Quote
                         </span>
                       )}
                       <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -165,12 +165,12 @@ export default async function RequestsPage({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
             </svg>
             <h3 className="text-lg font-medium text-white mb-2">
-              {status || search ? 'Brak wyników' : 'Brak zapytań'}
+              {status || search ? 'No results' : 'No requests yet'}
             </h3>
             <p className="text-slate-400 mb-4">
               {status || search
-                ? 'Spróbuj zmienić filtry lub wyszukiwanie.'
-                : 'Wyślij link do zapytań klientom, aby zaczęli przesyłać zapytania.'}
+                ? 'Try adjusting your filters or search.'
+                : 'Share your link with clients to start receiving requests.'}
             </p>
           </div>
         )}
@@ -181,7 +181,7 @@ export default async function RequestsPage({
         <div className="card">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-slate-400 text-sm">Moje usługi</p>
+              <p className="text-slate-400 text-sm">My Services</p>
               <p className="text-3xl font-bold text-white mt-1">{servicesCount || 0}</p>
             </div>
             <div className="w-12 h-12 bg-blue-600/20 rounded-lg flex items-center justify-center">
@@ -191,14 +191,14 @@ export default async function RequestsPage({
             </div>
           </div>
           <Link href="/services" className="text-blue-500 text-sm mt-4 inline-block hover:text-blue-400">
-            Zarządzaj →
+            Manage →
           </Link>
         </div>
 
         <div className="card">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-slate-400 text-sm">Nowe zapytania</p>
+              <p className="text-slate-400 text-sm">New Requests</p>
               <p className="text-3xl font-bold text-white mt-1">{newRequestsCount || 0}</p>
             </div>
             <div className="w-12 h-12 bg-yellow-600/20 rounded-lg flex items-center justify-center">
@@ -212,7 +212,7 @@ export default async function RequestsPage({
         <div className="card">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-slate-400 text-sm">Oczekujące wyceny</p>
+              <p className="text-slate-400 text-sm">Pending Quotes</p>
               <p className="text-3xl font-bold text-white mt-1">{pendingQuotesCount || 0}</p>
             </div>
             <div className="w-12 h-12 bg-purple-600/20 rounded-lg flex items-center justify-center">
@@ -222,14 +222,14 @@ export default async function RequestsPage({
             </div>
           </div>
           <Link href="/quotes" className="text-blue-500 text-sm mt-4 inline-block hover:text-blue-400">
-            Zobacz →
+            View →
           </Link>
         </div>
 
         <div className="card">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-slate-400 text-sm">Zaakceptowane</p>
+              <p className="text-slate-400 text-sm">Accepted</p>
               <p className="text-3xl font-bold text-white mt-1">{acceptedQuotesCount || 0}</p>
             </div>
             <div className="w-12 h-12 bg-green-600/20 rounded-lg flex items-center justify-center">
@@ -250,9 +250,9 @@ export default async function RequestsPage({
             </svg>
           </div>
           <div className="flex-1">
-            <h3 className="text-white font-medium mb-1">Twój link do zapytań</h3>
+            <h3 className="text-white font-medium mb-1">Your Request Link</h3>
             <p className="text-slate-400 text-sm mb-3">
-              Wyślij ten link klientom, aby mogli przesłać zapytania ze zdjęciami.
+              Share this link with clients so they can submit quote requests with photos.
             </p>
             <div className="flex gap-2">
               <input
