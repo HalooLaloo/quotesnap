@@ -140,16 +140,18 @@ export function QuoteForm({ request, services, userId }: QuoteFormProps) {
   // Update AI suggestion quantity
   const updateSuggestionQuantity = (index: number, quantity: number) => {
     const newSuggestions = [...aiSuggestions]
-    newSuggestions[index].quantity = quantity
-    newSuggestions[index].total = quantity * newSuggestions[index].unit_price
+    const q = isNaN(quantity) ? 0 : quantity
+    newSuggestions[index].quantity = q
+    newSuggestions[index].total = q * (newSuggestions[index].unit_price || 0)
     setAiSuggestions(newSuggestions)
   }
 
   // Update AI suggestion price
   const updateSuggestionPrice = (index: number, price: number) => {
     const newSuggestions = [...aiSuggestions]
-    newSuggestions[index].unit_price = price
-    newSuggestions[index].total = newSuggestions[index].quantity * price
+    const p = isNaN(price) ? 0 : price
+    newSuggestions[index].unit_price = p
+    newSuggestions[index].total = (newSuggestions[index].quantity || 0) * p
     setAiSuggestions(newSuggestions)
   }
 
@@ -193,16 +195,18 @@ export function QuoteForm({ request, services, userId }: QuoteFormProps) {
   // Aktualizuj ilość ręcznej pozycji
   const updateManualQuantity = (index: number, quantity: number) => {
     const newItems = [...manualItems]
-    newItems[index].quantity = quantity
-    newItems[index].total = quantity * newItems[index].unit_price
+    const q = isNaN(quantity) ? 0 : quantity
+    newItems[index].quantity = q
+    newItems[index].total = q * (newItems[index].unit_price || 0)
     setManualItems(newItems)
   }
 
   // Aktualizuj cenę ręcznej pozycji
   const updateManualPrice = (index: number, price: number) => {
     const newItems = [...manualItems]
-    newItems[index].unit_price = price
-    newItems[index].total = newItems[index].quantity * price
+    const p = isNaN(price) ? 0 : price
+    newItems[index].unit_price = p
+    newItems[index].total = (newItems[index].quantity || 0) * p
     setManualItems(newItems)
   }
 
@@ -460,8 +464,8 @@ export function QuoteForm({ request, services, userId }: QuoteFormProps) {
                         type="number"
                         min="0.1"
                         step="0.1"
-                        value={suggestion.quantity}
-                        onChange={(e) => updateSuggestionQuantity(index, parseFloat(e.target.value) || 0)}
+                        value={suggestion.quantity || ''}
+                        onChange={(e) => updateSuggestionQuantity(index, parseFloat(e.target.value))}
                         disabled={!suggestion.selected}
                         className="input w-16 text-center text-sm py-1"
                       />
@@ -482,12 +486,12 @@ export function QuoteForm({ request, services, userId }: QuoteFormProps) {
                         type="number"
                         min="0"
                         step="1"
-                        value={suggestion.unit_price}
-                        onChange={(e) => updateSuggestionPrice(index, parseFloat(e.target.value) || 0)}
+                        value={suggestion.unit_price || ''}
+                        onChange={(e) => updateSuggestionPrice(index, parseFloat(e.target.value))}
                         disabled={!suggestion.selected}
                         placeholder="Price"
                         className={`input w-20 text-center text-sm py-1 ${
-                          suggestion.unit_price === 0 && suggestion.selected ? 'border-amber-500 bg-amber-500/10' : ''
+                          !suggestion.unit_price && suggestion.selected ? 'border-amber-500 bg-amber-500/10' : ''
                         }`}
                       />
                       <span className="text-slate-500 text-sm">=</span>
@@ -559,8 +563,8 @@ export function QuoteForm({ request, services, userId }: QuoteFormProps) {
                       type="number"
                       min="0.1"
                       step="0.1"
-                      value={item.quantity}
-                      onChange={(e) => updateManualQuantity(index, parseFloat(e.target.value) || 0)}
+                      value={item.quantity || ''}
+                      onChange={(e) => updateManualQuantity(index, parseFloat(e.target.value))}
                       className="input w-16 text-center text-sm py-1"
                     />
                     <select
@@ -579,10 +583,10 @@ export function QuoteForm({ request, services, userId }: QuoteFormProps) {
                       type="number"
                       min="0"
                       step="1"
-                      value={item.unit_price}
-                      onChange={(e) => updateManualPrice(index, parseFloat(e.target.value) || 0)}
+                      value={item.unit_price || ''}
+                      onChange={(e) => updateManualPrice(index, parseFloat(e.target.value))}
                       className={`input w-20 text-center text-sm py-1 ${
-                        item.unit_price === 0 ? 'border-amber-500 bg-amber-500/10' : ''
+                        !item.unit_price ? 'border-amber-500 bg-amber-500/10' : ''
                       }`}
                     />
                     <span className="text-slate-500 text-sm">=</span>
@@ -591,7 +595,7 @@ export function QuoteForm({ request, services, userId }: QuoteFormProps) {
                     </span>
                   </div>
 
-                  {item.isCustom && item.unit_price === 0 && (
+                  {item.isCustom && !item.unit_price && (
                     <div className="mt-2 text-amber-400 text-xs flex items-center gap-1">
                       <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -713,12 +717,21 @@ export function QuoteForm({ request, services, userId }: QuoteFormProps) {
 
         {/* Notes */}
         <div className="card">
-          <h2 className="text-lg font-semibold text-white mb-4">Uwagi</h2>
+          <h2 className="text-lg font-semibold text-white mb-4">Notes for Client</h2>
+
+          {/* Show client's request/questions */}
+          {request && (
+            <div className="mb-4 p-3 bg-slate-700/50 rounded-lg border border-slate-600">
+              <p className="text-xs text-slate-400 mb-1">Client's request:</p>
+              <p className="text-slate-300 text-sm whitespace-pre-wrap">{request.description}</p>
+            </div>
+          )}
+
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             className="input min-h-[100px] resize-y"
-            placeholder="Dodatkowe uwagi dla klienta..."
+            placeholder="Your response to the client..."
           />
         </div>
       </div>
