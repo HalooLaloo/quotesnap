@@ -174,8 +174,8 @@ export function OnboardingWizard({ onClose, userId }: OnboardingWizardProps) {
           {/* Step 1: Welcome */}
           {currentStep === 'welcome' && (
             <div className="text-center py-8">
-              <div className="w-20 h-20 bg-[#1e3a5f] rounded-2xl flex items-center justify-center mx-auto mb-6">
-                <svg className="w-12 h-12 text-blue-400" viewBox="0 0 24 24" fill="currentColor">
+              <div className="w-20 h-20 bg-[#132039] rounded-2xl flex items-center justify-center mx-auto mb-6">
+                <svg className="w-12 h-12 text-orange-500" viewBox="0 0 24 24" fill="currentColor">
                   <rect x="2" y="6" width="9" height="5" rx="0.5" />
                   <rect x="13" y="6" width="9" height="5" rx="0.5" />
                   <rect x="6" y="13" width="9" height="5" rx="0.5" />
