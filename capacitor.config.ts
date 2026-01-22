@@ -8,7 +8,7 @@ const config: CapacitorConfig = {
     url: 'https://brickquote.app',
     cleartext: false,
     androidScheme: 'https',
-    allowNavigation: ['brickquote.app', '*.supabase.co', '*.supabase.com'],
+    allowNavigation: ['*'],
   },
   android: {
     allowMixedContent: false,
