@@ -113,11 +113,6 @@ export default async function QuoteDetailPage({
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
                           <span className="font-medium text-white">{item.service_name}</span>
-                          {item.isCustom && (
-                            <span className="px-2 py-0.5 text-xs bg-amber-500/20 text-amber-400 rounded">
-                              Custom
-                            </span>
-                          )}
                         </div>
                         {item.reason && (
                           <p className="text-sm text-purple-400 mt-1">{item.reason}</p>

@@ -719,13 +719,21 @@ export function QuoteForm({ request, services, userId }: QuoteFormProps) {
         <div className="card">
           <h2 className="text-lg font-semibold text-white mb-4">Notes for Client</h2>
 
-          {/* Show client's request/questions */}
-          {request && (
-            <div className="mb-4 p-3 bg-slate-700/50 rounded-lg border border-slate-600">
-              <p className="text-xs text-slate-400 mb-1">Client's request:</p>
-              <p className="text-slate-300 text-sm whitespace-pre-wrap">{request.description}</p>
-            </div>
-          )}
+          {/* Show client's additional question if exists */}
+          {request && (() => {
+            const questionMatch = request.description.match(/PYTANIE DO WYKONAWCY:\s*(.+?)(?=\n\n|---ROZMOWA---|$)/s)
+            const clientQuestion = questionMatch?.[1]?.trim()
+
+            if (clientQuestion) {
+              return (
+                <div className="mb-4 p-3 bg-blue-600/10 rounded-lg border border-blue-500/30">
+                  <p className="text-xs text-blue-400 mb-1">Client's question:</p>
+                  <p className="text-slate-300 text-sm whitespace-pre-wrap">{clientQuestion}</p>
+                </div>
+              )
+            }
+            return null
+          })()}
 
           <textarea
             value={notes}
