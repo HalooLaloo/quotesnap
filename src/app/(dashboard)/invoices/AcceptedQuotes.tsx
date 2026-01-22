@@ -14,7 +14,10 @@ interface Quote {
   qs_quote_requests: {
     client_name: string
     client_email?: string
-  } | null
+  } | {
+    client_name: string
+    client_email?: string
+  }[] | null
 }
 
 interface AcceptedQuotesProps {
@@ -30,13 +33,22 @@ export function AcceptedQuotes({ quotes }: AcceptedQuotesProps) {
   const [search, setSearch] = useState('')
   const [isExpanded, setIsExpanded] = useState(true)
 
+  // Helper to get client data from quote (handles both array and object from Supabase)
+  const getClientData = (quote: Quote) => {
+    const req = quote.qs_quote_requests
+    if (!req) return { name: '', email: '' }
+    if (Array.isArray(req)) {
+      return { name: req[0]?.client_name || '', email: req[0]?.client_email || '' }
+    }
+    return { name: req.client_name || '', email: req.client_email || '' }
+  }
+
   const filteredQuotes = quotes.filter(quote => {
     if (!search.trim()) return true
-    const clientName = quote.qs_quote_requests?.client_name || ''
-    const clientEmail = quote.qs_quote_requests?.client_email || ''
+    const { name, email } = getClientData(quote)
     const searchLower = search.toLowerCase()
-    return clientName.toLowerCase().includes(searchLower) ||
-           clientEmail.toLowerCase().includes(searchLower)
+    return name.toLowerCase().includes(searchLower) ||
+           email.toLowerCase().includes(searchLower)
   })
 
   if (quotes.length === 0) {
@@ -103,6 +115,7 @@ export function AcceptedQuotes({ quotes }: AcceptedQuotesProps) {
               {filteredQuotes.map((quote) => {
                 const currencySymbol = getCurrencySymbol(quote.currency || 'PLN')
                 const total = quote.total_gross || quote.total || 0
+                const client = getClientData(quote)
 
                 return (
                   <div
@@ -111,11 +124,11 @@ export function AcceptedQuotes({ quotes }: AcceptedQuotesProps) {
                   >
                     <div className="flex-1 min-w-0">
                       <p className="text-white font-medium">
-                        {quote.qs_quote_requests?.client_name || 'Unknown Client'}
+                        {client.name || 'Unknown Client'}
                       </p>
                       <p className="text-slate-400 text-sm">
-                        {quote.qs_quote_requests?.client_email && (
-                          <span>{quote.qs_quote_requests.client_email} • </span>
+                        {client.email && (
+                          <span>{client.email} • </span>
                         )}
                         <span className="text-green-400 font-medium">
                           {currencySymbol}{total.toFixed(2)}
