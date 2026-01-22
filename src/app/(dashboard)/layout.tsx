@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { Sidebar } from '@/components/Sidebar'
+import { OnboardingWrapper } from '@/components/OnboardingWrapper'
 
 export default async function DashboardLayout({
   children,
@@ -14,6 +15,12 @@ export default async function DashboardLayout({
     redirect('/login')
   }
 
+  // Check if user has any services (for onboarding)
+  const { count: servicesCount } = await supabase
+    .from('qs_services')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', user.id)
+
   return (
     <div className="min-h-screen flex">
       <Sidebar userEmail={user.email || ''} />
@@ -24,6 +31,9 @@ export default async function DashboardLayout({
         <div className="lg:hidden h-16" />
         {children}
       </main>
+
+      {/* Onboarding modal for new users */}
+      <OnboardingWrapper servicesCount={servicesCount || 0} />
     </div>
   )
 }
