@@ -31,6 +31,7 @@ export default function ClientRequestPage() {
     client_name: '',
     client_email: '',
     client_phone: '',
+    client_city: '',
     client_question: '',
   })
   const [submitted, setSubmitted] = useState(false)
@@ -307,6 +308,7 @@ export default function ClientRequestPage() {
         client_name: contactData.client_name,
         client_email: contactData.client_email || null,
         client_phone: contactData.client_phone || null,
+        address: contactData.client_city || null,
         description: fullDescription,
         photos: allPhotos,
         status: 'new',
@@ -466,6 +468,17 @@ export default function ClientRequestPage() {
                     placeholder="+48 123 456 789"
                   />
                 </div>
+              </div>
+
+              <div>
+                <label className="label">Miejscowość</label>
+                <input
+                  type="text"
+                  value={contactData.client_city}
+                  onChange={(e) => setContactData({ ...contactData, client_city: e.target.value })}
+                  className="input"
+                  placeholder="Warszawa"
+                />
               </div>
 
               {/* Pytanie do wykonawcy */}
