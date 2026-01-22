@@ -231,7 +231,8 @@ export default async function PublicQuotePage({
         <div className="text-center mb-6">
           <a
             href={`/api/quote-pdf/${token}`}
-            download
+            target="_blank"
+            rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors text-sm"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

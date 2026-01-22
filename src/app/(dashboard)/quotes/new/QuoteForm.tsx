@@ -330,27 +330,20 @@ export function QuoteForm({ request, services, userId }: QuoteFormProps) {
 
     // Aktualizuj status zapytania i wyślij email jeśli status = sent
     if (request && status === 'sent') {
-      await supabase
+      // Update request status (don't await - fire and forget)
+      supabase
         .from('qs_quote_requests')
         .update({ status: 'quoted' })
         .eq('id', request.id)
+        .then(() => {})
+        .catch((err) => console.error('Update request status error:', err))
 
-      // Wyślij email do klienta
-      try {
-        const emailResponse = await fetch('/api/send-quote', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ quoteId: insertedQuote.id }),
-        })
-
-        if (!emailResponse.ok) {
-          const emailData = await emailResponse.json()
-          console.error('Email send error:', emailData.error)
-          // Nie przerywamy - wycena jest zapisana, tylko mail nie doszedł
-        }
-      } catch (emailError) {
-        console.error('Email send error:', emailError)
-      }
+      // Send email to client (don't await - fire and forget)
+      fetch('/api/send-quote', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ quoteId: insertedQuote.id }),
+      }).catch((err) => console.error('Email send error:', err))
     }
 
     router.push('/quotes')

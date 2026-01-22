@@ -10,37 +10,63 @@ interface QuoteActionsProps {
 export function QuoteActions({ token }: QuoteActionsProps) {
   const [loading, setLoading] = useState<'accept' | 'reject' | null>(null)
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState(false)
   const router = useRouter()
 
   const handleAction = async (action: 'accept' | 'reject') => {
     setLoading(action)
     setError('')
+    setSuccess(false)
 
     try {
+      console.log('Sending action:', action, 'for token:', token)
+
       const response = await fetch('/api/accept-quote', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token, action }),
       })
 
+      console.log('Response status:', response.status)
+
       // Check if response is JSON
       const contentType = response.headers.get('content-type')
       if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text()
+        console.error('Non-JSON response:', text)
         throw new Error('Wystąpił błąd serwera. Spróbuj ponownie.')
       }
 
       const data = await response.json()
+      console.log('Response data:', data)
 
       if (!response.ok) {
         throw new Error(data.error || 'Nie udało się przetworzyć')
       }
 
-      router.refresh()
+      setSuccess(true)
+      // Wait a moment then refresh
+      setTimeout(() => {
+        window.location.reload()
+      }, 500)
     } catch (err) {
+      console.error('Accept quote error:', err)
       setError(err instanceof Error ? err.message : 'Coś poszło nie tak')
-    } finally {
       setLoading(null)
     }
+  }
+
+  if (success) {
+    return (
+      <div className="card bg-green-600/20 border-green-500/30">
+        <div className="flex items-center justify-center gap-3 py-4">
+          <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          </svg>
+          <span className="text-green-400 font-medium">Zapisano! Odświeżanie...</span>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -56,11 +82,14 @@ export function QuoteActions({ token }: QuoteActionsProps) {
       <div className="flex gap-4">
         <button
           onClick={() => handleAction('reject')}
-          disabled={loading !== null}
-          className="btn-secondary flex-1 flex items-center justify-center gap-2"
+          disabled={loading !== null || success}
+          className="btn-secondary flex-1 flex items-center justify-center gap-2 disabled:opacity-50"
         >
           {loading === 'reject' ? (
-            <span className="animate-spin">...</span>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <span>Przetwarzanie...</span>
+            </div>
           ) : (
             <>
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -73,11 +102,14 @@ export function QuoteActions({ token }: QuoteActionsProps) {
 
         <button
           onClick={() => handleAction('accept')}
-          disabled={loading !== null}
-          className="btn-primary flex-1 flex items-center justify-center gap-2"
+          disabled={loading !== null || success}
+          className="btn-primary flex-1 flex items-center justify-center gap-2 disabled:opacity-50"
         >
           {loading === 'accept' ? (
-            <span className="animate-spin">...</span>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <span>Przetwarzanie...</span>
+            </div>
           ) : (
             <>
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
