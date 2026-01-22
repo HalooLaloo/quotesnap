@@ -335,8 +335,10 @@ export function QuoteForm({ request, services, userId }: QuoteFormProps) {
         .from('qs_quote_requests')
         .update({ status: 'quoted' })
         .eq('id', request.id)
-        .then(() => {})
-        .catch((err) => console.error('Update request status error:', err))
+        .then(
+          () => {},
+          (err) => console.error('Update request status error:', err)
+        )
 
       // Send email to client (don't await - fire and forget)
       fetch('/api/send-quote', {
