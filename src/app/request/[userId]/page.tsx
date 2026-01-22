@@ -356,8 +356,14 @@ export default function ClientRequestPage() {
       {/* Header */}
       <header className="bg-slate-800 border-b border-slate-700 px-4 py-4">
         <div className="max-w-2xl mx-auto flex items-center gap-3">
-          <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
-            <span className="text-white font-bold">Q</span>
+          <div className="w-10 h-10 bg-slate-700 rounded-xl flex items-center justify-center">
+            <svg className="w-6 h-6 text-orange-500" viewBox="0 0 24 24" fill="currentColor">
+              <rect x="2" y="6" width="9" height="5" rx="0.5" />
+              <rect x="13" y="6" width="9" height="5" rx="0.5" />
+              <rect x="6" y="13" width="9" height="5" rx="0.5" />
+              <rect x="17" y="13" width="5" height="5" rx="0.5" />
+              <rect x="2" y="13" width="2" height="5" rx="0.5" />
+            </svg>
           </div>
           <div className="flex-1">
             <h1 className="text-white font-semibold">BrickQuote</h1>

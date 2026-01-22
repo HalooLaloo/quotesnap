@@ -134,8 +134,8 @@ function PricingContent() {
         {/* Header */}
         <div className="text-center mb-12">
           <Link href="/" className="inline-flex items-center gap-2 mb-8">
-            <div className="w-10 h-10 bg-orange-600 rounded-xl flex items-center justify-center">
-              <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
+            <div className="w-10 h-10 bg-slate-800 rounded-xl flex items-center justify-center">
+              <svg className="w-6 h-6 text-orange-500" viewBox="0 0 24 24" fill="currentColor">
                 <rect x="2" y="6" width="9" height="5" rx="0.5" />
                 <rect x="13" y="6" width="9" height="5" rx="0.5" />
                 <rect x="6" y="13" width="9" height="5" rx="0.5" />
