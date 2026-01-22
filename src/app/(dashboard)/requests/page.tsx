@@ -67,22 +67,20 @@ export default async function RequestsPage({
   const requestFormUrl = `${protocol}://${host}/request/${user?.id}`
 
   return (
-    <div className="p-8">
-      <div className="mb-8 flex items-start justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-white">Quote Requests</h1>
-          <p className="text-slate-400 mt-1">
-            Manage incoming quote requests from your clients.
-          </p>
-        </div>
+    <div className="p-4 md:p-8">
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-white">Zapytania</h1>
+        <p className="text-slate-400 text-sm mt-1">
+          Zarządzaj zapytaniami od klientów
+        </p>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 mb-6">
         <div className="card">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-slate-400 text-sm">My Services</p>
+              <p className="text-slate-400 text-sm">Moje usługi</p>
               <p className="text-3xl font-bold text-white mt-1">{servicesCount || 0}</p>
             </div>
             <div className="w-12 h-12 bg-blue-600/20 rounded-lg flex items-center justify-center">
@@ -92,14 +90,14 @@ export default async function RequestsPage({
             </div>
           </div>
           <Link href="/services" className="text-blue-500 text-sm mt-4 inline-block hover:text-blue-400">
-            Manage services →
+            Zarządzaj →
           </Link>
         </div>
 
         <div className="card">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-slate-400 text-sm">New Requests</p>
+              <p className="text-slate-400 text-sm">Nowe</p>
               <p className="text-3xl font-bold text-white mt-1">{newRequestsCount || 0}</p>
             </div>
             <div className="w-12 h-12 bg-yellow-600/20 rounded-lg flex items-center justify-center">
@@ -113,7 +111,7 @@ export default async function RequestsPage({
         <div className="card">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-slate-400 text-sm">Pending Quotes</p>
+              <p className="text-slate-400 text-sm">Oczekujące</p>
               <p className="text-3xl font-bold text-white mt-1">{pendingQuotesCount || 0}</p>
             </div>
             <div className="w-12 h-12 bg-purple-600/20 rounded-lg flex items-center justify-center">
@@ -123,14 +121,14 @@ export default async function RequestsPage({
             </div>
           </div>
           <Link href="/quotes" className="text-blue-500 text-sm mt-4 inline-block hover:text-blue-400">
-            View quotes →
+            Zobacz →
           </Link>
         </div>
 
         <div className="card">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-slate-400 text-sm">Accepted</p>
+              <p className="text-slate-400 text-sm">Zaakceptowane</p>
               <p className="text-3xl font-bold text-white mt-1">{acceptedQuotesCount || 0}</p>
             </div>
             <div className="w-12 h-12 bg-green-600/20 rounded-lg flex items-center justify-center">
@@ -143,7 +141,7 @@ export default async function RequestsPage({
       </div>
 
       {/* Share link */}
-      <div className="card mb-8 bg-blue-600/10 border-blue-500/30">
+      <div className="card mb-6 bg-blue-600/10 border-blue-500/30">
         <div className="flex items-start gap-4">
           <div className="w-10 h-10 bg-blue-600/20 rounded-lg flex items-center justify-center shrink-0">
             <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -151,9 +149,9 @@ export default async function RequestsPage({
             </svg>
           </div>
           <div className="flex-1">
-            <h3 className="text-white font-medium mb-1">Share your request link</h3>
+            <h3 className="text-white font-medium mb-1">Twój link do zapytań</h3>
             <p className="text-slate-400 text-sm mb-3">
-              Send this link to clients so they can submit quote requests with photos and descriptions.
+              Wyślij ten link klientom, aby mogli przesłać zapytania ze zdjęciami.
             </p>
             <div className="flex gap-2">
               <input
@@ -170,8 +168,8 @@ export default async function RequestsPage({
 
       {/* Requests list */}
       <div className="card">
-        <h2 className="text-xl font-semibold text-white mb-6">
-          Requests {status ? `(${status})` : ''} ({requests?.length || 0})
+        <h2 className="text-lg font-semibold text-white mb-4">
+          Lista zapytań ({requests?.length || 0})
         </h2>
 
         <RequestFilters />
@@ -182,6 +180,17 @@ export default async function RequestsPage({
               // Extract work type from description (RODZAJ PRAC: xxx)
               const workTypeMatch = request.description.match(/RODZAJ PRAC:\s*([^\n]+)/i)
               const workType = workTypeMatch ? workTypeMatch[1].trim() : request.description.slice(0, 100)
+
+              // Translate status to Polish
+              const statusLabels: Record<string, string> = {
+                'new': 'Nowe',
+                'reviewing': 'W trakcie',
+                'quoted': 'Wycenione',
+                'accepted': 'Zaakceptowane',
+                'rejected': 'Odrzucone',
+                'archived': 'Archiwum'
+              }
+              const statusLabel = statusLabels[request.status] || request.status
 
               return (
                 <Link
@@ -200,7 +209,7 @@ export default async function RequestsPage({
                         request.status === 'archived' ? 'bg-slate-500/20 text-slate-400' :
                         'bg-red-500/20 text-red-400'
                       }`}>
-                        {request.status}
+                        {statusLabel}
                       </span>
                     </div>
                     <p className="text-slate-400 text-sm truncate">{workType}</p>
@@ -215,7 +224,7 @@ export default async function RequestsPage({
                     </span>
                     {request.status === 'new' && (
                       <span className="btn-primary text-sm">
-                        Create Quote
+                        Wyceń
                       </span>
                     )}
                     <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -232,12 +241,12 @@ export default async function RequestsPage({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
             </svg>
             <h3 className="text-lg font-medium text-white mb-2">
-              {status || search ? 'No matching requests' : 'No requests yet'}
+              {status || search ? 'Brak wyników' : 'Brak zapytań'}
             </h3>
             <p className="text-slate-400 mb-4">
               {status || search
-                ? 'Try adjusting your filters or search terms.'
-                : 'Share your request link with clients to start receiving quote requests.'}
+                ? 'Spróbuj zmienić filtry lub wyszukiwanie.'
+                : 'Wyślij link do zapytań klientom, aby zaczęli przesyłać zapytania.'}
             </p>
           </div>
         )}
