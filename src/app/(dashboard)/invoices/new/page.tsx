@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { UNITS, InvoiceItem, QuoteItem } from '@/lib/types'
+import { COUNTRIES, DEFAULT_COUNTRY } from '@/lib/countries'
 
 function InvoiceForm() {
   const router = useRouter()
@@ -16,6 +17,12 @@ function InvoiceForm() {
   const [loading, setLoading] = useState(false)
   const [loadingQuote, setLoadingQuote] = useState(!!quoteId)
   const [error, setError] = useState('')
+
+  // Currency from profile
+  const [currency, setCurrency] = useState('USD')
+  const [currencySymbol, setCurrencySymbol] = useState('$')
+  const [taxLabel, setTaxLabel] = useState('Sales Tax')
+  const [defaultTax, setDefaultTax] = useState(0)
 
   // Invoice data
   const [clientName, setClientName] = useState('')
@@ -30,6 +37,31 @@ function InvoiceForm() {
   const [notes, setNotes] = useState('')
   const [dueDate, setDueDate] = useState('')
   const [paymentTerms, setPaymentTerms] = useState('Bank transfer within 14 days')
+
+  // Load user profile for currency settings
+  useEffect(() => {
+    const loadProfile = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('country, currency')
+          .eq('id', user.id)
+          .single()
+
+        if (profile) {
+          const countryCode = profile.country || DEFAULT_COUNTRY
+          const country = COUNTRIES[countryCode] || COUNTRIES[DEFAULT_COUNTRY]
+          setCurrency(profile.currency || country.currency)
+          setCurrencySymbol(country.currencySymbol)
+          setTaxLabel(country.taxLabel)
+          setDefaultTax(country.defaultTaxPercent)
+          setVatPercent(country.defaultTaxPercent)
+        }
+      }
+    }
+    loadProfile()
+  }, [supabase])
 
   // Load quote data if from_quote param exists
   useEffect(() => {
@@ -189,6 +221,7 @@ function InvoiceForm() {
           client_email: clientEmail || null,
           client_phone: clientPhone || null,
           client_address: clientAddress || null,
+          currency: currency,
         })
         .select()
         .single()
@@ -386,7 +419,7 @@ function InvoiceForm() {
               />
             </div>
             <div>
-              <label className="label">VAT (%)</label>
+              <label className="label">{taxLabel} (%)</label>
               <input
                 type="number"
                 value={vatPercent || ''}
@@ -400,27 +433,27 @@ function InvoiceForm() {
           <div className="bg-slate-700/50 rounded-lg p-4 space-y-2">
             <div className="flex justify-between text-slate-300">
               <span>Subtotal</span>
-              <span>{subtotal.toFixed(2)} PLN</span>
+              <span>{currencySymbol}{subtotal.toFixed(2)}</span>
             </div>
             {discountPercent > 0 && (
               <div className="flex justify-between text-slate-300">
                 <span>Discount ({discountPercent}%)</span>
-                <span className="text-red-400">-{discountAmount.toFixed(2)} PLN</span>
+                <span className="text-red-400">-{currencySymbol}{discountAmount.toFixed(2)}</span>
               </div>
             )}
             <div className="flex justify-between text-slate-300">
               <span>Net</span>
-              <span>{totalNet.toFixed(2)} PLN</span>
+              <span>{currencySymbol}{totalNet.toFixed(2)}</span>
             </div>
             {vatPercent > 0 && (
               <div className="flex justify-between text-slate-300">
-                <span>VAT ({vatPercent}%)</span>
-                <span>{vatAmount.toFixed(2)} PLN</span>
+                <span>{taxLabel} ({vatPercent}%)</span>
+                <span>{currencySymbol}{vatAmount.toFixed(2)}</span>
               </div>
             )}
             <div className="flex justify-between text-xl font-bold text-white pt-2 border-t border-slate-600">
               <span>Total</span>
-              <span>{totalGross.toFixed(2)} PLN</span>
+              <span>{currencySymbol}{totalGross.toFixed(2)}</span>
             </div>
           </div>
         </div>

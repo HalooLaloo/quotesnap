@@ -1,6 +1,13 @@
 import { createClient } from '@supabase/supabase-js'
 import { notFound } from 'next/navigation'
 import { InvoiceItem } from '@/lib/types'
+import { COUNTRIES } from '@/lib/countries'
+
+// Helper to get currency symbol from currency code
+function getCurrencySymbol(currencyCode: string): string {
+  const country = Object.values(COUNTRIES).find(c => c.currency === currencyCode)
+  return country?.currencySymbol || currencyCode
+}
 
 // Disable caching for this page - needs fresh data
 export const dynamic = 'force-dynamic'
@@ -38,6 +45,7 @@ export default async function PublicInvoicePage({
 
   const contractorName = profile?.company_name || profile?.full_name || 'Contractor'
   const items = (invoice.items || []) as InvoiceItem[]
+  const currencySymbol = getCurrencySymbol(invoice.currency || 'PLN')
 
   const statusInfo = {
     draft: { label: 'Draft', color: 'bg-slate-500/20 text-slate-400' },
@@ -101,10 +109,10 @@ export default async function PublicInvoicePage({
                 </div>
                 <div className="text-right ml-4">
                   <div className="text-slate-400 text-sm">
-                    {item.quantity} {item.unit} x {item.unit_price.toFixed(2)} PLN
+                    {item.quantity} {item.unit} x {currencySymbol}{item.unit_price.toFixed(2)}
                   </div>
                   <div className="font-semibold text-white">
-                    {item.total.toFixed(2)} PLN
+                    {currencySymbol}{item.total.toFixed(2)}
                   </div>
                 </div>
               </div>
@@ -115,33 +123,33 @@ export default async function PublicInvoicePage({
           <div className="border-t border-slate-700 pt-4 space-y-2">
             <div className="flex justify-between text-slate-300">
               <span>Subtotal</span>
-              <span>{invoice.subtotal?.toFixed(2)} PLN</span>
+              <span>{currencySymbol}{invoice.subtotal?.toFixed(2)}</span>
             </div>
 
             {invoice.discount_percent > 0 && (
               <div className="flex justify-between text-slate-300">
                 <span>Discount ({invoice.discount_percent}%)</span>
                 <span className="text-red-400">
-                  -{(invoice.subtotal * invoice.discount_percent / 100).toFixed(2)} PLN
+                  -{currencySymbol}{(invoice.subtotal * invoice.discount_percent / 100).toFixed(2)}
                 </span>
               </div>
             )}
 
             <div className="flex justify-between text-slate-300">
               <span>Net</span>
-              <span>{invoice.total_net?.toFixed(2)} PLN</span>
+              <span>{currencySymbol}{invoice.total_net?.toFixed(2)}</span>
             </div>
 
             {invoice.vat_percent > 0 && (
               <div className="flex justify-between text-slate-300">
                 <span>VAT ({invoice.vat_percent}%)</span>
-                <span>{(invoice.total_net * invoice.vat_percent / 100).toFixed(2)} PLN</span>
+                <span>{currencySymbol}{(invoice.total_net * invoice.vat_percent / 100).toFixed(2)}</span>
               </div>
             )}
 
             <div className="flex justify-between text-xl font-bold text-white pt-2 border-t border-slate-700">
               <span>Amount Due</span>
-              <span>{invoice.total_gross?.toFixed(2)} PLN</span>
+              <span>{currencySymbol}{invoice.total_gross?.toFixed(2)}</span>
             </div>
           </div>
         </div>

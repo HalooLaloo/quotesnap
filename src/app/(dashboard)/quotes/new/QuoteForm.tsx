@@ -13,6 +13,10 @@ interface QuoteFormProps {
   } | null
   services: Service[]
   userId: string
+  currency: string
+  currencySymbol: string
+  taxLabel: string
+  defaultTaxPercent: number
 }
 
 interface CustomServiceForm {
@@ -26,7 +30,7 @@ interface AiSuggestion extends QuoteItem {
   selected: boolean
 }
 
-export function QuoteForm({ request, services, userId }: QuoteFormProps) {
+export function QuoteForm({ request, services, userId, currency, currencySymbol, taxLabel, defaultTaxPercent }: QuoteFormProps) {
   const router = useRouter()
   const supabase = createClient()
 
@@ -41,8 +45,8 @@ export function QuoteForm({ request, services, userId }: QuoteFormProps) {
 
   const [notes, setNotes] = useState('')
   const [discountPercent, setDiscountPercent] = useState(0)
-  const [vatPercent, setVatPercent] = useState(23)
-  const [showVat, setShowVat] = useState(true)
+  const [vatPercent, setVatPercent] = useState(defaultTaxPercent)
+  const [showVat, setShowVat] = useState(defaultTaxPercent > 0)
   const [validDays, setValidDays] = useState(30)
   const [availableFrom, setAvailableFrom] = useState('')
   const [loading, setLoading] = useState(false)
@@ -282,14 +286,14 @@ export function QuoteForm({ request, services, userId }: QuoteFormProps) {
   // Zapisz wycenę
   const handleSubmit = async (status: 'draft' | 'sent') => {
     if (items.length === 0) {
-      setError('Dodaj przynajmniej jedną usługę do wyceny')
+      setError('Add at least one service to the quote')
       return
     }
 
     // Sprawdź czy wszystkie custom items mają cenę
     const customWithoutPrice = items.filter(i => i.isCustom && i.unit_price === 0)
     if (customWithoutPrice.length > 0) {
-      setError('Uzupełnij cenę dla wszystkich usług spoza cennika')
+      setError('Enter price for all custom services')
       return
     }
 
@@ -299,7 +303,7 @@ export function QuoteForm({ request, services, userId }: QuoteFormProps) {
     const validUntil = new Date()
     validUntil.setDate(validUntil.getDate() + validDays)
 
-    // Zapisz wycenę i pobierz jej ID
+    // Save quote and get its ID
     const { data: insertedQuote, error: insertError } = await supabase
       .from('qs_quotes')
       .insert({
@@ -318,6 +322,7 @@ export function QuoteForm({ request, services, userId }: QuoteFormProps) {
         available_from: availableFrom || null,
         status: status,
         sent_at: status === 'sent' ? new Date().toISOString() : null,
+        currency: currency,
       })
       .select('id')
       .single()
@@ -366,8 +371,8 @@ export function QuoteForm({ request, services, userId }: QuoteFormProps) {
                 </svg>
               </div>
               <div>
-                <h2 className="text-lg font-semibold text-white">Proponowany zakres prac</h2>
-                <p className="text-slate-400 text-sm">Na podstawie rozmowy z klientem</p>
+                <h2 className="text-lg font-semibold text-white">Suggested Scope of Work</h2>
+                <p className="text-slate-400 text-sm">Based on client conversation</p>
               </div>
               {aiLoaded && !aiLoading && (
                 <button
@@ -377,7 +382,7 @@ export function QuoteForm({ request, services, userId }: QuoteFormProps) {
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                   </svg>
-                  Odśwież
+                  Refresh
                 </button>
               )}
             </div>
@@ -389,15 +394,15 @@ export function QuoteForm({ request, services, userId }: QuoteFormProps) {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                   </svg>
-                  <span>AI analizuje zapytanie klienta...</span>
+                  <span>AI analyzing client request...</span>
                 </div>
               </div>
             ) : aiSuggestions.length === 0 ? (
               <div className="text-center py-8 text-slate-400">
                 {services.length === 0 ? (
-                  <p>Najpierw dodaj usługi do cennika</p>
+                  <p>First add services to your price list</p>
                 ) : (
-                  <p>Brak sugestii AI - dodaj usługi ręcznie poniżej</p>
+                  <p>No AI suggestions - add services manually below</p>
                 )}
               </div>
             ) : (
@@ -491,7 +496,7 @@ export function QuoteForm({ request, services, userId }: QuoteFormProps) {
                       />
                       <span className="text-slate-500 text-sm">=</span>
                       <span className="font-semibold text-white text-sm">
-                        {suggestion.total.toFixed(0)} PLN
+                        {currencySymbol}{suggestion.total.toFixed(0)}
                       </span>
                     </div>
 
@@ -511,7 +516,7 @@ export function QuoteForm({ request, services, userId }: QuoteFormProps) {
             {aiNotes && (
               <div className="mt-4 p-3 bg-slate-800/50 rounded-lg">
                 <p className="text-sm text-slate-300">
-                  <span className="text-purple-400 font-medium">Uwagi AI:</span> {aiNotes}
+                  <span className="text-purple-400 font-medium">AI Notes:</span> {aiNotes}
                 </p>
               </div>
             )}
@@ -521,7 +526,7 @@ export function QuoteForm({ request, services, userId }: QuoteFormProps) {
         {/* Manual items added by worker */}
         {manualItems.length > 0 && (
           <div className="card">
-            <h2 className="text-lg font-semibold text-white mb-4">Dodane przez Ciebie</h2>
+            <h2 className="text-lg font-semibold text-white mb-4">Added by You</h2>
             <div className="space-y-3">
               {manualItems.map((item, index) => (
                 <div
@@ -586,7 +591,7 @@ export function QuoteForm({ request, services, userId }: QuoteFormProps) {
                     />
                     <span className="text-slate-500 text-sm">=</span>
                     <span className="font-semibold text-white text-sm">
-                      {item.total.toFixed(0)} PLN
+                      {currencySymbol}{item.total.toFixed(0)}
                     </span>
                   </div>
 
@@ -606,15 +611,15 @@ export function QuoteForm({ request, services, userId }: QuoteFormProps) {
 
         {/* Add your own services section */}
         <div className="card">
-          <h2 className="text-lg font-semibold text-white mb-4">Dodaj własne usługi</h2>
+          <h2 className="text-lg font-semibold text-white mb-4">Add Your Services</h2>
           <p className="text-slate-400 text-sm mb-4">
-            Dodaj usługi, których AI nie zaproponowało
+            Add services that AI didn't suggest
           </p>
 
           {/* Services from price list */}
           {services.length > 0 && (
             <div className="mb-6">
-              <h3 className="text-sm font-medium text-slate-300 mb-3">Z Twojego cennika:</h3>
+              <h3 className="text-sm font-medium text-slate-300 mb-3">From Your Price List:</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {services.map((service) => {
                   const isInSuggestions = aiSuggestions.some(s => s.service_name === service.name && s.selected)
@@ -633,7 +638,7 @@ export function QuoteForm({ request, services, userId }: QuoteFormProps) {
                     >
                       <div className="font-medium">{service.name}</div>
                       <div className="text-sm text-slate-400">
-                        {service.price.toFixed(2)} PLN / {UNITS[service.unit as keyof typeof UNITS]}
+                        {currencySymbol}{service.price.toFixed(2)} / {UNITS[service.unit as keyof typeof UNITS]}
                       </div>
                     </button>
                   )
@@ -644,20 +649,20 @@ export function QuoteForm({ request, services, userId }: QuoteFormProps) {
 
           {/* Custom service form */}
           <div className="border-t border-slate-700 pt-4">
-            <h3 className="text-sm font-medium text-slate-300 mb-3">Lub dodaj usługę spoza cennika:</h3>
+            <h3 className="text-sm font-medium text-slate-300 mb-3">Or add a custom service:</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="sm:col-span-2">
-                <label className="label">Nazwa usługi</label>
+                <label className="label">Service Name</label>
                 <input
                   type="text"
                   value={customService.name}
                   onChange={(e) => setCustomService({ ...customService, name: e.target.value })}
-                  placeholder="np. Naprawa pęknięć"
+                  placeholder="e.g. Crack repairs"
                   className="input"
                 />
               </div>
               <div>
-                <label className="label">Ilość</label>
+                <label className="label">Quantity</label>
                 <input
                   type="number"
                   min="0.1"
@@ -668,7 +673,7 @@ export function QuoteForm({ request, services, userId }: QuoteFormProps) {
                 />
               </div>
               <div>
-                <label className="label">Jednostka</label>
+                <label className="label">Unit</label>
                 <select
                   value={customService.unit}
                   onChange={(e) => setCustomService({ ...customService, unit: e.target.value })}
@@ -682,7 +687,7 @@ export function QuoteForm({ request, services, userId }: QuoteFormProps) {
                 </select>
               </div>
               <div>
-                <label className="label">Cena za jednostkę (PLN)</label>
+                <label className="label">Unit Price ({currencySymbol})</label>
                 <input
                   type="number"
                   min="0"
@@ -702,7 +707,7 @@ export function QuoteForm({ request, services, userId }: QuoteFormProps) {
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                     </svg>
-                    Dodaj do wyceny
+                    Add to Quote
                   </span>
                 </button>
               </div>
@@ -744,7 +749,7 @@ export function QuoteForm({ request, services, userId }: QuoteFormProps) {
         {/* Request info */}
         {request && (
           <div className="card">
-            <h2 className="text-lg font-semibold text-white mb-4">Zapytanie klienta</h2>
+            <h2 className="text-lg font-semibold text-white mb-4">Client Request</h2>
             <p className="text-white font-medium">{request.client_name}</p>
             <p className="text-slate-400 text-sm mt-2 whitespace-pre-wrap line-clamp-6">{request.description}</p>
           </div>
@@ -752,16 +757,16 @@ export function QuoteForm({ request, services, userId }: QuoteFormProps) {
 
         {/* Totals */}
         <div className="card">
-          <h2 className="text-lg font-semibold text-white mb-4">Podsumowanie</h2>
+          <h2 className="text-lg font-semibold text-white mb-4">Summary</h2>
 
           <div className="space-y-3">
             <div className="flex justify-between text-slate-300">
-              <span>Suma częściowa</span>
-              <span>{subtotal.toFixed(2)} PLN</span>
+              <span>Subtotal</span>
+              <span>{currencySymbol}{subtotal.toFixed(2)}</span>
             </div>
 
             <div className="flex items-center justify-between">
-              <span className="text-slate-300">Rabat</span>
+              <span className="text-slate-300">Discount</span>
               <div className="flex items-center gap-2">
                 <input
                   type="number"
@@ -777,19 +782,19 @@ export function QuoteForm({ request, services, userId }: QuoteFormProps) {
 
             {discountPercent > 0 && (
               <div className="flex justify-between text-red-400">
-                <span>Kwota rabatu</span>
-                <span>-{discount.toFixed(2)} PLN</span>
+                <span>Discount Amount</span>
+                <span>-{currencySymbol}{discount.toFixed(2)}</span>
               </div>
             )}
 
             <div className="border-t border-slate-700 pt-3">
               <div className="flex justify-between text-slate-300">
-                <span>Netto</span>
-                <span>{totalNet.toFixed(2)} PLN</span>
+                <span>Net</span>
+                <span>{currencySymbol}{totalNet.toFixed(2)}</span>
               </div>
             </div>
 
-            {/* VAT */}
+            {/* Tax (VAT/GST/Sales Tax) */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <input
@@ -799,7 +804,7 @@ export function QuoteForm({ request, services, userId }: QuoteFormProps) {
                   onChange={(e) => setShowVat(e.target.checked)}
                   className="w-4 h-4 rounded border-slate-600 bg-slate-700 text-blue-500 focus:ring-blue-500"
                 />
-                <label htmlFor="showVat" className="text-slate-300">VAT</label>
+                <label htmlFor="showVat" className="text-slate-300">{taxLabel}</label>
               </div>
               {showVat && (
                 <div className="flex items-center gap-2">
@@ -818,22 +823,22 @@ export function QuoteForm({ request, services, userId }: QuoteFormProps) {
 
             {showVat && vatPercent > 0 && (
               <div className="flex justify-between text-slate-400">
-                <span>VAT ({vatPercent}%)</span>
-                <span>+{vatAmount.toFixed(2)} PLN</span>
+                <span>{taxLabel} ({vatPercent}%)</span>
+                <span>+{currencySymbol}{vatAmount.toFixed(2)}</span>
               </div>
             )}
 
             <div className="border-t border-slate-700 pt-3">
               <div className="flex justify-between text-xl font-bold text-white">
-                <span>{showVat ? 'Brutto' : 'Razem'}</span>
-                <span>{total.toFixed(2)} PLN</span>
+                <span>{showVat ? 'Gross' : 'Total'}</span>
+                <span>{currencySymbol}{total.toFixed(2)}</span>
               </div>
             </div>
           </div>
 
           {/* Available from */}
           <div className="mt-6">
-            <label className="label">Możliwy termin rozpoczęcia</label>
+            <label className="label">Available Start Date</label>
             <input
               type="date"
               value={availableFrom}
@@ -845,7 +850,7 @@ export function QuoteForm({ request, services, userId }: QuoteFormProps) {
 
           {/* Valid until */}
           <div className="mt-4">
-            <label className="label">Ważność wyceny (dni)</label>
+            <label className="label">Quote Valid For (days)</label>
             <input
               type="number"
               min="1"
@@ -870,14 +875,14 @@ export function QuoteForm({ request, services, userId }: QuoteFormProps) {
               disabled={loading || items.length === 0}
               className="btn-primary w-full"
             >
-              {loading ? 'Zapisywanie...' : 'Wyślij do klienta'}
+              {loading ? 'Saving...' : 'Send to Client'}
             </button>
             <button
               onClick={() => handleSubmit('draft')}
               disabled={loading || items.length === 0}
               className="btn-secondary w-full"
             >
-              Zapisz jako szkic
+              Save as Draft
             </button>
           </div>
         </div>

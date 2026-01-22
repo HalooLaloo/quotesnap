@@ -2,6 +2,13 @@ import { createClient } from '@supabase/supabase-js'
 import { notFound } from 'next/navigation'
 import { QuoteItem } from '@/lib/types'
 import { QuoteActions } from './QuoteActions'
+import { COUNTRIES, DEFAULT_COUNTRY } from '@/lib/countries'
+
+// Helper to get currency symbol from currency code
+function getCurrencySymbol(currencyCode: string): string {
+  const country = Object.values(COUNTRIES).find(c => c.currency === currencyCode)
+  return country?.currencySymbol || currencyCode
+}
 
 // Disable caching for this page - needs fresh data
 export const dynamic = 'force-dynamic'
@@ -47,6 +54,7 @@ export default async function PublicQuotePage({
 
   const contractorName = profile?.company_name || profile?.full_name || 'Contractor'
   const items = (quote.items || []) as QuoteItem[]
+  const currencySymbol = getCurrencySymbol(quote.currency || 'PLN')
 
   const statusInfo = {
     draft: { label: 'Draft', color: 'bg-slate-500/20 text-slate-400' },
@@ -122,10 +130,10 @@ export default async function PublicQuotePage({
                 </div>
                 <div className="text-right ml-4">
                   <div className="text-slate-400 text-sm">
-                    {item.quantity} {item.unit} x {item.unit_price.toFixed(2)} PLN
+                    {item.quantity} {item.unit} x {currencySymbol}{item.unit_price.toFixed(2)}
                   </div>
                   <div className="font-semibold text-white">
-                    {item.total.toFixed(2)} PLN
+                    {currencySymbol}{item.total.toFixed(2)}
                   </div>
                 </div>
               </div>
@@ -136,14 +144,14 @@ export default async function PublicQuotePage({
           <div className="border-t border-slate-700 pt-4 space-y-2">
             <div className="flex justify-between text-slate-300">
               <span>Subtotal</span>
-              <span>{quote.subtotal?.toFixed(2)} PLN</span>
+              <span>{currencySymbol}{quote.subtotal?.toFixed(2)}</span>
             </div>
 
             {quote.discount_percent > 0 && (
               <div className="flex justify-between text-slate-300">
                 <span>Discount ({quote.discount_percent}%)</span>
                 <span className="text-red-400">
-                  -{(quote.subtotal * quote.discount_percent / 100).toFixed(2)} PLN
+                  -{currencySymbol}{(quote.subtotal * quote.discount_percent / 100).toFixed(2)}
                 </span>
               </div>
             )}
@@ -152,18 +160,18 @@ export default async function PublicQuotePage({
               <>
                 <div className="flex justify-between text-slate-300">
                   <span>Net</span>
-                  <span>{quote.total_net?.toFixed(2)} PLN</span>
+                  <span>{currencySymbol}{quote.total_net?.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-slate-300">
                   <span>VAT ({quote.vat_percent}%)</span>
-                  <span>{(quote.total_net * quote.vat_percent / 100).toFixed(2)} PLN</span>
+                  <span>{currencySymbol}{(quote.total_net * quote.vat_percent / 100).toFixed(2)}</span>
                 </div>
               </>
             )}
 
             <div className="flex justify-between text-xl font-bold text-white pt-2 border-t border-slate-700">
               <span>Total</span>
-              <span>{(quote.total_gross || quote.total)?.toFixed(2)} PLN</span>
+              <span>{currencySymbol}{(quote.total_gross || quote.total)?.toFixed(2)}</span>
             </div>
           </div>
         </div>

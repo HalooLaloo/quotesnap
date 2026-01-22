@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import { QuoteForm } from './QuoteForm'
+import { COUNTRIES, DEFAULT_COUNTRY } from '@/lib/countries'
 
 export default async function NewQuotePage({
   searchParams,
@@ -10,6 +11,16 @@ export default async function NewQuotePage({
   const { request: requestId } = await searchParams
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
+
+  // Get user profile for currency
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('country, currency')
+    .eq('id', user?.id)
+    .single()
+
+  const countryCode = profile?.country || DEFAULT_COUNTRY
+  const country = COUNTRIES[countryCode] || COUNTRIES[DEFAULT_COUNTRY]
 
   // Pobierz zapytanie
   let request = null
@@ -49,6 +60,10 @@ export default async function NewQuotePage({
         request={request}
         services={services || []}
         userId={user?.id || ''}
+        currency={country.currency}
+        currencySymbol={country.currencySymbol}
+        taxLabel={country.taxLabel}
+        defaultTaxPercent={country.defaultTaxPercent}
       />
     </div>
   )

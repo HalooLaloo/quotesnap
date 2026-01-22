@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { UNITS } from '@/lib/types'
+import { COUNTRIES, COUNTRY_LIST, CountryConfig } from '@/lib/countries'
 
 interface SuggestedService {
   name: string
@@ -12,9 +13,18 @@ interface SuggestedService {
   selected: boolean
 }
 
-type Step = 'welcome' | 'describe' | 'services' | 'share' | 'done'
+type Step = 'welcome' | 'country' | 'describe' | 'services' | 'share' | 'done'
 
-const STEPS: Step[] = ['welcome', 'describe', 'services', 'share']
+const STEPS: Step[] = ['welcome', 'country', 'describe', 'services', 'share']
+
+const COUNTRY_FLAGS: Record<string, string> = {
+  US: '🇺🇸',
+  GB: '🇬🇧',
+  AU: '🇦🇺',
+  CA: '🇨🇦',
+  IE: '🇮🇪',
+  NZ: '🇳🇿',
+}
 
 interface OnboardingWizardProps {
   onClose: () => void
@@ -23,6 +33,7 @@ interface OnboardingWizardProps {
 
 export function OnboardingWizard({ onClose, userId }: OnboardingWizardProps) {
   const [currentStep, setCurrentStep] = useState<Step>('welcome')
+  const [selectedCountry, setSelectedCountry] = useState<string>('')
   const [description, setDescription] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -38,6 +49,35 @@ export function OnboardingWizard({ onClose, userId }: OnboardingWizardProps) {
 
   const currentStepIndex = STEPS.indexOf(currentStep)
   const progress = ((currentStepIndex + 1) / STEPS.length) * 100
+
+  const handleSaveCountry = async () => {
+    if (!selectedCountry) {
+      setError('Please select your country')
+      return
+    }
+
+    setLoading(true)
+    setError('')
+
+    try {
+      const country = COUNTRIES[selectedCountry]
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({
+          country: selectedCountry,
+          currency: country.currency,
+        })
+        .eq('id', userId)
+
+      if (updateError) throw updateError
+
+      setCurrentStep('describe')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const handleAnalyze = async () => {
     if (description.trim().length < 10) {
@@ -184,57 +224,102 @@ export function OnboardingWizard({ onClose, userId }: OnboardingWizardProps) {
                 </svg>
               </div>
               <h1 className="text-2xl font-bold text-white mb-3">
-                Witaj w BrickQuote!
+                Welcome to BrickQuote!
               </h1>
               <p className="text-slate-400 mb-8 max-w-sm mx-auto">
-                Za chwilę AI stworzy Twój cennik usług i będziesz gotowy do wysyłania profesjonalnych wycen.
+                AI will create your service price list and you'll be ready to send professional quotes.
               </p>
               <div className="flex items-center justify-center gap-2 text-slate-500 text-sm">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                Zajmie to około 2 minuty
+                Takes about 2 minutes
               </div>
             </div>
           )}
 
-          {/* Step 2: Describe */}
+          {/* Step 2: Country Selection */}
+          {currentStep === 'country' && (
+            <div>
+              <h2 className="text-xl font-bold text-white mb-2">
+                Where are you located?
+              </h2>
+              <p className="text-slate-400 text-sm mb-6">
+                This determines your currency and tax settings.
+              </p>
+
+              <div className="grid grid-cols-2 gap-3">
+                {COUNTRY_LIST.map((country) => (
+                  <button
+                    key={country.code}
+                    onClick={() => setSelectedCountry(country.code)}
+                    className={`p-4 rounded-xl border-2 transition-all text-left ${
+                      selectedCountry === country.code
+                        ? 'border-blue-500 bg-blue-600/10'
+                        : 'border-[#1e3a5f] bg-[#1e3a5f]/30 hover:border-slate-500'
+                    }`}
+                  >
+                    <span className="text-2xl mb-2 block">{COUNTRY_FLAGS[country.code]}</span>
+                    <span className={`font-medium ${selectedCountry === country.code ? 'text-white' : 'text-slate-300'}`}>
+                      {country.name}
+                    </span>
+                    <span className="text-slate-500 text-sm block mt-1">
+                      {COUNTRIES[country.code].currencySymbol} {COUNTRIES[country.code].currency}
+                    </span>
+                  </button>
+                ))}
+              </div>
+
+              {selectedCountry && (
+                <div className="mt-6 bg-[#1e3a5f]/30 rounded-lg p-4">
+                  <p className="text-slate-400 text-sm">
+                    <span className="text-white font-medium">{COUNTRIES[selectedCountry].taxLabel}</span> will be used for your quotes and invoices
+                    {COUNTRIES[selectedCountry].taxIdRequired && (
+                      <span> ({COUNTRIES[selectedCountry].taxIdLabel} required)</span>
+                    )}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Step 3: Describe */}
           {currentStep === 'describe' && (
             <div>
               <h2 className="text-xl font-bold text-white mb-2">
-                Czym się zajmujesz?
+                What do you do?
               </h2>
               <p className="text-slate-400 text-sm mb-6">
-                Opisz swoją działalność, a AI stworzy dla Ciebie cennik usług.
+                Describe your work and AI will create a price list for you.
               </p>
 
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Np. Jestem glazurnikiem z 10-letnim doświadczeniem. Kładę płytki w łazienkach i kuchniach, robię hydroizolacje, fuguję..."
+                placeholder="E.g., I'm a tile installer with 10 years of experience. I do bathroom and kitchen tiling, waterproofing, grouting..."
                 className="input min-h-[140px] resize-none mb-4"
                 autoFocus
               />
 
               <div className="bg-[#1e3a5f]/50 rounded-lg p-4">
                 <p className="text-slate-300 text-sm font-medium mb-2 flex items-center gap-2">
-                  <span className="text-lg">💡</span> Podpowiedź
+                  <span className="text-lg">💡</span> Tip
                 </p>
                 <p className="text-slate-400 text-sm">
-                  Im więcej napiszesz, tym lepiej AI dopasuje usługi. Wspomnij o: specjalizacjach, rodzajach prac, doświadczeniu.
+                  The more detail you provide, the better AI will match services. Mention: specializations, types of work, experience.
                 </p>
               </div>
             </div>
           )}
 
-          {/* Step 3: Services */}
+          {/* Step 4: Services */}
           {currentStep === 'services' && (
             <div>
               <h2 className="text-xl font-bold text-white mb-2">
-                Twój cennik
+                Your Price List
               </h2>
               <p className="text-slate-400 text-sm mb-6">
-                AI zaproponowało te usługi. Dostosuj ceny do swoich stawek.
+                AI suggested these services. Adjust prices to your rates.
               </p>
 
               <div className="space-y-2 mb-6 max-h-[300px] overflow-y-auto">
@@ -277,7 +362,9 @@ export function OnboardingWizard({ onClose, userId }: OnboardingWizardProps) {
                             className="w-20 bg-[#1e3a5f] border border-slate-600 rounded px-2 py-1 text-white text-sm text-right focus:border-blue-500 focus:outline-none"
                             placeholder="0"
                           />
-                          <span className="text-slate-500 text-xs">zł</span>
+                          <span className="text-slate-500 text-xs">
+                            {selectedCountry ? COUNTRIES[selectedCountry].currencySymbol : '$'}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -287,13 +374,13 @@ export function OnboardingWizard({ onClose, userId }: OnboardingWizardProps) {
 
               {/* Add custom service */}
               <div className="border-t border-[#1e3a5f] pt-4">
-                <p className="text-slate-400 text-xs mb-3">Brakuje usługi? Dodaj własną:</p>
+                <p className="text-slate-400 text-xs mb-3">Missing a service? Add your own:</p>
                 <div className="flex gap-2 flex-wrap">
                   <input
                     type="text"
                     value={customService.name}
                     onChange={(e) => setCustomService(prev => ({ ...prev, name: e.target.value }))}
-                    placeholder="Nazwa usługi"
+                    placeholder="Service name"
                     className="input flex-1 min-w-[120px] text-sm py-2"
                   />
                   <select
@@ -309,7 +396,7 @@ export function OnboardingWizard({ onClose, userId }: OnboardingWizardProps) {
                     type="number"
                     value={customService.price}
                     onChange={(e) => setCustomService(prev => ({ ...prev, price: e.target.value }))}
-                    placeholder="Cena"
+                    placeholder="Price"
                     className="input w-16 text-sm py-2"
                   />
                   <button
@@ -324,7 +411,7 @@ export function OnboardingWizard({ onClose, userId }: OnboardingWizardProps) {
             </div>
           )}
 
-          {/* Step 4: Share Link */}
+          {/* Step 5: Share Link */}
           {currentStep === 'share' && (
             <div className="py-4">
               <div className="text-center mb-6">
@@ -334,29 +421,29 @@ export function OnboardingWizard({ onClose, userId }: OnboardingWizardProps) {
                   </svg>
                 </div>
                 <h2 className="text-xl font-bold text-white mb-2">
-                  Cennik zapisany!
+                  Price list saved!
                 </h2>
               </div>
 
               {/* How it works */}
               <div className="bg-[#1e3a5f]/30 rounded-xl p-4 mb-6">
-                <p className="text-slate-300 text-sm font-medium mb-3">Jak to działa?</p>
+                <p className="text-slate-300 text-sm font-medium mb-3">How it works</p>
                 <div className="space-y-2 text-sm">
                   <div className="flex items-start gap-3">
                     <span className="w-5 h-5 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center text-xs shrink-0">1</span>
-                    <p className="text-slate-400">Wysyłasz link klientowi</p>
+                    <p className="text-slate-400">Send this link to your client</p>
                   </div>
                   <div className="flex items-start gap-3">
                     <span className="w-5 h-5 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center text-xs shrink-0">2</span>
-                    <p className="text-slate-400">Klient opisuje czego potrzebuje (zdjęcia, opis, wymiary)</p>
+                    <p className="text-slate-400">Client describes what they need (photos, description, measurements)</p>
                   </div>
                   <div className="flex items-start gap-3">
                     <span className="w-5 h-5 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center text-xs shrink-0">3</span>
-                    <p className="text-slate-400">Zapytanie trafia do Ciebie w panelu</p>
+                    <p className="text-slate-400">Request appears in your dashboard</p>
                   </div>
                   <div className="flex items-start gap-3">
                     <span className="w-5 h-5 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center text-xs shrink-0">4</span>
-                    <p className="text-slate-400">Tworzysz wycenę i wysyłasz do klienta</p>
+                    <p className="text-slate-400">Create a quote and send it to the client</p>
                   </div>
                 </div>
               </div>
@@ -378,13 +465,13 @@ export function OnboardingWizard({ onClose, userId }: OnboardingWizardProps) {
                         : 'bg-blue-500 hover:bg-blue-400 text-white'
                     }`}
                   >
-                    {copied ? 'Skopiowano!' : 'Kopiuj'}
+                    {copied ? 'Copied!' : 'Copy'}
                   </button>
                 </div>
 
                 <div className="flex gap-2">
                   <a
-                    href={`https://wa.me/?text=${encodeURIComponent('Wyślij zapytanie o wycenę: ' + shareUrl)}`}
+                    href={`https://wa.me/?text=${encodeURIComponent('Request a quote: ' + shareUrl)}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-green-600 hover:bg-green-500 text-white rounded-lg transition-colors text-sm font-medium"
@@ -395,7 +482,7 @@ export function OnboardingWizard({ onClose, userId }: OnboardingWizardProps) {
                     WhatsApp
                   </a>
                   <a
-                    href={`sms:?body=${encodeURIComponent('Wyślij zapytanie o wycenę: ' + shareUrl)}`}
+                    href={`sms:?body=${encodeURIComponent('Request a quote: ' + shareUrl)}`}
                     className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-[#1e3a5f] hover:bg-slate-600 text-white rounded-lg transition-colors text-sm font-medium"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -407,7 +494,7 @@ export function OnboardingWizard({ onClose, userId }: OnboardingWizardProps) {
               </div>
 
               <p className="text-slate-500 text-xs text-center">
-                Link znajdziesz też w panelu, w zakładce "Zapytania"
+                You can also find this link in your dashboard under "Requests"
               </p>
             </div>
           )}
@@ -421,13 +508,38 @@ export function OnboardingWizard({ onClose, userId }: OnboardingWizardProps) {
                 onClick={onClose}
                 className="text-slate-500 hover:text-slate-300 transition-colors text-sm"
               >
-                Pomiń na razie
+                Skip for now
               </button>
               <button
-                onClick={() => setCurrentStep('describe')}
+                onClick={() => setCurrentStep('country')}
                 className="btn-primary px-8"
               >
-                Zaczynamy →
+                Let's go →
+              </button>
+            </div>
+          )}
+
+          {currentStep === 'country' && (
+            <div className="flex justify-between items-center">
+              <button
+                onClick={() => setCurrentStep('welcome')}
+                className="text-slate-500 hover:text-slate-300 transition-colors text-sm"
+              >
+                ← Back
+              </button>
+              <button
+                onClick={handleSaveCountry}
+                disabled={loading || !selectedCountry}
+                className="btn-primary px-6"
+              >
+                {loading ? (
+                  <span className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Saving...
+                  </span>
+                ) : (
+                  'Continue →'
+                )}
               </button>
             </div>
           )}
@@ -435,10 +547,10 @@ export function OnboardingWizard({ onClose, userId }: OnboardingWizardProps) {
           {currentStep === 'describe' && (
             <div className="flex justify-between items-center">
               <button
-                onClick={() => setCurrentStep('welcome')}
+                onClick={() => setCurrentStep('country')}
                 className="text-slate-500 hover:text-slate-300 transition-colors text-sm"
               >
-                ← Wstecz
+                ← Back
               </button>
               <button
                 onClick={handleAnalyze}
@@ -448,10 +560,10 @@ export function OnboardingWizard({ onClose, userId }: OnboardingWizardProps) {
                 {loading ? (
                   <span className="flex items-center gap-2">
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    AI analizuje...
+                    AI analyzing...
                   </span>
                 ) : (
-                  'Generuj cennik →'
+                  'Generate price list →'
                 )}
               </button>
             </div>
@@ -463,7 +575,7 @@ export function OnboardingWizard({ onClose, userId }: OnboardingWizardProps) {
                 onClick={() => setCurrentStep('describe')}
                 className="text-slate-500 hover:text-slate-300 transition-colors text-sm"
               >
-                ← Wstecz
+                ← Back
               </button>
               <button
                 onClick={handleSaveServices}
@@ -473,10 +585,10 @@ export function OnboardingWizard({ onClose, userId }: OnboardingWizardProps) {
                 {loading ? (
                   <span className="flex items-center gap-2">
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Zapisuję...
+                    Saving...
                   </span>
                 ) : (
-                  `Zapisz ${services.filter(s => s.selected).length} usług →`
+                  `Save ${services.filter(s => s.selected).length} services →`
                 )}
               </button>
             </div>
@@ -488,7 +600,7 @@ export function OnboardingWizard({ onClose, userId }: OnboardingWizardProps) {
                 onClick={handleFinish}
                 className="btn-primary px-8"
               >
-                Przejdź do panelu →
+                Go to dashboard →
               </button>
             </div>
           )}
