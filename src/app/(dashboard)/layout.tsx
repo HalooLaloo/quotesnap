@@ -21,6 +21,15 @@ export default async function DashboardLayout({
     .select('*', { count: 'exact', head: true })
     .eq('user_id', user.id)
 
+  // Check if user has country set (completed onboarding)
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('country')
+    .eq('id', user.id)
+    .single()
+
+  const hasCountry = !!profile?.country
+
   return (
     <div className="min-h-screen flex">
       <Sidebar userEmail={user.email || ''} />
@@ -33,7 +42,7 @@ export default async function DashboardLayout({
       </main>
 
       {/* Onboarding modal for new users */}
-      <OnboardingWrapper servicesCount={servicesCount || 0} userId={user.id} />
+      <OnboardingWrapper servicesCount={servicesCount || 0} userId={user.id} hasCountry={hasCountry} />
     </div>
   )
 }
