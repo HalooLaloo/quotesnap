@@ -716,7 +716,7 @@ export function QuoteForm({ request, services, userId }: QuoteFormProps) {
 
           {/* Show client's additional question if exists */}
           {request && (() => {
-            const questionMatch = request.description.match(/PYTANIE DO WYKONAWCY:\s*(.+?)(?=\n\n|---ROZMOWA---|$)/s)
+            const questionMatch = request.description.match(/PYTANIE DO WYKONAWCY:\s*([\s\S]+?)(?=\n\n|---ROZMOWA---|$)/)
             const clientQuestion = questionMatch?.[1]?.trim()
 
             if (clientQuestion) {
