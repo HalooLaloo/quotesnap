@@ -32,7 +32,7 @@ PRACE PRZYGOTOWAWCZE:
 - Czy jest coś do wyniesienia/zabezpieczenia? (meble, sprzęty AGD?)
 
 MATERIAŁY I WYKOŃCZENIE:
-- Materiały dostarcza klient czy wykonawca ma wycenić?
+- Kto dostarczy materiały? Daj klientowi 3 opcje: (1) sam dostarczę materiały, (2) wykonawca wyceni i kupi, (3) chcę to ustalić bezpośrednio z wykonawcą
 - Czy są konkretne preferencje? (kolor farby, rodzaj płytek, typ paneli?)
 
 LOGISTYKA:
@@ -101,7 +101,7 @@ STAN OBECNY:
 PRACE PRZYGOTOWAWCZE:
 - [co trzeba zdemontować/przygotować]
 
-MATERIAŁY: [klient dostarcza / wykonawca wycenia / częściowo]
+MATERIAŁY: [klient dostarcza / wykonawca wycenia / do ustalenia z wykonawcą]
 
 LOKALIZACJA: [adres/piętro/dostęp]
 
