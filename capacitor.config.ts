@@ -12,8 +12,8 @@ const config: CapacitorConfig = {
   },
   android: {
     allowMixedContent: false,
-    captureInput: true,
-    webContentsDebuggingEnabled: true, // Do debugowania
+    captureInput: false,
+    webContentsDebuggingEnabled: true,
     appendUserAgent: 'BrickQuoteApp',
   },
   plugins: {

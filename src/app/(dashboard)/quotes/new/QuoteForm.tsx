@@ -406,7 +406,7 @@ export function QuoteForm({ request, services, userId }: QuoteFormProps) {
                 {aiSuggestions.map((suggestion, index) => (
                   <div
                     key={index}
-                    className={`p-4 rounded-lg border transition-all ${
+                    className={`p-3 rounded-lg border transition-all ${
                       suggestion.selected
                         ? suggestion.isCustom
                           ? 'bg-amber-600/10 border-amber-500/40'
@@ -414,11 +414,11 @@ export function QuoteForm({ request, services, userId }: QuoteFormProps) {
                         : 'bg-slate-800/30 border-slate-700/50 opacity-60'
                     }`}
                   >
-                    <div className="flex items-start gap-3">
-                      {/* Checkbox */}
+                    {/* Header row: checkbox, name, delete */}
+                    <div className="flex items-start gap-2 mb-2">
                       <button
                         onClick={() => toggleSuggestion(index)}
-                        className={`mt-1 w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${
+                        className={`mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${
                           suggestion.selected
                             ? 'bg-purple-600 border-purple-600'
                             : 'border-slate-500 hover:border-slate-400'
@@ -431,93 +431,77 @@ export function QuoteForm({ request, services, userId }: QuoteFormProps) {
                         )}
                       </button>
 
-                      {/* Service info */}
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <input
-                            type="text"
-                            value={suggestion.service_name}
-                            onChange={(e) => updateSuggestionName(index, e.target.value)}
-                            disabled={!suggestion.selected}
-                            className="input font-medium text-white bg-transparent border-transparent hover:border-slate-600 focus:border-blue-500 px-2 py-1 -ml-2"
-                          />
-                          {suggestion.isCustom && (
-                            <span className="px-2 py-0.5 text-xs bg-amber-500/20 text-amber-400 rounded">
-                              Spoza cennika
-                            </span>
-                          )}
-                        </div>
+                        <input
+                          type="text"
+                          value={suggestion.service_name}
+                          onChange={(e) => updateSuggestionName(index, e.target.value)}
+                          disabled={!suggestion.selected}
+                          className="w-full font-medium text-white text-sm bg-transparent border-none p-0 focus:ring-0"
+                        />
                         {suggestion.reason && (
-                          <p className="text-sm text-purple-400 mt-1">{suggestion.reason}</p>
+                          <p className="text-xs text-purple-400 mt-0.5 line-clamp-2">{suggestion.reason}</p>
                         )}
                       </div>
 
-                      {/* Quantity & Price */}
-                      <div className="flex items-center gap-2 shrink-0">
-                        <input
-                          type="number"
-                          min="0.1"
-                          step="0.1"
-                          value={suggestion.quantity}
-                          onChange={(e) => updateSuggestionQuantity(index, parseFloat(e.target.value) || 0)}
-                          disabled={!suggestion.selected}
-                          className="input w-20 text-center text-sm"
-                        />
-                        <select
-                          value={suggestion.unit}
-                          onChange={(e) => updateSuggestionUnit(index, e.target.value)}
-                          disabled={!suggestion.selected}
-                          className="input w-20 text-sm text-slate-400"
-                        >
-                          <option value="m²">m²</option>
-                          <option value="mb">mb</option>
-                          <option value="szt.">szt.</option>
-                          <option value="godz.">godz.</option>
-                          <option value="ryczałt">ryczałt</option>
-                        </select>
-                      </div>
-
-                      <div className="flex items-center gap-1 shrink-0">
-                        <span className="text-slate-500 text-sm">×</span>
-                        <input
-                          type="number"
-                          min="0"
-                          step="1"
-                          value={suggestion.unit_price}
-                          onChange={(e) => updateSuggestionPrice(index, parseFloat(e.target.value) || 0)}
-                          disabled={!suggestion.selected}
-                          placeholder="Cena"
-                          className={`input w-24 text-center text-sm ${
-                            suggestion.unit_price === 0 && suggestion.selected ? 'border-amber-500 bg-amber-500/10' : ''
-                          }`}
-                        />
-                        <span className="text-slate-500 text-xs">PLN</span>
-                      </div>
-
-                      <div className="text-right w-28 shrink-0">
-                        <div className="font-semibold text-white">
-                          {suggestion.total.toFixed(2)} PLN
-                        </div>
-                      </div>
-
-                      {/* Przycisk usuwania */}
                       <button
                         onClick={() => removeSuggestion(index)}
-                        className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors shrink-0"
-                        title="Usuń pozycję"
+                        className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors shrink-0"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         </svg>
                       </button>
                     </div>
 
+                    {/* Values row: qty, unit, price, total */}
+                    <div className="flex items-center gap-2 ml-7 flex-wrap">
+                      <input
+                        type="number"
+                        min="0.1"
+                        step="0.1"
+                        value={suggestion.quantity}
+                        onChange={(e) => updateSuggestionQuantity(index, parseFloat(e.target.value) || 0)}
+                        disabled={!suggestion.selected}
+                        className="input w-16 text-center text-sm py-1"
+                      />
+                      <select
+                        value={suggestion.unit}
+                        onChange={(e) => updateSuggestionUnit(index, e.target.value)}
+                        disabled={!suggestion.selected}
+                        className="input w-16 text-sm text-slate-400 py-1"
+                      >
+                        <option value="m²">m²</option>
+                        <option value="mb">mb</option>
+                        <option value="szt.">szt.</option>
+                        <option value="godz.">godz.</option>
+                        <option value="ryczałt">ryczałt</option>
+                      </select>
+                      <span className="text-slate-500 text-sm">×</span>
+                      <input
+                        type="number"
+                        min="0"
+                        step="1"
+                        value={suggestion.unit_price}
+                        onChange={(e) => updateSuggestionPrice(index, parseFloat(e.target.value) || 0)}
+                        disabled={!suggestion.selected}
+                        placeholder="Price"
+                        className={`input w-20 text-center text-sm py-1 ${
+                          suggestion.unit_price === 0 && suggestion.selected ? 'border-amber-500 bg-amber-500/10' : ''
+                        }`}
+                      />
+                      <span className="text-slate-500 text-sm">=</span>
+                      <span className="font-semibold text-white text-sm">
+                        {suggestion.total.toFixed(0)} PLN
+                      </span>
+                    </div>
+
                     {suggestion.isCustom && suggestion.unit_price === 0 && suggestion.selected && (
-                      <div className="mt-2 ml-8 text-amber-400 text-xs flex items-center gap-1">
+                      <div className="mt-2 ml-7 text-amber-400 text-xs flex items-center gap-1">
                         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                         </svg>
-                        Wpisz cenę za jednostkę
+                        Enter unit price
                       </div>
                     )}
                   </div>
@@ -543,77 +527,78 @@ export function QuoteForm({ request, services, userId }: QuoteFormProps) {
               {manualItems.map((item, index) => (
                 <div
                   key={index}
-                  className={`p-4 rounded-lg ${
+                  className={`p-3 rounded-lg border ${
                     item.isCustom
-                      ? 'bg-amber-600/10 border border-amber-500/30'
-                      : 'bg-slate-700/50'
+                      ? 'bg-amber-600/10 border-amber-500/30'
+                      : 'bg-slate-700/50 border-slate-600'
                   }`}
                 >
-                  <div className="flex items-center gap-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="text"
-                          value={item.service_name}
-                          onChange={(e) => updateManualName(index, e.target.value)}
-                          className="input font-medium text-white bg-transparent border-transparent hover:border-slate-600 focus:border-blue-500 px-2 py-1 -ml-2"
-                        />
-                        {item.isCustom && (
-                          <span className="px-2 py-0.5 text-xs bg-amber-500/20 text-amber-400 rounded">
-                            Custom
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
+                  {/* Header row: name, delete */}
+                  <div className="flex items-start gap-2 mb-2">
+                    <div className="flex-1 min-w-0">
                       <input
-                        type="number"
-                        min="0.1"
-                        step="0.1"
-                        value={item.quantity}
-                        onChange={(e) => updateManualQuantity(index, parseFloat(e.target.value) || 0)}
-                        className="input w-20 text-center text-sm"
+                        type="text"
+                        value={item.service_name}
+                        onChange={(e) => updateManualName(index, e.target.value)}
+                        className="w-full font-medium text-white text-sm bg-transparent border-none p-0 focus:ring-0"
                       />
-                      <select
-                        value={item.unit}
-                        onChange={(e) => updateManualUnit(index, e.target.value)}
-                        className="input w-20 text-sm text-slate-400"
-                      >
-                        <option value="m²">m²</option>
-                        <option value="mb">mb</option>
-                        <option value="szt.">szt.</option>
-                        <option value="godz.">godz.</option>
-                        <option value="ryczałt">ryczałt</option>
-                      </select>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <span className="text-slate-400 text-sm">×</span>
-                      <input
-                        type="number"
-                        min="0"
-                        step="1"
-                        value={item.unit_price}
-                        onChange={(e) => updateManualPrice(index, parseFloat(e.target.value) || 0)}
-                        className={`input w-24 text-center text-sm ${
-                          item.unit_price === 0 ? 'border-amber-500 bg-amber-500/10' : ''
-                        }`}
-                      />
-                      <span className="text-slate-500 text-xs">PLN</span>
-                    </div>
-                    <div className="text-right w-24">
-                      <div className="font-semibold text-white">
-                        {item.total.toFixed(2)} PLN
-                      </div>
                     </div>
                     <button
                       onClick={() => removeManualItem(index)}
-                      className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                      className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors shrink-0"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                       </svg>
                     </button>
                   </div>
+
+                  {/* Values row: qty, unit, price, total */}
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <input
+                      type="number"
+                      min="0.1"
+                      step="0.1"
+                      value={item.quantity}
+                      onChange={(e) => updateManualQuantity(index, parseFloat(e.target.value) || 0)}
+                      className="input w-16 text-center text-sm py-1"
+                    />
+                    <select
+                      value={item.unit}
+                      onChange={(e) => updateManualUnit(index, e.target.value)}
+                      className="input w-16 text-sm text-slate-400 py-1"
+                    >
+                      <option value="m²">m²</option>
+                      <option value="mb">mb</option>
+                      <option value="szt.">szt.</option>
+                      <option value="godz.">godz.</option>
+                      <option value="ryczałt">ryczałt</option>
+                    </select>
+                    <span className="text-slate-500 text-sm">×</span>
+                    <input
+                      type="number"
+                      min="0"
+                      step="1"
+                      value={item.unit_price}
+                      onChange={(e) => updateManualPrice(index, parseFloat(e.target.value) || 0)}
+                      className={`input w-20 text-center text-sm py-1 ${
+                        item.unit_price === 0 ? 'border-amber-500 bg-amber-500/10' : ''
+                      }`}
+                    />
+                    <span className="text-slate-500 text-sm">=</span>
+                    <span className="font-semibold text-white text-sm">
+                      {item.total.toFixed(0)} PLN
+                    </span>
+                  </div>
+
+                  {item.isCustom && item.unit_price === 0 && (
+                    <div className="mt-2 text-amber-400 text-xs flex items-center gap-1">
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                      </svg>
+                      Enter unit price
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
