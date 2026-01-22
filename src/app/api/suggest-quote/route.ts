@@ -19,15 +19,38 @@ Otrzymasz:
 
 Twoim zadaniem jest stworzyć MAKSYMALNIE SZCZEGÓŁOWĄ wycenę.
 
-## KRYTYCZNE - DOPASOWYWANIE USŁUG Z CENNIKA:
-- DOKŁADNIE CZYTAJ nazwę każdej usługi w cenniku
-- Używaj TYLKO tych usług które NAPRAWDĘ pasują do zakresu prac
-- Jeśli usługa ma w nazwie "bale" lub "belki" - NIE używaj jej do malowania ścian!
-- Jeśli usługa ma w nazwie "sufit" - NIE używaj jej do ścian!
-- Jeśli usługa ma jednostkę "szt." - NIE używaj jej dla powierzchni (m²)!
-- Lepiej NIE użyć usługi niż użyć ZŁEJ usługi
-- W razie wątpliwości dodaj prace jako custom_suggestions zamiast błędnie dopasowywać
-- NIGDY nie zgaduj - jeśli nie ma odpowiedniej usługi w cenniku, dodaj jako custom
+## ABSOLUTNIE KRYTYCZNE - DOPASOWYWANIE USŁUG:
+
+### ZASADA GŁÓWNA: Nazwa usługi MUSI opisywać TĘ SAMĄ czynność co wymagana praca!
+- "Czyszczenie rynien" to NIE jest "Malowanie" - to ZUPEŁNIE INNE prace!
+- "Montaż listew" to NIE jest "Kładzenie płytek"
+- "Naprawa dachu" to NIE jest "Gładzie na ścianach"
+- CZYTAJ DOSŁOWNIE nazwę usługi - co ona FAKTYCZNIE oznacza?
+
+### ZASADA JEDNOSTEK: Jednostka MUSI pasować do typu pracy!
+- m² (metr kwadratowy) → powierzchnie: ściany, podłogi, sufity, płytki
+- mb (metr bieżący) → długości: listwy, rury, kable, cokoły
+- szt. (sztuka) → pojedyncze elementy: gniazdka, lampy, drzwi, okna
+- godz. (godzina) → prace czasowe: nadzór, konsultacje
+- ryczałt → całościowe usługi: transport, sprzątanie
+
+### PRZED UŻYCIEM USŁUGI ZADAJ SOBIE PYTANIA:
+1. Czy nazwa usługi opisuje dokładnie tę pracę którą klient potrzebuje?
+2. Czy jednostka ma sens dla tej pracy? (nie użyjesz "szt." do malowania ścian!)
+3. Czy cena wydaje się rozsądna dla tej pracy?
+
+### KIEDY NIE UŻYWAĆ USŁUGI Z CENNIKA:
+- Nazwa usługi nie pasuje do wymaganej pracy (nawet jeśli cena pasuje!)
+- Jednostka nie ma sensu (np. m² dla pracy liczonej w sztukach)
+- Masz JAKIEKOLWIEK wątpliwości → dodaj jako custom_suggestions
+
+### PRZYKŁADY BŁĘDÓW KTÓRYCH NIE WOLNO POPEŁNIAĆ:
+❌ Używanie "Czyszczenie rynien 100zł/szt" do wyceny "Malowanie ścian"
+❌ Używanie "Montaż drzwi 500zł/szt" do wyceny "Kładzenie paneli"
+❌ Używanie jakiejkolwiek usługi tylko dlatego że cena wydaje się pasować
+
+✅ Jeśli nie ma "Malowanie ścian" w cenniku → dodaj jako custom_suggestions
+✅ Jeśli nie ma odpowiedniej usługi → ZAWSZE custom_suggestions
 
 ## KLUCZOWE ZASADY:
 
