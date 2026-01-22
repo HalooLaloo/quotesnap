@@ -146,7 +146,7 @@ export function OnboardingWizard({ onClose, userId }: OnboardingWizardProps) {
     const selectedServices = services.filter(s => s.selected)
 
     if (selectedServices.length === 0) {
-      setError('Wybierz przynajmniej jedną usługę')
+      setError('Select at least one service')
       return
     }
 
@@ -157,7 +157,7 @@ export function OnboardingWizard({ onClose, userId }: OnboardingWizardProps) {
       const { data: { user } } = await supabase.auth.getUser()
 
       if (!user) {
-        throw new Error('Nie jesteś zalogowany')
+        throw new Error('You must be logged in')
       }
 
       const { error: insertError } = await supabase
@@ -173,9 +173,12 @@ export function OnboardingWizard({ onClose, userId }: OnboardingWizardProps) {
 
       if (insertError) throw insertError
 
+      // Mark onboarding as completed in localStorage
+      localStorage.setItem(`onboarding_dismissed_${userId}`, 'true')
+
       setCurrentStep('share')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Wystąpił błąd')
+      setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {
       setLoading(false)
     }
@@ -188,8 +191,9 @@ export function OnboardingWizard({ onClose, userId }: OnboardingWizardProps) {
   }
 
   const handleFinish = () => {
-    router.refresh()
+    // First close (which also sets localStorage), then refresh
     onClose()
+    router.refresh()
   }
 
   return (
