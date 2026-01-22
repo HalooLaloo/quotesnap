@@ -129,13 +129,13 @@ function PricingContent() {
                    subscription?.subscription_status === 'trialing'
 
   return (
-    <div className="min-h-screen bg-slate-900 py-12 px-4">
+    <div className="min-h-screen bg-[#0a1628] py-12 px-4">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12">
           <Link href="/" className="inline-flex items-center gap-2 mb-8">
-            <div className="w-10 h-10 bg-slate-800 rounded-xl flex items-center justify-center">
-              <svg className="w-6 h-6 text-orange-500" viewBox="0 0 24 24" fill="currentColor">
+            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
+              <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
                 <rect x="2" y="6" width="9" height="5" rx="0.5" />
                 <rect x="13" y="6" width="9" height="5" rx="0.5" />
                 <rect x="6" y="13" width="9" height="5" rx="0.5" />
@@ -258,7 +258,7 @@ function PricingContent() {
         <div className="mt-12 text-center">
           <p className="text-slate-400">
             Questions?{' '}
-            <a href="mailto:support@brickquote.app" className="text-orange-400 hover:text-orange-300">
+            <a href="mailto:support@brickquote.app" className="text-blue-400 hover:text-blue-300">
               Kontakt
             </a>
           </p>
@@ -279,7 +279,7 @@ function PricingContent() {
 
 export default function PricingPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-slate-900 flex items-center justify-center"><div className="text-white">Loading...</div></div>}>
+    <Suspense fallback={<div className="min-h-screen bg-[#0a1628] flex items-center justify-center"><div className="text-white">Loading...</div></div>}>
       <PricingContent />
     </Suspense>
   )

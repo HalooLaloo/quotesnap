@@ -64,7 +64,7 @@ export function Sidebar({ userEmail }: SidebarProps) {
       {/* Mobile hamburger button */}
       <button
         onClick={() => setIsMobileOpen(true)}
-        className="lg:hidden fixed top-4 left-4 z-40 p-2 bg-slate-800 rounded-lg text-slate-300 hover:bg-slate-700"
+        className="lg:hidden fixed top-4 left-4 z-40 p-2 bg-[#132039] rounded-lg text-slate-300 hover:bg-[#1e3a5f]"
       >
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -82,15 +82,15 @@ export function Sidebar({ userEmail }: SidebarProps) {
       {/* Sidebar */}
       <aside className={`
         fixed lg:static inset-y-0 left-0 z-50
-        w-64 bg-slate-900 border-r border-slate-700 flex flex-col
+        w-64 bg-[#0a1628] border-r border-[#1e3a5f] flex flex-col
         transform transition-transform duration-200 ease-in-out
         ${isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
         {/* Logo */}
-        <div className="p-4 border-b border-slate-700 flex items-center justify-between">
+        <div className="p-4 border-b border-[#1e3a5f] flex items-center justify-between">
           <Link href="/requests" className="flex items-center gap-2" onClick={() => setIsMobileOpen(false)}>
-            <div className="w-8 h-8 bg-slate-800 rounded-lg flex items-center justify-center">
-              <svg className="w-5 h-5 text-orange-500" viewBox="0 0 24 24" fill="currentColor">
+            <div className="w-8 h-8 bg-[#132039] rounded-lg flex items-center justify-center">
+              <svg className="w-5 h-5 text-blue-400" viewBox="0 0 24 24" fill="currentColor">
                 <rect x="2" y="6" width="9" height="5" rx="0.5" />
                 <rect x="13" y="6" width="9" height="5" rx="0.5" />
                 <rect x="6" y="13" width="9" height="5" rx="0.5" />
@@ -122,7 +122,7 @@ export function Sidebar({ userEmail }: SidebarProps) {
                   className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
                     isActive(item.href)
                       ? 'bg-blue-600 text-white'
-                      : 'text-slate-300 hover:bg-slate-800'
+                      : 'text-slate-300 hover:bg-[#132039]'
                   }`}
                 >
                   {item.icon}
@@ -134,7 +134,7 @@ export function Sidebar({ userEmail }: SidebarProps) {
         </nav>
 
         {/* User section */}
-        <div className="p-4 border-t border-slate-700">
+        <div className="p-4 border-t border-[#1e3a5f]">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-8 h-8 bg-slate-700 rounded-full flex items-center justify-center">
               <span className="text-sm text-slate-300">

@@ -53,8 +53,8 @@ export async function GET(
     // Create PDF
     const doc = new jsPDF()
 
-    // Header
-    doc.setFillColor(234, 88, 12) // orange-600
+    // Header - Navy blue
+    doc.setFillColor(37, 99, 235) // blue-600
     doc.rect(0, 0, 210, 40, 'F')
 
     doc.setTextColor(255, 255, 255)

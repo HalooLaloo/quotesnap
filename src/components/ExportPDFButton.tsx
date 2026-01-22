@@ -42,7 +42,7 @@ export function ExportPDFButton({ quote, contractorName }: ExportPDFButtonProps)
 
     // Header
     doc.setFontSize(24)
-    doc.setTextColor(234, 88, 12) // orange-600
+    doc.setTextColor(37, 99, 235) // blue-600
     doc.text('BrickQuote', 20, 25)
 
     doc.setFontSize(12)
@@ -96,7 +96,7 @@ export function ExportPDFButton({ quote, contractorName }: ExportPDFButtonProps)
       body: tableData,
       theme: 'striped',
       headStyles: {
-        fillColor: [234, 88, 12], // orange-600
+        fillColor: [37, 99, 235], // blue-600
         textColor: [255, 255, 255],
         fontStyle: 'bold',
       },

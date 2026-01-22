@@ -210,7 +210,7 @@ function InvoiceForm() {
     return (
       <div className="p-8 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-8 h-8 border-2 border-orange-500/30 border-t-orange-500 rounded-full animate-spin mx-auto mb-4" />
+          <div className="w-8 h-8 border-2 border-blue-500/30 border-t-orange-500 rounded-full animate-spin mx-auto mb-4" />
           <p className="text-slate-400">Loading quote data...</p>
         </div>
       </div>
@@ -360,7 +360,7 @@ function InvoiceForm() {
 
         <button
           onClick={addItem}
-          className="mt-4 text-orange-400 hover:text-orange-300 text-sm font-medium flex items-center gap-1"
+          className="mt-4 text-blue-400 hover:text-orange-300 text-sm font-medium flex items-center gap-1"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -488,7 +488,7 @@ export default function NewInvoicePage() {
   return (
     <Suspense fallback={
       <div className="p-8 flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-orange-500/30 border-t-orange-500 rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-blue-500/30 border-t-orange-500 rounded-full animate-spin" />
       </div>
     }>
       <InvoiceForm />

@@ -12,13 +12,13 @@ export default async function Home() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-[#0a1628]">
       {/* Header */}
-      <header className="border-b border-slate-700 bg-slate-900/50 backdrop-blur-sm">
+      <header className="border-b border-[#1e3a5f] bg-[#0a1628]/80 backdrop-blur-sm">
         <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-slate-800 rounded-lg flex items-center justify-center">
-              <svg className="w-5 h-5 text-orange-500" viewBox="0 0 24 24" fill="currentColor">
+            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+              <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
                 <rect x="2" y="6" width="9" height="5" rx="0.5" />
                 <rect x="13" y="6" width="9" height="5" rx="0.5" />
                 <rect x="6" y="13" width="9" height="5" rx="0.5" />
@@ -44,7 +44,7 @@ export default async function Home() {
         <div className="max-w-3xl text-center">
           <h1 className="text-5xl font-bold text-white mb-6">
             Profesjonalne wyceny
-            <span className="text-orange-500"> w kilka minut</span>
+            <span className="text-blue-400"> w kilka minut</span>
           </h1>
           <p className="text-xl text-slate-400 mb-8 max-w-2xl mx-auto">
             Twórz, wysyłaj i zarządzaj wycenami dla swojego biznesu budowlanego.
@@ -63,7 +63,7 @@ export default async function Home() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-16">
             <div className="card text-left">
               <div className="w-10 h-10 bg-blue-600/20 rounded-lg flex items-center justify-center mb-4">
-                <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
               </div>
@@ -74,8 +74,8 @@ export default async function Home() {
             </div>
 
             <div className="card text-left">
-              <div className="w-10 h-10 bg-green-600/20 rounded-lg flex items-center justify-center mb-4">
-                <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-10 h-10 bg-blue-600/20 rounded-lg flex items-center justify-center mb-4">
+                <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                 </svg>
               </div>
@@ -86,8 +86,8 @@ export default async function Home() {
             </div>
 
             <div className="card text-left">
-              <div className="w-10 h-10 bg-purple-600/20 rounded-lg flex items-center justify-center mb-4">
-                <svg className="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-10 h-10 bg-blue-600/20 rounded-lg flex items-center justify-center mb-4">
+                <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
@@ -101,7 +101,7 @@ export default async function Home() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-slate-700 py-6">
+      <footer className="border-t border-[#1e3a5f] py-6">
         <div className="max-w-6xl mx-auto px-4 text-center text-slate-500 text-sm">
           © 2025 BrickQuote. Wszelkie prawa zastrzeżone.
         </div>

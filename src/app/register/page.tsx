@@ -50,8 +50,8 @@ export default function RegisterPage() {
         {/* Logo */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2">
-            <div className="w-10 h-10 bg-slate-800 rounded-lg flex items-center justify-center">
-              <svg className="w-6 h-6 text-orange-500" viewBox="0 0 24 24" fill="currentColor">
+            <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+              <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
                 <rect x="2" y="6" width="9" height="5" rx="0.5" />
                 <rect x="13" y="6" width="9" height="5" rx="0.5" />
                 <rect x="6" y="13" width="9" height="5" rx="0.5" />
@@ -126,7 +126,7 @@ export default function RegisterPage() {
 
           <p className="mt-6 text-center text-slate-400 text-sm">
             Masz już konto?{' '}
-            <Link href="/login" className="text-orange-500 hover:text-orange-400">
+            <Link href="/login" className="text-blue-400 hover:text-blue-300">
               Zaloguj się
             </Link>
           </p>

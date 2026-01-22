@@ -154,11 +154,11 @@ export function OnboardingWizard({ onClose, userId }: OnboardingWizardProps) {
 
   return (
     <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-      <div className="bg-slate-800 rounded-2xl max-w-lg w-full max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
+      <div className="bg-[#132039] rounded-2xl max-w-lg w-full max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
         {/* Progress bar */}
-        <div className="h-1 bg-slate-700">
+        <div className="h-1 bg-[#1e3a5f]">
           <div
-            className="h-full bg-orange-500 transition-all duration-500"
+            className="h-full bg-blue-500 transition-all duration-500"
             style={{ width: `${progress}%` }}
           />
         </div>
@@ -174,8 +174,8 @@ export function OnboardingWizard({ onClose, userId }: OnboardingWizardProps) {
           {/* Step 1: Welcome */}
           {currentStep === 'welcome' && (
             <div className="text-center py-8">
-              <div className="w-20 h-20 bg-slate-700 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                <svg className="w-12 h-12 text-orange-500" viewBox="0 0 24 24" fill="currentColor">
+              <div className="w-20 h-20 bg-[#1e3a5f] rounded-2xl flex items-center justify-center mx-auto mb-6">
+                <svg className="w-12 h-12 text-blue-400" viewBox="0 0 24 24" fill="currentColor">
                   <rect x="2" y="6" width="9" height="5" rx="0.5" />
                   <rect x="13" y="6" width="9" height="5" rx="0.5" />
                   <rect x="6" y="13" width="9" height="5" rx="0.5" />
@@ -216,7 +216,7 @@ export function OnboardingWizard({ onClose, userId }: OnboardingWizardProps) {
                 autoFocus
               />
 
-              <div className="bg-slate-700/50 rounded-lg p-4">
+              <div className="bg-[#1e3a5f]/50 rounded-lg p-4">
                 <p className="text-slate-300 text-sm font-medium mb-2 flex items-center gap-2">
                   <span className="text-lg">💡</span> Podpowiedź
                 </p>
@@ -243,8 +243,8 @@ export function OnboardingWizard({ onClose, userId }: OnboardingWizardProps) {
                     key={index}
                     className={`p-3 rounded-lg border transition-colors ${
                       service.selected
-                        ? 'bg-orange-600/10 border-orange-500/30'
-                        : 'bg-slate-700/30 border-slate-600/30'
+                        ? 'bg-blue-600/10 border-blue-500/30'
+                        : 'bg-[#1e3a5f]/30 border-slate-600/30'
                     }`}
                   >
                     <div className="flex items-start gap-3">
@@ -252,7 +252,7 @@ export function OnboardingWizard({ onClose, userId }: OnboardingWizardProps) {
                         onClick={() => toggleService(index)}
                         className={`w-5 h-5 rounded flex items-center justify-center shrink-0 mt-0.5 ${
                           service.selected
-                            ? 'bg-orange-500 text-white'
+                            ? 'bg-blue-500 text-white'
                             : 'bg-slate-600'
                         }`}
                       >
@@ -274,7 +274,7 @@ export function OnboardingWizard({ onClose, userId }: OnboardingWizardProps) {
                             type="number"
                             value={service.price || ''}
                             onChange={(e) => updateServicePrice(index, e.target.value)}
-                            className="w-20 bg-slate-700 border border-slate-600 rounded px-2 py-1 text-white text-sm text-right focus:border-orange-500 focus:outline-none"
+                            className="w-20 bg-[#1e3a5f] border border-slate-600 rounded px-2 py-1 text-white text-sm text-right focus:border-blue-500 focus:outline-none"
                             placeholder="0"
                           />
                           <span className="text-slate-500 text-xs">zł</span>
@@ -286,7 +286,7 @@ export function OnboardingWizard({ onClose, userId }: OnboardingWizardProps) {
               </div>
 
               {/* Add custom service */}
-              <div className="border-t border-slate-700 pt-4">
+              <div className="border-t border-[#1e3a5f] pt-4">
                 <p className="text-slate-400 text-xs mb-3">Brakuje usługi? Dodaj własną:</p>
                 <div className="flex gap-2 flex-wrap">
                   <input
@@ -315,7 +315,7 @@ export function OnboardingWizard({ onClose, userId }: OnboardingWizardProps) {
                   <button
                     onClick={addCustomService}
                     disabled={!customService.name.trim()}
-                    className="bg-slate-700 hover:bg-slate-600 disabled:opacity-50 text-white px-3 py-2 rounded-lg transition-colors"
+                    className="bg-[#1e3a5f] hover:bg-slate-600 disabled:opacity-50 text-white px-3 py-2 rounded-lg transition-colors"
                   >
                     +
                   </button>
@@ -339,23 +339,23 @@ export function OnboardingWizard({ onClose, userId }: OnboardingWizardProps) {
               </div>
 
               {/* How it works */}
-              <div className="bg-slate-700/30 rounded-xl p-4 mb-6">
+              <div className="bg-[#1e3a5f]/30 rounded-xl p-4 mb-6">
                 <p className="text-slate-300 text-sm font-medium mb-3">Jak to działa?</p>
                 <div className="space-y-2 text-sm">
                   <div className="flex items-start gap-3">
-                    <span className="w-5 h-5 rounded-full bg-orange-500/20 text-orange-400 flex items-center justify-center text-xs shrink-0">1</span>
+                    <span className="w-5 h-5 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center text-xs shrink-0">1</span>
                     <p className="text-slate-400">Wysyłasz link klientowi</p>
                   </div>
                   <div className="flex items-start gap-3">
-                    <span className="w-5 h-5 rounded-full bg-orange-500/20 text-orange-400 flex items-center justify-center text-xs shrink-0">2</span>
+                    <span className="w-5 h-5 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center text-xs shrink-0">2</span>
                     <p className="text-slate-400">Klient opisuje czego potrzebuje (zdjęcia, opis, wymiary)</p>
                   </div>
                   <div className="flex items-start gap-3">
-                    <span className="w-5 h-5 rounded-full bg-orange-500/20 text-orange-400 flex items-center justify-center text-xs shrink-0">3</span>
+                    <span className="w-5 h-5 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center text-xs shrink-0">3</span>
                     <p className="text-slate-400">Zapytanie trafia do Ciebie w panelu</p>
                   </div>
                   <div className="flex items-start gap-3">
-                    <span className="w-5 h-5 rounded-full bg-orange-500/20 text-orange-400 flex items-center justify-center text-xs shrink-0">4</span>
+                    <span className="w-5 h-5 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center text-xs shrink-0">4</span>
                     <p className="text-slate-400">Tworzysz wycenę i wysyłasz do klienta</p>
                   </div>
                 </div>
@@ -368,14 +368,14 @@ export function OnboardingWizard({ onClose, userId }: OnboardingWizardProps) {
                     type="text"
                     readOnly
                     value={shareUrl}
-                    className="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm"
+                    className="flex-1 bg-[#132039] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm"
                   />
                   <button
                     onClick={handleCopyLink}
                     className={`px-4 py-2 rounded-lg transition-colors text-sm font-medium ${
                       copied
                         ? 'bg-green-600 text-white'
-                        : 'bg-orange-500 hover:bg-orange-400 text-white'
+                        : 'bg-blue-500 hover:bg-blue-400 text-white'
                     }`}
                   >
                     {copied ? 'Skopiowano!' : 'Kopiuj'}
@@ -396,7 +396,7 @@ export function OnboardingWizard({ onClose, userId }: OnboardingWizardProps) {
                   </a>
                   <a
                     href={`sms:?body=${encodeURIComponent('Wyślij zapytanie o wycenę: ' + shareUrl)}`}
-                    className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors text-sm font-medium"
+                    className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-[#1e3a5f] hover:bg-slate-600 text-white rounded-lg transition-colors text-sm font-medium"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
@@ -414,7 +414,7 @@ export function OnboardingWizard({ onClose, userId }: OnboardingWizardProps) {
         </div>
 
         {/* Footer */}
-        <div className="p-6 border-t border-slate-700">
+        <div className="p-6 border-t border-[#1e3a5f]">
           {currentStep === 'welcome' && (
             <div className="flex justify-between items-center">
               <button

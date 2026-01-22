@@ -253,8 +253,8 @@ export default async function QuoteDetailPage({
 
           {/* Create Invoice button for accepted quotes */}
           {quote.status === 'accepted' && (
-            <div className="card bg-orange-600/10 border-orange-500/30">
-              <h3 className="text-orange-400 font-medium mb-2">Work completed?</h3>
+            <div className="card bg-blue-600/10 border-blue-500/30">
+              <h3 className="text-blue-400 font-medium mb-2">Work completed?</h3>
               <p className="text-slate-400 text-sm mb-4">
                 Create an invoice based on this quote. You can adjust items and prices before sending.
               </p>
