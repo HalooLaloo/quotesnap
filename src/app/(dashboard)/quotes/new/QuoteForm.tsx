@@ -440,7 +440,7 @@ export function QuoteForm({ request, services, userId }: QuoteFormProps) {
                           className="w-full font-medium text-white text-sm bg-transparent border-none p-0 focus:ring-0"
                         />
                         {suggestion.reason && (
-                          <p className="text-xs text-purple-400 mt-0.5 line-clamp-2">{suggestion.reason}</p>
+                          <p className="text-xs text-purple-400 mt-0.5 line-clamp-3">{suggestion.reason}</p>
                         )}
                       </div>
 
@@ -469,7 +469,7 @@ export function QuoteForm({ request, services, userId }: QuoteFormProps) {
                         value={suggestion.unit}
                         onChange={(e) => updateSuggestionUnit(index, e.target.value)}
                         disabled={!suggestion.selected}
-                        className="input w-16 text-sm text-slate-400 py-1"
+                        className="input w-20 text-sm text-slate-400 py-1"
                       >
                         <option value="m²">m²</option>
                         <option value="mb">mb</option>
@@ -566,7 +566,7 @@ export function QuoteForm({ request, services, userId }: QuoteFormProps) {
                     <select
                       value={item.unit}
                       onChange={(e) => updateManualUnit(index, e.target.value)}
-                      className="input w-16 text-sm text-slate-400 py-1"
+                      className="input w-20 text-sm text-slate-400 py-1"
                     >
                       <option value="m²">m²</option>
                       <option value="mb">mb</option>
