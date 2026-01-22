@@ -3,6 +3,7 @@ import { headers } from 'next/headers'
 import Link from 'next/link'
 import { CopyButton } from '@/components/CopyButton'
 import { RequestFilters } from '@/components/RequestFilters'
+import { ShareLinkButton } from '@/components/ShareLinkButton'
 
 export default async function RequestsPage({
   searchParams,
@@ -69,11 +70,14 @@ export default async function RequestsPage({
   return (
     <div className="p-4 md:p-8">
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-white">Zapytania</h1>
-        <p className="text-slate-400 text-sm mt-1">
-          Zarządzaj zapytaniami od klientów
-        </p>
+      <div className="flex items-start justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-white">Zapytania</h1>
+          <p className="text-slate-400 text-sm mt-1">
+            Zarządzaj zapytaniami od klientów
+          </p>
+        </div>
+        <ShareLinkButton url={requestFormUrl} />
       </div>
 
       {/* Requests list - FIRST */}
