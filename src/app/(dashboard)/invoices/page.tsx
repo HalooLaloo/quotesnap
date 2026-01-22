@@ -1,5 +1,12 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
+import { AcceptedQuotes } from './AcceptedQuotes'
+import { COUNTRIES } from '@/lib/countries'
+
+function getCurrencySymbol(currencyCode: string): string {
+  const country = Object.values(COUNTRIES).find(c => c.currency === currencyCode)
+  return country?.currencySymbol || currencyCode
+}
 
 export default async function InvoicesPage() {
   const supabase = await createClient()
@@ -9,6 +16,25 @@ export default async function InvoicesPage() {
     .from('qs_invoices')
     .select('*')
     .eq('user_id', user?.id)
+    .order('created_at', { ascending: false })
+
+  // Get accepted quotes that haven't been invoiced yet
+  const { data: acceptedQuotes } = await supabase
+    .from('qs_quotes')
+    .select(`
+      id,
+      total_gross,
+      total,
+      status,
+      created_at,
+      currency,
+      qs_quote_requests (
+        client_name,
+        client_email
+      )
+    `)
+    .eq('user_id', user?.id)
+    .eq('status', 'accepted')
     .order('created_at', { ascending: false })
 
   const statusColors = {
@@ -30,6 +56,9 @@ export default async function InvoicesPage() {
           + New Invoice
         </Link>
       </div>
+
+      {/* Accepted Quotes Section */}
+      <AcceptedQuotes quotes={acceptedQuotes || []} />
 
       <div className="card">
         <h2 className="text-xl font-semibold text-white mb-6">
@@ -55,7 +84,7 @@ export default async function InvoicesPage() {
                     </span>
                   </div>
                   <p className="text-slate-400 text-sm">
-                    {invoice.client_name} • <span className="text-white font-medium">{invoice.total_gross?.toFixed(2) || '0.00'} PLN</span>
+                    {invoice.client_name} • <span className="text-white font-medium">{getCurrencySymbol(invoice.currency || 'PLN')}{invoice.total_gross?.toFixed(2) || '0.00'}</span>
                   </p>
                 </div>
                 <div className="flex items-center gap-3 ml-4">
