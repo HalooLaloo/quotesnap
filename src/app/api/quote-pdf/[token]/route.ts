@@ -1,15 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { jsPDF } from 'jspdf'
-import 'jspdf-autotable'
+import autoTable from 'jspdf-autotable'
 import { QuoteItem } from '@/lib/types'
 
-// Extend jsPDF type for autotable
-declare module 'jspdf' {
-  interface jsPDF {
-    autoTable: (options: Record<string, unknown>) => jsPDF
-  }
-}
+// Force Node.js runtime for PDF generation
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
 
 export async function GET(
   request: NextRequest,
@@ -124,7 +121,7 @@ export async function GET(
       `${item.total.toFixed(2)} PLN`
     ])
 
-    doc.autoTable({
+    autoTable(doc, {
       startY: y,
       head: [['Usluga', 'Ilosc', 'Cena jedn.', 'Wartosc']],
       body: tableData,
@@ -148,7 +145,7 @@ export async function GET(
 
     // Summary section
     // @ts-expect-error - autoTable adds lastAutoTable property
-    y = doc.lastAutoTable.finalY + 15
+    y = (doc as { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY + 15 || y + 60
 
     const summaryX = 130
     doc.setFontSize(10)
@@ -218,6 +215,7 @@ export async function GET(
     })
   } catch (error) {
     console.error('PDF generation error:', error)
-    return NextResponse.json({ error: 'Failed to generate PDF' }, { status: 500 })
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    return NextResponse.json({ error: `Failed to generate PDF: ${errorMessage}` }, { status: 500 })
   }
 }

@@ -3,6 +3,10 @@ import { notFound } from 'next/navigation'
 import { QuoteItem } from '@/lib/types'
 import { QuoteActions } from './QuoteActions'
 
+// Disable caching for this page - needs fresh data
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export default async function PublicQuotePage({
   params,
 }: {
