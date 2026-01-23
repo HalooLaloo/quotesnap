@@ -73,23 +73,23 @@ export async function GET(
     // Create PDF
     const doc = new jsPDF()
 
-    // Header - Navy blue
-    doc.setFillColor(37, 99, 235)
-    doc.rect(0, 0, 210, 40, 'F')
+    // Header - Slate blue
+    doc.setFillColor(30, 58, 95) // #1e3a5f
+    doc.rect(0, 0, 210, 30, 'F')
 
     doc.setTextColor(255, 255, 255)
-    doc.setFontSize(24)
+    doc.setFontSize(20)
     doc.setFont('helvetica', 'bold')
-    doc.text('BrickQuote', 20, 25)
+    doc.text('BrickQuote', 20, 20)
 
-    doc.setFontSize(12)
+    doc.setFontSize(11)
     doc.setFont('helvetica', 'normal')
-    doc.text('Wycena', 170, 25, { align: 'right' })
+    doc.text('Wycena', 190, 20, { align: 'right' })
 
     // Quote info
-    let y = 55
+    let y = 45
     doc.setTextColor(0, 0, 0)
-    doc.setFontSize(11)
+    doc.setFontSize(10)
 
     // Left column - Contractor
     doc.setFont('helvetica', 'bold')
@@ -116,7 +116,7 @@ export async function GET(
     }
 
     // Date info
-    y = 95
+    y = 85
     doc.setFontSize(10)
     doc.setTextColor(100, 100, 100)
     const createdDate = new Date(quote.created_at).toLocaleDateString('pl-PL')
@@ -133,7 +133,7 @@ export async function GET(
     }
 
     // Items table - convert all text to ASCII
-    y = 110
+    y = 100
     const tableData = items.map(item => [
       toAscii(item.service_name),
       `${item.quantity} ${toAscii(item.unit)}`,
@@ -147,7 +147,7 @@ export async function GET(
       body: tableData,
       theme: 'striped',
       headStyles: {
-        fillColor: [59, 130, 246],
+        fillColor: [30, 58, 95], // #1e3a5f
         textColor: [255, 255, 255],
         fontStyle: 'bold',
         fontSize: 9,
@@ -169,7 +169,7 @@ export async function GET(
     // @ts-expect-error - autoTable adds lastAutoTable property
     y = (doc as { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY + 15 || y + 60
 
-    const summaryX = 130
+    const summaryX = 120
     doc.setFontSize(10)
     doc.setTextColor(0, 0, 0)
 
@@ -199,19 +199,30 @@ export async function GET(
 
     // Total
     y += 10
-    doc.setDrawColor(200, 200, 200)
-    doc.line(summaryX, y - 3, 190, y - 3)
+    doc.setDrawColor(30, 58, 95) // #1e3a5f
+    doc.setLineWidth(0.5)
+    doc.line(120, y - 3, 190, y - 3)
 
-    doc.setFontSize(14)
+    doc.setFontSize(11)
     doc.setFont('helvetica', 'bold')
-    doc.text('RAZEM:', summaryX, y + 2)
+    doc.setTextColor(30, 58, 95)
+    doc.text('RAZEM:', 120, y + 2)
     doc.text(`${(quote.total_gross || quote.total)?.toFixed(2)} PLN`, 190, y + 2, { align: 'right' })
+    doc.setTextColor(0, 0, 0)
 
     // Notes
     if (quote.notes) {
-      y += 20
+      // Check if we need a new page
+      if (y > 240) {
+        doc.addPage()
+        y = 20
+      } else {
+        y += 20
+      }
+
       doc.setFontSize(10)
       doc.setFont('helvetica', 'bold')
+      doc.setTextColor(0, 0, 0)
       doc.text('Uwagi:', 20, y)
       doc.setFont('helvetica', 'normal')
 
@@ -219,11 +230,21 @@ export async function GET(
       doc.text(splitNotes, 20, y + 6)
     }
 
+    // Thank you message
+    const pageCount = doc.getNumberOfPages()
+    doc.setPage(pageCount)
+
+    doc.setFontSize(10)
+    doc.setTextColor(30, 58, 95)
+    doc.setFont('helvetica', 'bold')
+    doc.text('Dziekujemy za zainteresowanie!', 105, 265, { align: 'center' })
+
     // Footer
     doc.setFontSize(8)
+    doc.setFont('helvetica', 'normal')
     doc.setTextColor(150, 150, 150)
-    doc.text('Wycena wygenerowana przez BrickQuote', 105, 285, { align: 'center' })
-    doc.text('Wycena ma charakter orientacyjny. Ostateczna cena moze roznic sie po ocenie zakresu prac na miejscu.', 105, 290, { align: 'center' })
+    doc.text('Wycena wygenerowana przez BrickQuote', 105, 280, { align: 'center' })
+    doc.text('Wycena ma charakter orientacyjny. Ostateczna cena moze roznic sie po ocenie zakresu prac na miejscu.', 105, 285, { align: 'center' })
 
     // Generate PDF buffer
     const pdfBuffer = doc.output('arraybuffer')
