@@ -66,7 +66,7 @@ export async function GET(
     const doc = new jsPDF()
 
     // Header - App background color
-    doc.setFillColor(10, 22, 40) // #0a1628 - app background
+    doc.setFillColor(30, 58, 95) // #1e3a5f - slate blue
     doc.rect(0, 0, 210, 30, 'F')
 
     doc.setTextColor(255, 255, 255)
@@ -142,7 +142,7 @@ export async function GET(
       body: tableData,
       theme: 'striped',
       headStyles: {
-        fillColor: [10, 22, 40], // #0a1628 - app background
+        fillColor: [30, 58, 95], // #1e3a5f - slate blue
         textColor: [255, 255, 255],
         fontStyle: 'bold',
         fontSize: 9,
@@ -195,13 +195,13 @@ export async function GET(
 
     // Total
     y += 10
-    doc.setDrawColor(10, 22, 40) // #0a1628
+    doc.setDrawColor(30, 58, 95) // #1e3a5f
     doc.setLineWidth(0.5)
     doc.line(120, y - 3, 190, y - 3)
 
     doc.setFontSize(11)
     doc.setFont('helvetica', 'bold')
-    doc.setTextColor(10, 22, 40)
+    doc.setTextColor(30, 58, 95)
     doc.text('AMOUNT DUE:', 120, y + 2)
     doc.text(`${invoice.total_gross?.toFixed(2)} PLN`, 190, y + 2, { align: 'right' })
     doc.setTextColor(0, 0, 0)
