@@ -65,22 +65,21 @@ export async function GET(
     // Create PDF
     const doc = new jsPDF()
 
-    // Header - Minimalist navy blue line
-    doc.setDrawColor(30, 64, 175) // blue-800
-    doc.setLineWidth(1)
-    doc.line(20, 20, 190, 20)
+    // Header - Professional navy blue bar (smaller)
+    doc.setFillColor(30, 64, 175) // blue-800
+    doc.rect(0, 0, 210, 30, 'F')
 
-    doc.setTextColor(30, 64, 175)
-    doc.setFontSize(24)
+    doc.setTextColor(255, 255, 255)
+    doc.setFontSize(20)
     doc.setFont('helvetica', 'bold')
-    doc.text('INVOICE', 20, 35)
+    doc.text('INVOICE', 20, 20)
 
-    doc.setFontSize(12)
-    doc.setTextColor(100, 100, 100)
-    doc.text(invoice.invoice_number, 190, 35, { align: 'right' })
+    doc.setFontSize(11)
+    doc.setFont('helvetica', 'normal')
+    doc.text(invoice.invoice_number, 190, 20, { align: 'right' })
 
     // Contractor info (left)
-    let y = 50
+    let y = 45
     doc.setTextColor(0, 0, 0)
     doc.setFontSize(10)
 
@@ -141,10 +140,10 @@ export async function GET(
       startY: y,
       head: [['Description', 'Qty', 'Unit Price', 'Amount']],
       body: tableData,
-      theme: 'plain',
+      theme: 'striped',
       headStyles: {
-        fillColor: [241, 245, 249], // slate-100
-        textColor: [30, 64, 175], // blue-800
+        fillColor: [30, 64, 175], // blue-800
+        textColor: [255, 255, 255],
         fontStyle: 'bold',
         fontSize: 9,
       },
@@ -152,8 +151,6 @@ export async function GET(
         fontSize: 8,
         cellPadding: 3,
         overflow: 'linebreak',
-        lineColor: [226, 232, 240], // slate-200
-        lineWidth: 0.1,
       },
       columnStyles: {
         0: { cellWidth: 85 },
