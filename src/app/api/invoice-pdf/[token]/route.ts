@@ -65,22 +65,24 @@ export async function GET(
     // Create PDF
     const doc = new jsPDF()
 
-    // Header - Green for invoice
-    doc.setFillColor(22, 163, 74)
-    doc.rect(0, 0, 210, 40, 'F')
+    // Header - Minimalist navy blue line
+    doc.setDrawColor(30, 64, 175) // blue-800
+    doc.setLineWidth(1)
+    doc.line(20, 20, 190, 20)
 
-    doc.setTextColor(255, 255, 255)
+    doc.setTextColor(30, 64, 175)
     doc.setFontSize(24)
     doc.setFont('helvetica', 'bold')
-    doc.text('INVOICE', 20, 25)
+    doc.text('INVOICE', 20, 35)
 
-    doc.setFontSize(14)
-    doc.text(invoice.invoice_number, 190, 25, { align: 'right' })
+    doc.setFontSize(12)
+    doc.setTextColor(100, 100, 100)
+    doc.text(invoice.invoice_number, 190, 35, { align: 'right' })
 
     // Contractor info (left)
-    let y = 55
+    let y = 50
     doc.setTextColor(0, 0, 0)
-    doc.setFontSize(11)
+    doc.setFontSize(10)
 
     doc.setFont('helvetica', 'bold')
     doc.text('From:', 20, y)
@@ -137,12 +139,12 @@ export async function GET(
 
     autoTable(doc, {
       startY: y,
-      head: [['Description', 'Quantity', 'Unit Price', 'Amount']],
+      head: [['Description', 'Qty', 'Unit Price', 'Amount']],
       body: tableData,
-      theme: 'striped',
+      theme: 'plain',
       headStyles: {
-        fillColor: [22, 163, 74],
-        textColor: [255, 255, 255],
+        fillColor: [241, 245, 249], // slate-100
+        textColor: [30, 64, 175], // blue-800
         fontStyle: 'bold',
         fontSize: 9,
       },
@@ -150,6 +152,8 @@ export async function GET(
         fontSize: 8,
         cellPadding: 3,
         overflow: 'linebreak',
+        lineColor: [226, 232, 240], // slate-200
+        lineWidth: 0.1,
       },
       columnStyles: {
         0: { cellWidth: 85 },
@@ -163,7 +167,7 @@ export async function GET(
     // @ts-expect-error - autoTable adds lastAutoTable property
     y = (doc as { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY + 15 || y + 60
 
-    const summaryX = 130
+    const summaryX = 120
     doc.setFontSize(10)
     doc.setTextColor(0, 0, 0)
 
@@ -194,13 +198,16 @@ export async function GET(
 
     // Total
     y += 10
-    doc.setDrawColor(200, 200, 200)
-    doc.line(summaryX, y - 3, 190, y - 3)
+    doc.setDrawColor(30, 64, 175) // blue-800
+    doc.setLineWidth(0.5)
+    doc.line(120, y - 3, 190, y - 3)
 
-    doc.setFontSize(14)
+    doc.setFontSize(11)
     doc.setFont('helvetica', 'bold')
-    doc.text('AMOUNT DUE:', summaryX, y + 2)
+    doc.setTextColor(30, 64, 175)
+    doc.text('AMOUNT DUE:', 120, y + 2)
     doc.text(`${invoice.total_gross?.toFixed(2)} PLN`, 190, y + 2, { align: 'right' })
+    doc.setTextColor(0, 0, 0)
 
     // Payment details
     if (profile?.bank_name || profile?.bank_account || invoice.payment_terms) {
