@@ -130,7 +130,7 @@ export async function GET(
     y = 115
     const tableData = items.map(item => [
       toAscii(item.description),
-      `${item.quantity} ${item.unit}`,
+      `${item.quantity} ${toAscii(item.unit)}`,
       `${item.unit_price.toFixed(2)} PLN`,
       `${item.total.toFixed(2)} PLN`
     ])
