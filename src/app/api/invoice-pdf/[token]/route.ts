@@ -8,6 +8,26 @@ import { InvoiceItem } from '@/lib/types'
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
+// Transliterate Polish and other special characters to ASCII
+function toAscii(text: string | null | undefined): string {
+  if (!text) return ''
+  const map: Record<string, string> = {
+    'ą': 'a', 'ć': 'c', 'ę': 'e', 'ł': 'l', 'ń': 'n',
+    'ó': 'o', 'ś': 's', 'ź': 'z', 'ż': 'z',
+    'Ą': 'A', 'Ć': 'C', 'Ę': 'E', 'Ł': 'L', 'Ń': 'N',
+    'Ó': 'O', 'Ś': 'S', 'Ź': 'Z', 'Ż': 'Z',
+    // German
+    'ä': 'a', 'ö': 'o', 'ü': 'u', 'ß': 'ss',
+    'Ä': 'A', 'Ö': 'O', 'Ü': 'U',
+    // French
+    'à': 'a', 'â': 'a', 'é': 'e', 'è': 'e', 'ê': 'e', 'ë': 'e',
+    'î': 'i', 'ï': 'i', 'ô': 'o', 'ù': 'u', 'û': 'u', 'ç': 'c',
+    'À': 'A', 'Â': 'A', 'É': 'E', 'È': 'E', 'Ê': 'E', 'Ë': 'E',
+    'Î': 'I', 'Ï': 'I', 'Ô': 'O', 'Ù': 'U', 'Û': 'U', 'Ç': 'C',
+  }
+  return text.split('').map(char => map[char] || char).join('')
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ token: string }> }
@@ -38,15 +58,15 @@ export async function GET(
       .eq('id', invoice.user_id)
       .single()
 
-    const contractorName = profile?.company_name || profile?.full_name || 'Contractor'
-    const clientName = invoice.client_name || 'Client'
+    const contractorName = toAscii(profile?.company_name || profile?.full_name || 'Contractor')
+    const clientName = toAscii(invoice.client_name || 'Client')
     const items = (invoice.items || []) as InvoiceItem[]
 
     // Create PDF
     const doc = new jsPDF()
 
     // Header - Green for invoice
-    doc.setFillColor(22, 163, 74) // green-600
+    doc.setFillColor(22, 163, 74)
     doc.rect(0, 0, 210, 40, 'F')
 
     doc.setTextColor(255, 255, 255)
@@ -67,7 +87,7 @@ export async function GET(
     doc.setFont('helvetica', 'normal')
     doc.text(contractorName, 20, y + 6)
     if (profile?.business_address) {
-      doc.text(profile.business_address, 20, y + 12)
+      doc.text(toAscii(profile.business_address), 20, y + 12)
     }
     if (profile?.phone) {
       doc.text(`Tel: ${profile.phone}`, 20, y + 18)
@@ -85,7 +105,7 @@ export async function GET(
     doc.setFont('helvetica', 'normal')
     doc.text(clientName, 120, y + 6)
     if (invoice.client_address) {
-      doc.text(invoice.client_address, 120, y + 12)
+      doc.text(toAscii(invoice.client_address), 120, y + 12)
     }
     if (invoice.client_phone) {
       doc.text(`Tel: ${invoice.client_phone}`, 120, y + 18)
@@ -109,7 +129,7 @@ export async function GET(
     // Items table
     y = 115
     const tableData = items.map(item => [
-      item.description,
+      toAscii(item.description),
       `${item.quantity} ${item.unit}`,
       `${item.unit_price.toFixed(2)} PLN`,
       `${item.total.toFixed(2)} PLN`
@@ -121,19 +141,21 @@ export async function GET(
       body: tableData,
       theme: 'striped',
       headStyles: {
-        fillColor: [22, 163, 74], // green-600
+        fillColor: [22, 163, 74],
         textColor: [255, 255, 255],
         fontStyle: 'bold',
+        fontSize: 9,
       },
       styles: {
-        fontSize: 10,
-        cellPadding: 4,
+        fontSize: 8,
+        cellPadding: 3,
+        overflow: 'linebreak',
       },
       columnStyles: {
-        0: { cellWidth: 80 },
-        1: { cellWidth: 30, halign: 'center' },
-        2: { cellWidth: 35, halign: 'right' },
-        3: { cellWidth: 35, halign: 'right' },
+        0: { cellWidth: 85 },
+        1: { cellWidth: 25, halign: 'center' },
+        2: { cellWidth: 30, halign: 'right' },
+        3: { cellWidth: 30, halign: 'right' },
       },
     })
 
@@ -153,7 +175,7 @@ export async function GET(
     if (invoice.discount_percent > 0) {
       y += 7
       doc.text(`Discount (${invoice.discount_percent}%):`, summaryX, y)
-      doc.setTextColor(220, 38, 38) // red
+      doc.setTextColor(220, 38, 38)
       doc.text(`-${(invoice.subtotal * invoice.discount_percent / 100).toFixed(2)} PLN`, 190, y, { align: 'right' })
       doc.setTextColor(0, 0, 0)
     }
@@ -191,7 +213,7 @@ export async function GET(
 
       if (profile?.bank_name) {
         y += 7
-        doc.text(`Bank: ${profile.bank_name}`, 20, y)
+        doc.text(`Bank: ${toAscii(profile.bank_name)}`, 20, y)
       }
       if (profile?.bank_account) {
         y += 7
@@ -199,7 +221,7 @@ export async function GET(
       }
       if (invoice.payment_terms) {
         y += 7
-        doc.text(`Terms: ${invoice.payment_terms}`, 20, y)
+        doc.text(`Terms: ${toAscii(invoice.payment_terms)}`, 20, y)
       }
     }
 
@@ -211,7 +233,7 @@ export async function GET(
       doc.text('Notes:', 20, y)
       doc.setFont('helvetica', 'normal')
 
-      const splitNotes = doc.splitTextToSize(invoice.notes, 170)
+      const splitNotes = doc.splitTextToSize(toAscii(invoice.notes), 170)
       doc.text(splitNotes, 20, y + 6)
     }
 

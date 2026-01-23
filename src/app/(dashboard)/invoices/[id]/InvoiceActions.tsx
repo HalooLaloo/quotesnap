@@ -20,6 +20,36 @@ export function InvoiceActions({ invoice }: InvoiceActionsProps) {
   const router = useRouter()
   const supabase = createClient()
 
+  const handleSendToClient = async () => {
+    if (!invoice.client_email) {
+      alert('No client email address')
+      return
+    }
+
+    setLoading('sending')
+    try {
+      const response = await fetch('/api/send-invoice', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ invoiceId: invoice.id }),
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Failed to send')
+      }
+
+      router.refresh()
+    } catch (err) {
+      console.error('Error sending invoice:', err)
+      alert('Failed to send invoice')
+    } finally {
+      setLoading(null)
+    }
+  }
+
   const handleMarkAsSent = async () => {
     setLoading('sent')
     try {
@@ -78,6 +108,27 @@ export function InvoiceActions({ invoice }: InvoiceActionsProps) {
       <div className="space-y-3">
         {invoice.status === 'draft' && (
           <>
+            {invoice.client_email && (
+              <button
+                onClick={handleSendToClient}
+                disabled={loading === 'sending'}
+                className="btn-primary w-full flex items-center justify-center gap-2"
+              >
+                {loading === 'sending' ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    Send to Client
+                  </>
+                )}
+              </button>
+            )}
             <button
               onClick={handleCopyLink}
               className="btn-secondary w-full flex items-center justify-center gap-2"
@@ -90,7 +141,7 @@ export function InvoiceActions({ invoice }: InvoiceActionsProps) {
             <button
               onClick={handleMarkAsSent}
               disabled={loading === 'sent'}
-              className="btn-primary w-full flex items-center justify-center gap-2"
+              className="btn-secondary w-full flex items-center justify-center gap-2"
             >
               {loading === 'sent' ? (
                 <>

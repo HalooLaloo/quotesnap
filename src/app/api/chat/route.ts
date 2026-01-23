@@ -28,7 +28,8 @@ STAN TECHNICZNY:
 
 PRACE PRZYGOTOWAWCZE:
 - Czy trzeba coś zdemontować? (stare płytki, panele, armatura, gniazdka?)
-- Czy potrzebne jest gruntowanie, szpachlowanie, gładzie?
+- Dla MALOWANIA: czy ściany wymagają szpachlowania lub gładzi?
+- Dla PŁYTEK: czy podłoże wymaga wyrównania? (w łazience potrzebna hydroizolacja)
 - Czy jest coś do wyniesienia/zabezpieczenia? (meble, sprzęty AGD?)
 
 MATERIAŁY I WYKOŃCZENIE:

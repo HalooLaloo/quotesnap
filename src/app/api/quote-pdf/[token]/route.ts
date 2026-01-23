@@ -8,6 +8,26 @@ import { QuoteItem } from '@/lib/types'
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
+// Transliterate Polish and other special characters to ASCII
+function toAscii(text: string | null | undefined): string {
+  if (!text) return ''
+  const map: Record<string, string> = {
+    'ą': 'a', 'ć': 'c', 'ę': 'e', 'ł': 'l', 'ń': 'n',
+    'ó': 'o', 'ś': 's', 'ź': 'z', 'ż': 'z',
+    'Ą': 'A', 'Ć': 'C', 'Ę': 'E', 'Ł': 'L', 'Ń': 'N',
+    'Ó': 'O', 'Ś': 'S', 'Ź': 'Z', 'Ż': 'Z',
+    // German
+    'ä': 'a', 'ö': 'o', 'ü': 'u', 'ß': 'ss',
+    'Ä': 'A', 'Ö': 'O', 'Ü': 'U',
+    // French
+    'à': 'a', 'â': 'a', 'é': 'e', 'è': 'e', 'ê': 'e', 'ë': 'e',
+    'î': 'i', 'ï': 'i', 'ô': 'o', 'ù': 'u', 'û': 'u', 'ç': 'c',
+    'À': 'A', 'Â': 'A', 'É': 'E', 'È': 'E', 'Ê': 'E', 'Ë': 'E',
+    'Î': 'I', 'Ï': 'I', 'Ô': 'O', 'Ù': 'U', 'Û': 'U', 'Ç': 'C',
+  }
+  return text.split('').map(char => map[char] || char).join('')
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ token: string }> }
@@ -46,15 +66,15 @@ export async function GET(
       .eq('id', quote.user_id)
       .single()
 
-    const contractorName = profile?.company_name || profile?.full_name || 'Wykonawca'
-    const clientName = quote.qs_quote_requests?.client_name || 'Klient'
+    const contractorName = toAscii(profile?.company_name || profile?.full_name || 'Wykonawca')
+    const clientName = toAscii(quote.qs_quote_requests?.client_name || 'Klient')
     const items = (quote.items || []) as QuoteItem[]
 
     // Create PDF
     const doc = new jsPDF()
 
     // Header - Navy blue
-    doc.setFillColor(37, 99, 235) // blue-600
+    doc.setFillColor(37, 99, 235)
     doc.rect(0, 0, 210, 40, 'F')
 
     doc.setTextColor(255, 255, 255)
@@ -112,10 +132,10 @@ export async function GET(
       doc.text(`Dostepnosc od: ${availableDate}`, 140, y)
     }
 
-    // Items table
+    // Items table - convert all text to ASCII
     y = 110
     const tableData = items.map(item => [
-      item.service_name,
+      toAscii(item.service_name),
       `${item.quantity} ${item.unit}`,
       `${item.unit_price.toFixed(2)} PLN`,
       `${item.total.toFixed(2)} PLN`
@@ -127,19 +147,21 @@ export async function GET(
       body: tableData,
       theme: 'striped',
       headStyles: {
-        fillColor: [59, 130, 246], // blue-500
+        fillColor: [59, 130, 246],
         textColor: [255, 255, 255],
         fontStyle: 'bold',
+        fontSize: 9,
       },
       styles: {
-        fontSize: 10,
-        cellPadding: 4,
+        fontSize: 8,
+        cellPadding: 3,
+        overflow: 'linebreak',
       },
       columnStyles: {
-        0: { cellWidth: 80 },
-        1: { cellWidth: 30, halign: 'center' },
-        2: { cellWidth: 35, halign: 'right' },
-        3: { cellWidth: 35, halign: 'right' },
+        0: { cellWidth: 85 },
+        1: { cellWidth: 25, halign: 'center' },
+        2: { cellWidth: 30, halign: 'right' },
+        3: { cellWidth: 30, halign: 'right' },
       },
     })
 
@@ -159,7 +181,7 @@ export async function GET(
     if (quote.discount_percent > 0) {
       y += 7
       doc.text(`Rabat (${quote.discount_percent}%):`, summaryX, y)
-      doc.setTextColor(220, 38, 38) // red
+      doc.setTextColor(220, 38, 38)
       doc.text(`-${(quote.subtotal * quote.discount_percent / 100).toFixed(2)} PLN`, 190, y, { align: 'right' })
       doc.setTextColor(0, 0, 0)
     }
@@ -193,7 +215,7 @@ export async function GET(
       doc.text('Uwagi:', 20, y)
       doc.setFont('helvetica', 'normal')
 
-      const splitNotes = doc.splitTextToSize(quote.notes, 170)
+      const splitNotes = doc.splitTextToSize(toAscii(quote.notes), 170)
       doc.text(splitNotes, 20, y + 6)
     }
 

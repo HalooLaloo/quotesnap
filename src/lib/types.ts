@@ -59,6 +59,7 @@ export interface Quote {
   token: string
   sent_at: string | null
   accepted_at: string | null
+  viewed_at: string | null
   created_at: string
 }
 

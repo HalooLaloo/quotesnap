@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { QuoteItem } from '@/lib/types'
 import { CollapsibleDescription } from './CollapsibleDescription'
 import { ExportPDFButton } from '@/components/ExportPDFButton'
+import { StatusTimeline, getQuoteTimelineSteps } from '@/components/StatusTimeline'
 
 export default async function QuoteDetailPage({
   params,
@@ -222,34 +223,8 @@ export default async function QuoteDetailPage({
             </div>
           )}
 
-          {/* Status info */}
-          {quote.sent_at && (
-            <div className="card bg-blue-600/10 border-blue-500/30">
-              <p className="text-blue-400 text-sm">
-                Wysłano: {new Date(quote.sent_at).toLocaleDateString('pl-PL', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })}
-              </p>
-            </div>
-          )}
-
-          {quote.accepted_at && (
-            <div className="card bg-green-600/10 border-green-500/30">
-              <p className="text-green-400 text-sm">
-                Zaakceptowano: {new Date(quote.accepted_at).toLocaleDateString('pl-PL', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })}
-              </p>
-            </div>
-          )}
+          {/* Status Timeline */}
+          <StatusTimeline steps={getQuoteTimelineSteps(quote)} />
 
           {/* Create Invoice button for accepted quotes */}
           {quote.status === 'accepted' && (

@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { InvoiceItem } from '@/lib/types'
 import { InvoiceActions } from './InvoiceActions'
+import { StatusTimeline, getInvoiceTimelineSteps } from '@/components/StatusTimeline'
 
 export default async function InvoiceDetailPage({
   params,
@@ -247,30 +248,8 @@ export default async function InvoiceDetailPage({
           {/* Actions */}
           <InvoiceActions invoice={invoice} />
 
-          {/* Status timestamps */}
-          {invoice.sent_at && (
-            <div className="card bg-blue-600/10 border-blue-500/30">
-              <p className="text-blue-400 text-sm">
-                Sent: {new Date(invoice.sent_at).toLocaleDateString('en-US', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                })}
-              </p>
-            </div>
-          )}
-
-          {invoice.paid_at && (
-            <div className="card bg-green-600/10 border-green-500/30">
-              <p className="text-green-400 text-sm">
-                Paid: {new Date(invoice.paid_at).toLocaleDateString('en-US', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                })}
-              </p>
-            </div>
-          )}
+          {/* Status Timeline */}
+          <StatusTimeline steps={getInvoiceTimelineSteps(invoice)} />
         </div>
       </div>
     </div>

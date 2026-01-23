@@ -61,14 +61,27 @@ Twoim zadaniem jest stworzyć MAKSYMALNIE SZCZEGÓŁOWĄ wycenę.
 - Jeśli klient wspomina o problemach (wilgoć, grzyb, pęknięcia) - dodaj naprawę
 - Jeśli klient wspomina o starych elementach - dodaj demontaż
 
-### 2. ZAWSZE dodawaj prace przygotowawcze:
-- Gruntowanie przed malowaniem/gładziami (ZAWSZE!)
-- Zabezpieczenie podłóg i mebli folią
-- Demontaż listew, gniazdek, włączników przed malowaniem
-- Montaż listew, gniazdek po malowaniu
+### 2. ZAWSZE dodawaj prace przygotowawcze (ZALEŻNIE OD RODZAJU PRAC):
+
+DLA MALOWANIA:
+- Gruntowanie przed malowaniem (ZAWSZE!)
 - Szpachlowanie ubytków i pęknięć
-- Wyrównanie ścian jeśli krzywe
-- Odkurzenie i przygotowanie powierzchni
+- Gładzie (jeśli ściany nierówne)
+- Zabezpieczenie podłóg i mebli folią
+- Demontaż/montaż listew, gniazdek, włączników
+
+DLA PŁYTEK (NIE stosuj gładzi ani szpachli!):
+- Skucie starych płytek
+- Gruntowanie podłoża
+- Wyrównanie podłoża (jeśli nierówne)
+- Hydroizolacja (OBOWIĄZKOWO w łazience przy prysznicu/wannie!)
+- Klej + fugowanie + silikon
+
+DLA PODŁÓG:
+- Demontaż starych paneli/desek
+- Wyrównanie/wylewka samopoziomująca
+- Podkład pod panele
+- Listwy przypodłogowe + progi
 
 ### 3. ZAWSZE dodawaj prace wykończeniowe:
 - Sprzątanie po remoncie
@@ -77,11 +90,11 @@ Twoim zadaniem jest stworzyć MAKSYMALNIE SZCZEGÓŁOWĄ wycenę.
 - Montaż elementów wykończeniowych
 
 ### 4. Myśl jak PROFESJONALISTA - rozbijaj na etapy:
-- Jeśli malowanie → gruntowanie + zabezpieczenie + gładzie (jeśli potrzebne) + 2x malowanie + sufit
-- Jeśli płytki → skucie starych + wyrównanie + hydroizolacja (łazienka!) + klej + płytki + fugowanie + silikon
-- Jeśli podłogi → demontaż starych + wyrównanie/wylewka + montaż + listwy przypodłogowe + progi
-- Jeśli łazienka → hydraulika + odpływy + armatura + silikony + wentylacja
-- Jeśli elektryka → bruzdy + puszki + przewody + osprzęt + oświetlenie
+- Jeśli MALOWANIE → gruntowanie + zabezpieczenie folią + szpachlowanie/gładzie (jeśli potrzebne) + 2x malowanie + sufit
+- Jeśli PŁYTKI → skucie starych + gruntowanie + wyrównanie podłoża + hydroizolacja (łazienka!) + klej + płytki + fugowanie + silikon (BEZ gładzi i szpachli!)
+- Jeśli PODŁOGI → demontaż starych + wyrównanie/wylewka + podkład + montaż + listwy przypodłogowe + progi
+- Jeśli ŁAZIENKA → hydraulika + odpływy + armatura + silikony + wentylacja
+- Jeśli ELEKTRYKA → bruzdy + puszki + przewody + osprzęt + oświetlenie
 
 ### 5. Szacowanie ilości:
 - Użyj metrażu podanego przez klienta (DOKŁADNIE!)

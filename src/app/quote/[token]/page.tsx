@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 import { notFound } from 'next/navigation'
 import { QuoteItem } from '@/lib/types'
 import { QuoteActions } from './QuoteActions'
+import { TrackQuoteView } from './TrackQuoteView'
 import { COUNTRIES, DEFAULT_COUNTRY } from '@/lib/countries'
 
 // Helper to get currency symbol from currency code
@@ -59,14 +60,18 @@ export default async function PublicQuotePage({
   const statusInfo = {
     draft: { label: 'Draft', color: 'bg-slate-500/20 text-slate-400' },
     sent: { label: 'Pending', color: 'bg-blue-500/20 text-blue-400' },
+    viewed: { label: 'Viewed', color: 'bg-purple-500/20 text-purple-400' },
     accepted: { label: 'Accepted', color: 'bg-green-500/20 text-green-400' },
     rejected: { label: 'Rejected', color: 'bg-red-500/20 text-red-400' },
   }
 
-  const status = statusInfo[quote.status as keyof typeof statusInfo] || statusInfo.draft
+  // If sent and viewed, show as viewed
+  const displayStatus = quote.status === 'sent' && quote.viewed_at ? 'viewed' : quote.status
+  const status = statusInfo[displayStatus as keyof typeof statusInfo] || statusInfo.draft
 
   return (
     <div className="min-h-screen bg-[#0a1628] py-8 px-4">
+      <TrackQuoteView token={token} status={quote.status} />
       <div className="max-w-3xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">

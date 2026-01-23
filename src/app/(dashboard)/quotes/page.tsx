@@ -46,12 +46,21 @@ export default async function QuotesPage() {
                     </p>
                     <span className={`px-2 py-0.5 text-xs rounded-full ${
                       quote.status === 'draft' ? 'bg-slate-500/20 text-slate-400' :
+                      quote.status === 'sent' && quote.viewed_at ? 'bg-purple-500/20 text-purple-400' :
                       quote.status === 'sent' ? 'bg-blue-500/20 text-blue-400' :
                       quote.status === 'accepted' ? 'bg-green-500/20 text-green-400' :
                       'bg-red-500/20 text-red-400'
                     }`}>
-                      {quote.status}
+                      {quote.status === 'sent' && quote.viewed_at ? 'viewed' : quote.status}
                     </span>
+                    {quote.viewed_at && quote.status === 'sent' && (
+                      <span className="flex items-center gap-1 text-purple-400 text-xs" title={`Viewed on ${new Date(quote.viewed_at).toLocaleString()}`}>
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                      </span>
+                    )}
                   </div>
                   <p className="text-slate-400 text-sm">
                     Total: <span className="text-white font-medium">{quote.total?.toFixed(2) || '0.00'} PLN</span>
