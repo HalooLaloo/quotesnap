@@ -29,15 +29,14 @@ export default function RegisterPage() {
 
     setLoading(true)
 
-    const redirectUrl = `${window.location.origin}/auth/callback`
-    console.log('emailRedirectTo:', redirectUrl)
-    alert('Redirect URL: ' + redirectUrl)
-
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: redirectUrl,
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        data: {
+          source_app: 'brickquote',
+        },
       },
     })
 
