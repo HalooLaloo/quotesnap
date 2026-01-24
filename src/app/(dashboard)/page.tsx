@@ -2,6 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { COUNTRIES } from '@/lib/countries'
 
+export const dynamic = 'force-dynamic'
+
 function getCurrencySymbol(currencyCode: string): string {
   const country = Object.values(COUNTRIES).find(c => c.currency === currencyCode)
   return country?.currencySymbol || currencyCode
