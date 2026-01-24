@@ -23,12 +23,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Price ID not configured' }, { status: 500 })
     }
 
-    // Get or create Stripe customer
-    const { data: profile } = await supabase
+    // Get or create profile
+    let { data: profile } = await supabase
       .from('profiles')
       .select('stripe_customer_id')
       .eq('id', user.id)
       .single()
+
+    // Create profile if it doesn't exist
+    if (!profile) {
+      const { data: newProfile } = await supabase
+        .from('profiles')
+        .insert({ id: user.id, email: user.email })
+        .select('stripe_customer_id')
+        .single()
+      profile = newProfile
+    }
 
     let customerId = profile?.stripe_customer_id
 
