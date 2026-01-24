@@ -178,9 +178,10 @@ export default async function QuoteDetailPage({
 
               <div className="border-t border-slate-700 pt-3">
                 <div className="flex justify-between text-xl font-bold text-white">
-                  <span>Razem</span>
+                  <span>Orientacyjnie</span>
                   <span>{quote.total?.toFixed(2) || '0.00'} PLN</span>
                 </div>
+                <p className="text-slate-500 text-xs mt-1">Cena może się nieznacznie zmienić</p>
               </div>
             </div>
 

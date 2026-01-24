@@ -211,7 +211,7 @@ function generateQuoteEmailHtml(data: QuoteEmailData): string {
           ${discountHtml}
           ${vatHtml}
           <tr style="background: #f0fdf4;">
-            <td colspan="3" style="padding: 16px 12px; text-align: right; font-size: 18px; font-weight: 700; color: #166534;">${data.vatPercent > 0 ? 'BRUTTO' : 'DO ZAPŁATY'}:</td>
+            <td colspan="3" style="padding: 16px 12px; text-align: right; font-size: 18px; font-weight: 700; color: #166534;">ORIENTACYJNIE:</td>
             <td style="padding: 16px 12px; text-align: right; font-size: 18px; font-weight: 700; color: #166534;">${data.total.toFixed(2)} PLN</td>
           </tr>
         </tfoot>

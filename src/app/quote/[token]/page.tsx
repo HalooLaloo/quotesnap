@@ -175,9 +175,10 @@ export default async function PublicQuotePage({
             )}
 
             <div className="flex justify-between text-xl font-bold text-white pt-2 border-t border-slate-700">
-              <span>Total</span>
+              <span>Orientacyjnie</span>
               <span>{currencySymbol}{(quote.total_gross || quote.total)?.toFixed(2)}</span>
             </div>
+            <p className="text-slate-500 text-xs mt-2">Cena może się nieznacznie zmienić po wizji lokalnej</p>
           </div>
         </div>
 

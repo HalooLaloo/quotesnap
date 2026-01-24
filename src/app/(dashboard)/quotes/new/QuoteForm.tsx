@@ -836,9 +836,10 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
 
             <div className="border-t border-slate-700 pt-3">
               <div className="flex justify-between text-xl font-bold text-white">
-                <span>{showVat ? 'Gross' : 'Total'}</span>
+                <span>Orientacyjnie</span>
                 <span>{currencySymbol}{total.toFixed(2)}</span>
               </div>
+              <p className="text-slate-500 text-xs mt-1">Cena może się nieznacznie zmienić po wizji lokalnej</p>
             </div>
           </div>
 
