@@ -55,13 +55,16 @@ export async function POST(request: NextRequest) {
     }
 
     // Pobierz dane wykonawcy
-    const { data: profile } = await supabase
+    const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('full_name, company_name, phone')
       .eq('id', user?.id)
       .single()
 
+    console.log('Profile query result:', { profile, profileError, userId: user?.id })
+
     const contractorName = profile?.company_name || profile?.full_name || 'Wykonawca'
+    console.log('Contractor name:', contractorName)
     const items = (quote.items || []) as QuoteItem[]
 
     // Generate quote view URL
