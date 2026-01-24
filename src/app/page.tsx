@@ -291,6 +291,23 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* No App Needed Banner */}
+      <section className="py-8 px-4">
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 rounded-2xl p-6 flex flex-col md:flex-row items-center justify-center gap-4 text-center md:text-left">
+            <div className="w-14 h-14 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+              <svg className="w-7 h-7 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <div>
+              <h3 className="text-xl font-semibold text-white mb-1">No app needed for your clients</h3>
+              <p className="text-slate-400">They just click your link, upload photos, and chat with AI. Works on any phone or computer - nothing to download.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* How it Works */}
       <section id="how-it-works" className="py-24 px-4">
         <div className="max-w-6xl mx-auto">
