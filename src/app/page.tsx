@@ -267,7 +267,7 @@ export default async function Home() {
                 </svg>
               </div>
               <p className="text-2xl font-bold text-white mb-1">No site visit</p>
-              <p className="text-slate-400 text-sm">Quote from photos</p>
+              <p className="text-slate-400 text-sm">Photos + AI interview</p>
             </div>
             <div className="bg-[#132039] border border-[#1e3a5f] rounded-xl p-6 text-center">
               <div className="w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center mx-auto mb-4">
