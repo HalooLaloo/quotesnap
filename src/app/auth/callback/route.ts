@@ -55,8 +55,12 @@ export async function GET(request: Request) {
 
       return NextResponse.redirect(`${origin}${next}`)
     }
+
+    // PKCE error (likely different device/browser) - email is already verified by Supabase
+    // Redirect to login with message to log in manually
+    return NextResponse.redirect(`${origin}/login?verified=true`)
   }
 
-  // Auth error - redirect to login
+  // No code - redirect to login
   return NextResponse.redirect(`${origin}/login?error=auth`)
 }
