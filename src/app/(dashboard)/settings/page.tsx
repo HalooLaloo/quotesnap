@@ -27,6 +27,12 @@ export default function SettingsPage() {
   const [userId, setUserId] = useState('')
   const [copied, setCopied] = useState(false)
 
+  // Subscription
+  const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null)
+  const [stripePriceId, setStripePriceId] = useState<string | null>(null)
+  const [periodEnd, setPeriodEnd] = useState<string | null>(null)
+  const [managingSubscription, setManagingSubscription] = useState(false)
+
   // Profile fields
   const [fullName, setFullName] = useState('')
   const [companyName, setCompanyName] = useState('')
@@ -67,6 +73,9 @@ export default function SettingsPage() {
           setBusinessAddress(profile.business_address || '')
           setBankName(profile.bank_name || '')
           setBankAccount(profile.bank_account || '')
+          setSubscriptionStatus(profile.subscription_status)
+          setStripePriceId(profile.stripe_price_id)
+          setPeriodEnd(profile.subscription_current_period_end)
         }
       } catch (err) {
         console.error('Error loading profile:', err)
@@ -118,6 +127,48 @@ export default function SettingsPage() {
   }
 
   const selectedCountry = COUNTRIES[country] || COUNTRIES[DEFAULT_COUNTRY]
+
+  const handleManageSubscription = async () => {
+    setManagingSubscription(true)
+    try {
+      const response = await fetch('/api/stripe/portal', {
+        method: 'POST',
+      })
+      const data = await response.json()
+      if (data.url) {
+        window.location.href = data.url
+      } else {
+        setError(data.error || 'Failed to open subscription management')
+        setManagingSubscription(false)
+      }
+    } catch (err) {
+      console.error('Portal error:', err)
+      setError('Failed to open subscription management')
+      setManagingSubscription(false)
+    }
+  }
+
+  const getPlanName = () => {
+    if (!stripePriceId) return 'No plan'
+    if (stripePriceId === process.env.NEXT_PUBLIC_STRIPE_MONTHLY_PRICE_ID) return 'Pro Monthly'
+    if (stripePriceId === process.env.NEXT_PUBLIC_STRIPE_YEARLY_PRICE_ID) return 'Pro Yearly'
+    return 'Pro'
+  }
+
+  const getStatusBadge = () => {
+    switch (subscriptionStatus) {
+      case 'active':
+        return <span className="px-2 py-1 bg-green-500/20 text-green-400 rounded-full text-xs font-medium">Active</span>
+      case 'trialing':
+        return <span className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded-full text-xs font-medium">Trial</span>
+      case 'past_due':
+        return <span className="px-2 py-1 bg-red-500/20 text-red-400 rounded-full text-xs font-medium">Past Due</span>
+      case 'canceled':
+        return <span className="px-2 py-1 bg-slate-500/20 text-slate-400 rounded-full text-xs font-medium">Canceled</span>
+      default:
+        return <span className="px-2 py-1 bg-slate-500/20 text-slate-400 rounded-full text-xs font-medium">Inactive</span>
+    }
+  }
 
   if (loading) {
     return (
@@ -298,6 +349,36 @@ export default function SettingsPage() {
         >
           {saving ? 'Saving...' : 'Save Changes'}
         </button>
+      </div>
+
+      {/* Subscription Section */}
+      <div className="card mt-8">
+        <h2 className="text-lg font-semibold text-white mb-4">Subscription</h2>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between p-4 bg-[#1e3a5f]/30 rounded-lg">
+            <div>
+              <div className="flex items-center gap-3">
+                <span className="text-white font-medium">{getPlanName()}</span>
+                {getStatusBadge()}
+              </div>
+              {periodEnd && (
+                <p className="text-slate-400 text-sm mt-1">
+                  {subscriptionStatus === 'trialing' ? 'Trial ends' : 'Next billing'}: {new Date(periodEnd).toLocaleDateString()}
+                </p>
+              )}
+            </div>
+            <button
+              onClick={handleManageSubscription}
+              disabled={managingSubscription}
+              className="btn-secondary"
+            >
+              {managingSubscription ? 'Loading...' : 'Manage'}
+            </button>
+          </div>
+          <p className="text-slate-500 text-sm">
+            Manage your subscription, update payment method, or cancel anytime.
+          </p>
+        </div>
       </div>
 
       {/* Account Section */}
