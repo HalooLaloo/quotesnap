@@ -33,7 +33,7 @@ export default function RegisterPage() {
       email,
       password,
       options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        emailRedirectTo: 'https://brickquote.app/auth/callback',
         data: {
           source_app: 'brickquote',
         },
