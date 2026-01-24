@@ -11,7 +11,7 @@ interface SidebarProps {
 
 const navItems = [
   {
-    href: '/',
+    href: '/dashboard',
     label: 'Dashboard',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -72,8 +72,8 @@ export function Sidebar({ userEmail }: SidebarProps) {
   const [isMobileOpen, setIsMobileOpen] = useState(false)
 
   const isActive = (href: string) => {
-    if (href === '/') {
-      return pathname === '/'
+    if (href === '/dashboard') {
+      return pathname === '/dashboard'
     }
     if (href === '/requests') {
       return pathname === '/requests' || pathname.startsWith('/requests/')
@@ -110,7 +110,7 @@ export function Sidebar({ userEmail }: SidebarProps) {
       `}>
         {/* Logo */}
         <div className="p-4 border-b border-[#1e3a5f] flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2" onClick={() => setIsMobileOpen(false)}>
+          <Link href="/dashboard" className="flex items-center gap-2" onClick={() => setIsMobileOpen(false)}>
             <div className="w-8 h-8 bg-[#132039] rounded-lg flex items-center justify-center">
               <svg className="w-5 h-5 text-orange-500" viewBox="0 0 24 24" fill="currentColor">
                 <rect x="2" y="6" width="9" height="5" rx="0.5" />
