@@ -250,22 +250,42 @@ export default async function Home() {
       {/* Stats Section */}
       <section className="py-16 px-4 border-y border-[#1e3a5f] bg-[#0d1f35]/50">
         <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            <div>
-              <p className="text-4xl font-bold text-white mb-2">Hours → 5 min</p>
-              <p className="text-slate-400">Quote creation time</p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div className="bg-[#132039] border border-[#1e3a5f] rounded-xl p-6 text-center">
+              <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center mx-auto mb-4">
+                <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </div>
+              <p className="text-2xl font-bold text-white mb-1">Hours → 5 min</p>
+              <p className="text-slate-400 text-sm">Quote creation time</p>
             </div>
-            <div>
-              <p className="text-4xl font-bold text-white mb-2">No visit</p>
-              <p className="text-slate-400">Quote from photos</p>
+            <div className="bg-[#132039] border border-[#1e3a5f] rounded-xl p-6 text-center">
+              <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-4">
+                <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+              </div>
+              <p className="text-2xl font-bold text-white mb-1">No site visit</p>
+              <p className="text-slate-400 text-sm">Quote from photos</p>
             </div>
-            <div>
-              <p className="text-4xl font-bold text-white mb-2">Zero</p>
-              <p className="text-slate-400">Paperwork</p>
+            <div className="bg-[#132039] border border-[#1e3a5f] rounded-xl p-6 text-center">
+              <div className="w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center mx-auto mb-4">
+                <svg className="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <p className="text-2xl font-bold text-white mb-1">Zero paperwork</p>
+              <p className="text-slate-400 text-sm">100% digital</p>
             </div>
-            <div>
-              <p className="text-4xl font-bold text-white mb-2">24/7</p>
-              <p className="text-slate-400">Clients can request quotes</p>
+            <div className="bg-[#132039] border border-[#1e3a5f] rounded-xl p-6 text-center">
+              <div className="w-12 h-12 rounded-full bg-amber-500/20 flex items-center justify-center mx-auto mb-4">
+                <svg className="w-6 h-6 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <p className="text-2xl font-bold text-white mb-1">24/7</p>
+              <p className="text-slate-400 text-sm">Clients request anytime</p>
             </div>
           </div>
         </div>
