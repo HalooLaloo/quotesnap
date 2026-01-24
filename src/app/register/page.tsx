@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
 export default function RegisterPage() {
@@ -10,8 +9,8 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState(false)
   const [loading, setLoading] = useState(false)
-  const router = useRouter()
   const supabase = createClient()
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -42,8 +41,8 @@ export default function RegisterPage() {
       setError(error.message)
       setLoading(false)
     } else {
-      router.push('/requests')
-      router.refresh()
+      setSuccess(true)
+      setLoading(false)
     }
   }
 
@@ -68,11 +67,29 @@ export default function RegisterPage() {
 
         {/* Card */}
         <div className="card">
-          <h1 className="text-2xl font-bold text-white mb-6 text-center">
-            Stwórz konto
-          </h1>
+          {success ? (
+            <div className="text-center py-4">
+              <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <h2 className="text-xl font-bold text-white mb-2">Sprawdź swoją skrzynkę</h2>
+              <p className="text-slate-400 mb-4">
+                Wysłaliśmy link potwierdzający na adres:<br />
+                <span className="text-white font-medium">{email}</span>
+              </p>
+              <p className="text-slate-500 text-sm">
+                Kliknij link w mailu, aby aktywować konto.
+              </p>
+            </div>
+          ) : (
+            <>
+              <h1 className="text-2xl font-bold text-white mb-6 text-center">
+                Stwórz konto
+              </h1>
 
-          <form onSubmit={handleRegister} className="space-y-4">
+              <form onSubmit={handleRegister} className="space-y-4">
             {error && (
               <div className="bg-red-500/10 border border-red-500/50 text-red-400 px-4 py-3 rounded-lg text-sm">
                 {error}
@@ -133,6 +150,8 @@ export default function RegisterPage() {
               Zaloguj się
             </Link>
           </p>
+            </>
+          )}
         </div>
       </div>
     </div>
