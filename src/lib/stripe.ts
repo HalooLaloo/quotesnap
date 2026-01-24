@@ -37,7 +37,7 @@ export const PLANS = {
     features: [
       'Everything in monthly',
       'Save $99 per year',
-      '2 months free',
+      'Save $99 (3+ months free)',
     ],
   },
 } as const
