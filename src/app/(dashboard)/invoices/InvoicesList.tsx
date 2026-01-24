@@ -1,7 +1,9 @@
 'use client'
 
 import { useState, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { createClient } from '@/lib/supabase/client'
 import { COUNTRIES } from '@/lib/countries'
 
 interface Invoice {
@@ -32,6 +34,30 @@ type StatusFilter = 'all' | 'draft' | 'sent' | 'paid' | 'overdue'
 export function InvoicesList({ invoices }: InvoicesListProps) {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
+  const [deleteModal, setDeleteModal] = useState<Invoice | null>(null)
+  const [deleting, setDeleting] = useState(false)
+  const router = useRouter()
+  const supabase = createClient()
+
+  const handleDelete = async () => {
+    if (!deleteModal) return
+    setDeleting(true)
+    try {
+      const { error } = await supabase
+        .from('qs_invoices')
+        .delete()
+        .eq('id', deleteModal.id)
+
+      if (error) throw error
+      setDeleteModal(null)
+      router.refresh()
+    } catch (err) {
+      console.error('Error deleting invoice:', err)
+      alert('Nie udało się usunąć faktury')
+    } finally {
+      setDeleting(false)
+    }
+  }
 
   // Check if invoice is overdue
   const isOverdue = (invoice: Invoice) => {
@@ -187,17 +213,16 @@ export function InvoicesList({ invoices }: InvoicesListProps) {
             const currencySymbol = getCurrencySymbol(invoice.currency || 'PLN')
 
             return (
-              <Link
+              <div
                 key={invoice.id}
-                href={`/invoices/${invoice.id}`}
-                className={`block p-4 rounded-lg transition-colors ${
+                className={`p-4 rounded-lg transition-colors ${
                   overdue
-                    ? 'bg-red-500/10 border border-red-500/30 hover:bg-red-500/20'
-                    : 'bg-slate-700/50 hover:bg-slate-700'
+                    ? 'bg-red-500/10 border border-red-500/30'
+                    : 'bg-slate-700/50'
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <div className="flex-1 min-w-0">
+                  <Link href={`/invoices/${invoice.id}`} className="flex-1 min-w-0 hover:opacity-80">
                     <div className="flex items-center gap-3 mb-1">
                       <p className="text-white font-medium text-lg">
                         {invoice.client_name || 'Brak nazwy'}
@@ -219,7 +244,7 @@ export function InvoicesList({ invoices }: InvoicesListProps) {
                         <span> • {invoice.client_email}</span>
                       )}
                     </p>
-                  </div>
+                  </Link>
                   <div className="flex items-center gap-4 ml-4">
                     <div className="text-right">
                       <p className={`text-lg font-bold ${overdue ? 'text-red-400' : 'text-white'}`}>
@@ -234,12 +259,26 @@ export function InvoicesList({ invoices }: InvoicesListProps) {
                         </p>
                       )}
                     </div>
-                    <svg className="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault()
+                        setDeleteModal(invoice)
+                      }}
+                      className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                      title="Usuń fakturę"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                    <Link href={`/invoices/${invoice.id}`} className="text-slate-500 hover:text-white">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </Link>
                   </div>
                 </div>
-              </Link>
+              </div>
             )
           })}
         </div>
@@ -273,6 +312,53 @@ export function InvoicesList({ invoices }: InvoicesListProps) {
               </Link>
             </>
           )}
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-slate-800 rounded-xl p-6 max-w-md w-full border border-slate-700">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-12 h-12 bg-red-500/20 rounded-full flex items-center justify-center">
+                <svg className="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-white">Usuń fakturę</h3>
+                <p className="text-slate-400 text-sm">Ta operacja jest nieodwracalna</p>
+              </div>
+            </div>
+
+            <p className="text-slate-300 mb-6">
+              Czy na pewno chcesz usunąć fakturę <span className="font-semibold text-white">{deleteModal.invoice_number}</span> dla klienta <span className="font-semibold text-white">{deleteModal.client_name}</span>?
+            </p>
+
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setDeleteModal(null)}
+                disabled={deleting}
+                className="btn-secondary"
+              >
+                Anuluj
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 flex items-center gap-2"
+              >
+                {deleting ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Usuwanie...
+                  </>
+                ) : (
+                  'Usuń fakturę'
+                )}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
