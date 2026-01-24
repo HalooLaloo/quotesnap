@@ -1,17 +1,16 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 
-export default function LoginPage() {
+function LoginForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
-  const router = useRouter()
   const searchParams = useSearchParams()
   const supabase = createClient()
 
@@ -60,6 +59,70 @@ export default function LoginPage() {
   }
 
   return (
+    <div className="card">
+      <h1 className="text-2xl font-bold text-white mb-6 text-center">
+        Witaj ponownie
+      </h1>
+
+      <form onSubmit={handleLogin} className="space-y-4">
+        {success && (
+          <div className="bg-green-500/10 border border-green-500/50 text-green-400 px-4 py-3 rounded-lg text-sm">
+            {success}
+          </div>
+        )}
+        {error && (
+          <div className="bg-red-500/10 border border-red-500/50 text-red-400 px-4 py-3 rounded-lg text-sm">
+            {error}
+          </div>
+        )}
+
+        <div>
+          <label htmlFor="email" className="label">E-mail</label>
+          <input
+            id="email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="input"
+            placeholder="you@example.com"
+            required
+          />
+        </div>
+
+        <div>
+          <label htmlFor="password" className="label">Hasło</label>
+          <input
+            id="password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="input"
+            placeholder="••••••••"
+            required
+          />
+        </div>
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="btn-primary w-full"
+        >
+          {loading ? 'Logowanie...' : 'Zaloguj się'}
+        </button>
+      </form>
+
+      <p className="mt-6 text-center text-slate-400 text-sm">
+        Nie masz konta?{' '}
+        <Link href="/register" className="text-blue-400 hover:text-blue-300">
+          Zarejestruj się
+        </Link>
+      </p>
+    </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
     <div className="min-h-screen flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         {/* Logo */}
@@ -78,66 +141,9 @@ export default function LoginPage() {
           </Link>
         </div>
 
-        {/* Card */}
-        <div className="card">
-          <h1 className="text-2xl font-bold text-white mb-6 text-center">
-            Witaj ponownie
-          </h1>
-
-          <form onSubmit={handleLogin} className="space-y-4">
-            {success && (
-              <div className="bg-green-500/10 border border-green-500/50 text-green-400 px-4 py-3 rounded-lg text-sm">
-                {success}
-              </div>
-            )}
-            {error && (
-              <div className="bg-red-500/10 border border-red-500/50 text-red-400 px-4 py-3 rounded-lg text-sm">
-                {error}
-              </div>
-            )}
-
-            <div>
-              <label htmlFor="email" className="label">E-mail</label>
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="input"
-                placeholder="you@example.com"
-                required
-              />
-            </div>
-
-            <div>
-              <label htmlFor="password" className="label">Hasło</label>
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="input"
-                placeholder="••••••••"
-                required
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="btn-primary w-full"
-            >
-              {loading ? 'Logowanie...' : 'Zaloguj się'}
-            </button>
-          </form>
-
-          <p className="mt-6 text-center text-slate-400 text-sm">
-            Nie masz konta?{' '}
-            <Link href="/register" className="text-blue-400 hover:text-blue-300">
-              Zarejestruj się
-            </Link>
-          </p>
-        </div>
+        <Suspense fallback={<div className="card"><div className="text-center text-slate-400">Loading...</div></div>}>
+          <LoginForm />
+        </Suspense>
       </div>
     </div>
   )
