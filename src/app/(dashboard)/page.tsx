@@ -7,6 +7,15 @@ function getCurrencySymbol(currencyCode: string): string {
   return country?.currencySymbol || currencyCode
 }
 
+// Helper to get client name from quote request (handles both array and object from Supabase)
+function getClientName(req: unknown): string {
+  if (!req) return 'Unknown'
+  if (Array.isArray(req)) {
+    return req[0]?.client_name || 'Unknown'
+  }
+  return (req as { client_name: string }).client_name || 'Unknown'
+}
+
 export default async function DashboardPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -81,7 +90,7 @@ export default async function DashboardPage() {
     ...(quotes?.slice(0, 5).map(q => ({
       type: 'quote' as const,
       id: q.id,
-      title: (q.qs_quote_requests as { client_name: string } | null)?.client_name || 'Unknown',
+      title: getClientName(q.qs_quote_requests),
       status: q.viewed_at && q.status === 'sent' ? 'viewed' : q.status,
       date: q.created_at,
       href: `/quotes/${q.id}`,
@@ -224,7 +233,7 @@ export default async function DashboardPage() {
               <div className="space-y-2">
                 {expiringQuotes.slice(0, 3).map(q => (
                   <Link key={q.id} href={`/quotes/${q.id}`} className="block text-sm text-slate-400 hover:text-white">
-                    {(q.qs_quote_requests as { client_name: string } | null)?.client_name} - {currencySymbol}{(q.total_gross || q.total)?.toFixed(2)}
+                    {getClientName(q.qs_quote_requests)} - {currencySymbol}{(q.total_gross || q.total)?.toFixed(2)}
                   </Link>
                 ))}
               </div>
