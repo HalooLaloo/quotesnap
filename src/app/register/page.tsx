@@ -44,8 +44,16 @@ export default function RegisterPage() {
       setError(error.message)
       setLoading(false)
     } else {
-      setSuccess(true)
-      setLoading(false)
+      // Check if user is immediately logged in (no email confirmation required)
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        // User is logged in, redirect to subscribe
+        window.location.href = '/subscribe'
+      } else {
+        // Email confirmation required, show success message
+        setSuccess(true)
+        setLoading(false)
+      }
     }
   }
 
