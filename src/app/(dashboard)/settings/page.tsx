@@ -23,6 +23,10 @@ export default function SettingsPage() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
+  // User ID for integrations
+  const [userId, setUserId] = useState('')
+  const [copied, setCopied] = useState(false)
+
   // Profile fields
   const [fullName, setFullName] = useState('')
   const [companyName, setCompanyName] = useState('')
@@ -53,6 +57,7 @@ export default function SettingsPage() {
         if (profileError) throw profileError
 
         if (profile) {
+          setUserId(user.id)
           setFullName(profile.full_name || '')
           setCompanyName(profile.company_name || '')
           setEmail(user.email || '')
@@ -293,6 +298,40 @@ export default function SettingsPage() {
         >
           {saving ? 'Saving...' : 'Save Changes'}
         </button>
+      </div>
+
+      {/* Account Section */}
+      <div className="card mt-8">
+        <h2 className="text-lg font-semibold text-white mb-4">Account</h2>
+        <div>
+          <label className="label">Your Account ID</label>
+          <p className="text-slate-400 text-sm mb-2">
+            Use this ID to connect with other Brick apps like BrickProfile
+          </p>
+          <div className="flex items-center gap-2">
+            <code className="flex-1 bg-[#1e3a5f]/50 border border-[#1e3a5f] rounded-lg px-4 py-3 text-slate-300 font-mono text-sm">
+              {userId}
+            </code>
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(userId)
+                setCopied(true)
+                setTimeout(() => setCopied(false), 2000)
+              }}
+              className="btn-secondary px-4 py-3"
+            >
+              {copied ? (
+                <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              ) : (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+              )}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   )
