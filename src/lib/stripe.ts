@@ -7,27 +7,37 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 // BrickQuote pricing
 export const PLANS = {
-  starter: {
-    name: 'Starter',
+  monthly: {
+    name: 'Pro Monthly',
     price: 29,
-    priceId: '', // Will be set after creating in Stripe
+    interval: 'month',
+    priceId: process.env.STRIPE_MONTHLY_PRICE_ID || '',
+    trialDays: 3,
     features: [
-      '30 quotes per month',
+      'Unlimited quotes & invoices',
+      'AI photo analysis',
+      'AI line item suggestions',
       'AI chatbot for clients',
-      'Email quote delivery',
-      'Basic analytics',
+      'Client request portal',
+      'Online quote acceptance',
+      'Professional PDF generation',
+      'Email notifications',
+      'Service catalog',
+      'Payment tracking',
+      'Priority support',
     ],
   },
-  pro: {
-    name: 'Pro',
-    price: 49,
-    priceId: '', // Will be set after creating in Stripe
+  yearly: {
+    name: 'Pro Yearly',
+    price: 249,
+    interval: 'year',
+    priceId: process.env.STRIPE_YEARLY_PRICE_ID || '',
+    trialDays: 0, // No trial for yearly - they save $99
+    savings: 99,
     features: [
-      'Unlimited quotes',
-      'Priority AI processing',
-      'Custom branding on PDFs',
-      'Advanced analytics',
-      'Priority support',
+      'Everything in monthly',
+      'Save $99 per year',
+      '2 months free',
     ],
   },
 } as const

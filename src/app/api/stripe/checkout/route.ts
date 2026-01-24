@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { stripe } from '@/lib/stripe'
+import { stripe, PLANS, PlanType } from '@/lib/stripe'
 import { createClient } from '@/lib/supabase/server'
 
 export async function POST(request: NextRequest) {
@@ -11,10 +11,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { priceId } = await request.json()
+    const { plan } = await request.json() as { plan: PlanType }
 
-    if (!priceId) {
-      return NextResponse.json({ error: 'Price ID required' }, { status: 400 })
+    if (!plan || !PLANS[plan]) {
+      return NextResponse.json({ error: 'Invalid plan' }, { status: 400 })
+    }
+
+    const selectedPlan = PLANS[plan]
+
+    if (!selectedPlan.priceId) {
+      return NextResponse.json({ error: 'Price ID not configured' }, { status: 500 })
     }
 
     // Get or create Stripe customer
@@ -40,19 +46,26 @@ export async function POST(request: NextRequest) {
     }
 
     // Create checkout session
-    const session = await stripe.checkout.sessions.create({
+    const sessionConfig: Parameters<typeof stripe.checkout.sessions.create>[0] = {
       customer: customerId,
       mode: 'subscription',
       payment_method_types: ['card'],
-      line_items: [{ price: priceId, quantity: 1 }],
+      line_items: [{ price: selectedPlan.priceId, quantity: 1 }],
       success_url: `${request.headers.get('origin')}/requests?success=true`,
       cancel_url: `${request.headers.get('origin')}/pricing?canceled=true`,
+      metadata: { userId: user.id },
       subscription_data: {
-        trial_period_days: 7,
         metadata: { userId: user.id },
       },
-      metadata: { userId: user.id },
-    })
+      allow_promotion_codes: true,
+    }
+
+    // Add trial only for monthly plan
+    if (selectedPlan.trialDays > 0) {
+      sessionConfig.subscription_data!.trial_period_days = selectedPlan.trialDays
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionConfig)
 
     return NextResponse.json({ url: session.url })
   } catch (error) {
