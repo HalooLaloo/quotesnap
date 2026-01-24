@@ -38,7 +38,15 @@ export default function LoginPage() {
         {/* Logo */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2">
-            <img src="/logo.jpeg" alt="BrickQuote" className="w-10 h-10 rounded-lg" />
+            <div className="w-10 h-10 rounded-lg bg-[#132039] flex items-center justify-center">
+              <svg className="w-6 h-6 text-orange-500" viewBox="0 0 24 24" fill="currentColor">
+                <rect x="2" y="6" width="9" height="5" rx="0.5" />
+                <rect x="13" y="6" width="9" height="5" rx="0.5" />
+                <rect x="6" y="13" width="9" height="5" rx="0.5" />
+                <rect x="17" y="13" width="5" height="5" rx="0.5" />
+                <rect x="2" y="13" width="2" height="5" rx="0.5" />
+              </svg>
+            </div>
             <span className="text-2xl font-bold text-white">BrickQuote</span>
           </Link>
         </div>
