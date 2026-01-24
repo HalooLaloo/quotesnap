@@ -29,11 +29,15 @@ export default function RegisterPage() {
 
     setLoading(true)
 
+    const redirectUrl = `${window.location.origin}/auth/callback`
+    console.log('emailRedirectTo:', redirectUrl)
+    alert('Redirect URL: ' + redirectUrl)
+
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        emailRedirectTo: redirectUrl,
       },
     })
 
