@@ -59,7 +59,7 @@ export function SentQuotes({ quotes }: SentQuotesProps) {
         >
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
         </svg>
-        Wysłane wyceny ({quotes.length}) - klient potwierdził ustnie
+        Pozostałe wyceny ({quotes.length})
       </button>
 
       {isExpanded && (
