@@ -3,6 +3,24 @@
 import { jsPDF } from 'jspdf'
 import autoTable from 'jspdf-autotable'
 
+// Transliterate Polish and other special characters to ASCII
+function toAscii(text: string | null | undefined): string {
+  if (!text) return ''
+  const map: Record<string, string> = {
+    'ą': 'a', 'ć': 'c', 'ę': 'e', 'ł': 'l', 'ń': 'n',
+    'ó': 'o', 'ś': 's', 'ź': 'z', 'ż': 'z',
+    'Ą': 'A', 'Ć': 'C', 'Ę': 'E', 'Ł': 'L', 'Ń': 'N',
+    'Ó': 'O', 'Ś': 'S', 'Ź': 'Z', 'Ż': 'Z',
+    'ä': 'a', 'ö': 'o', 'ü': 'u', 'ß': 'ss',
+    'Ä': 'A', 'Ö': 'O', 'Ü': 'U',
+    'à': 'a', 'â': 'a', 'é': 'e', 'è': 'e', 'ê': 'e', 'ë': 'e',
+    'î': 'i', 'ï': 'i', 'ô': 'o', 'ù': 'u', 'û': 'u', 'ç': 'c',
+    'À': 'A', 'Â': 'A', 'É': 'E', 'È': 'E', 'Ê': 'E', 'Ë': 'E',
+    'Î': 'I', 'Ï': 'I', 'Ô': 'O', 'Ù': 'U', 'Û': 'U', 'Ç': 'C',
+  }
+  return text.split('').map(char => map[char] || char).join('')
+}
+
 interface QuoteItem {
   service_name: string
   quantity: number
@@ -38,148 +56,176 @@ interface ExportPDFButtonProps {
 export function ExportPDFButton({ quote, contractorName }: ExportPDFButtonProps) {
   const handleExport = () => {
     const doc = new jsPDF()
-    const clientName = quote.qs_quote_requests?.client_name || 'Client'
+    const clientName = toAscii(quote.qs_quote_requests?.client_name || 'Klient')
+    const contractor = toAscii(contractorName || 'Wykonawca')
 
-    // Header
-    doc.setFontSize(24)
-    doc.setTextColor(37, 99, 235) // blue-600
-    doc.text('BrickQuote', 20, 25)
+    // Header - Slate blue
+    doc.setFillColor(30, 58, 95) // #1e3a5f
+    doc.rect(0, 0, 210, 30, 'F')
 
-    doc.setFontSize(12)
-    doc.setTextColor(100, 116, 139) // slate-500
-    doc.text('Professional Quote', 20, 32)
+    doc.setTextColor(255, 255, 255)
+    doc.setFontSize(20)
+    doc.setFont('helvetica', 'bold')
+    doc.text('BrickQuote', 20, 20)
+
+    doc.setFontSize(11)
+    doc.setFont('helvetica', 'normal')
+    doc.text('Wycena', 190, 20, { align: 'right' })
 
     // Quote info
+    let y = 45
+    doc.setTextColor(0, 0, 0)
     doc.setFontSize(10)
-    doc.setTextColor(71, 85, 105) // slate-600
-    doc.text(`Quote #${quote.id.slice(0, 8).toUpperCase()}`, 140, 20)
-    doc.text(`Date: ${new Date(quote.created_at).toLocaleDateString()}`, 140, 26)
-    if (quote.valid_until) {
-      doc.text(`Valid until: ${new Date(quote.valid_until).toLocaleDateString()}`, 140, 32)
-    }
 
-    // Client info
-    doc.setFontSize(12)
-    doc.setTextColor(30, 41, 59) // slate-800
-    doc.text('Quote for:', 20, 50)
-    doc.setFontSize(14)
-    doc.text(clientName, 20, 57)
-    doc.setFontSize(10)
-    doc.setTextColor(71, 85, 105)
-    if (quote.qs_quote_requests?.client_email) {
-      doc.text(quote.qs_quote_requests.client_email, 20, 63)
-    }
+    // Left column - Contractor
+    doc.setFont('helvetica', 'bold')
+    doc.text('Wykonawca:', 20, y)
+    doc.setFont('helvetica', 'normal')
+    doc.text(contractor, 20, y + 6)
+
+    // Right column - Client
+    doc.setFont('helvetica', 'bold')
+    doc.text('Klient:', 120, y)
+    doc.setFont('helvetica', 'normal')
+    doc.text(clientName, 120, y + 6)
     if (quote.qs_quote_requests?.client_phone) {
-      doc.text(quote.qs_quote_requests.client_phone, 20, 69)
+      doc.text(`Tel: ${quote.qs_quote_requests.client_phone}`, 120, y + 12)
+    }
+    if (quote.qs_quote_requests?.client_email) {
+      doc.text(`Email: ${quote.qs_quote_requests.client_email}`, 120, y + 18)
     }
 
-    // Contractor info
-    if (contractorName) {
-      doc.setFontSize(12)
-      doc.setTextColor(30, 41, 59)
-      doc.text('From:', 140, 50)
-      doc.setFontSize(14)
-      doc.text(contractorName, 140, 57)
+    // Date info
+    y = 85
+    doc.setFontSize(10)
+    doc.setTextColor(100, 100, 100)
+    const createdDate = new Date(quote.created_at).toLocaleDateString('pl-PL')
+    doc.text(`Data wyceny: ${createdDate}`, 20, y)
+
+    if (quote.valid_until) {
+      const validDate = new Date(quote.valid_until).toLocaleDateString('pl-PL')
+      doc.text(`Wazna do: ${validDate}`, 80, y)
+    }
+
+    if (quote.available_from) {
+      const availableDate = new Date(quote.available_from).toLocaleDateString('pl-PL')
+      doc.text(`Dostepnosc od: ${availableDate}`, 140, y)
     }
 
     // Items table
+    y = 100
     const tableData = quote.items.map((item) => [
-      item.service_name,
-      `${item.quantity} ${item.unit}`,
+      toAscii(item.service_name),
+      `${item.quantity} ${toAscii(item.unit)}`,
       `${item.unit_price.toFixed(2)} PLN`,
       `${item.total.toFixed(2)} PLN`,
     ])
 
     autoTable(doc, {
-      startY: 80,
-      head: [['Service', 'Quantity', 'Unit Price', 'Total']],
+      startY: y,
+      head: [['Usluga', 'Ilosc', 'Cena jedn.', 'Wartosc']],
       body: tableData,
       theme: 'striped',
       headStyles: {
-        fillColor: [37, 99, 235], // blue-600
+        fillColor: [30, 58, 95], // #1e3a5f
         textColor: [255, 255, 255],
         fontStyle: 'bold',
+        fontSize: 9,
       },
       styles: {
-        fontSize: 10,
-        cellPadding: 5,
+        fontSize: 8,
+        cellPadding: 3,
+        overflow: 'linebreak',
       },
       columnStyles: {
-        0: { cellWidth: 80 },
-        1: { cellWidth: 30, halign: 'center' },
-        2: { cellWidth: 35, halign: 'right' },
-        3: { cellWidth: 35, halign: 'right' },
+        0: { cellWidth: 85 },
+        1: { cellWidth: 25, halign: 'center' },
+        2: { cellWidth: 30, halign: 'right' },
+        3: { cellWidth: 30, halign: 'right' },
       },
     })
 
     // Summary
-    const finalY = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10
+    // @ts-expect-error - autoTable adds lastAutoTable property
+    y = (doc as { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY + 15 || y + 60
 
+    const summaryX = 120
     doc.setFontSize(10)
-    doc.setTextColor(71, 85, 105)
-
-    let yPos = finalY
+    doc.setTextColor(0, 0, 0)
 
     // Subtotal
-    doc.text('Subtotal:', 130, yPos)
-    doc.text(`${quote.subtotal.toFixed(2)} PLN`, 190, yPos, { align: 'right' })
-    yPos += 7
+    doc.text('Suma:', summaryX, y)
+    doc.text(`${quote.subtotal.toFixed(2)} PLN`, 190, y, { align: 'right' })
 
     // Discount
     if (quote.discount_percent > 0) {
-      doc.text(`Discount (${quote.discount_percent}%):`, 130, yPos)
-      doc.setTextColor(220, 38, 38) // red
-      doc.text(`-${(quote.subtotal * quote.discount_percent / 100).toFixed(2)} PLN`, 190, yPos, { align: 'right' })
-      doc.setTextColor(71, 85, 105)
-      yPos += 7
-    }
-
-    // Net total
-    if (quote.total_net) {
-      doc.text('Net total:', 130, yPos)
-      doc.text(`${quote.total_net.toFixed(2)} PLN`, 190, yPos, { align: 'right' })
-      yPos += 7
+      y += 7
+      doc.text(`Rabat (${quote.discount_percent}%):`, summaryX, y)
+      doc.setTextColor(220, 38, 38)
+      doc.text(`-${(quote.subtotal * quote.discount_percent / 100).toFixed(2)} PLN`, 190, y, { align: 'right' })
+      doc.setTextColor(0, 0, 0)
     }
 
     // VAT
     if (quote.vat_percent && quote.vat_percent > 0) {
-      doc.text(`VAT (${quote.vat_percent}%):`, 130, yPos)
-      const vatAmount = (quote.total_gross || quote.total) - (quote.total_net || quote.subtotal)
-      doc.text(`${vatAmount.toFixed(2)} PLN`, 190, yPos, { align: 'right' })
-      yPos += 7
+      y += 7
+      doc.text('Netto:', summaryX, y)
+      doc.text(`${quote.total_net?.toFixed(2)} PLN`, 190, y, { align: 'right' })
+
+      y += 7
+      doc.text(`VAT (${quote.vat_percent}%):`, summaryX, y)
+      doc.text(`${((quote.total_net || 0) * quote.vat_percent / 100).toFixed(2)} PLN`, 190, y, { align: 'right' })
     }
 
     // Total
-    yPos += 3
-    doc.setDrawColor(37, 99, 235)
-    doc.line(130, yPos - 3, 190, yPos - 3)
+    y += 10
+    doc.setDrawColor(30, 58, 95)
+    doc.setLineWidth(0.5)
+    doc.line(120, y - 3, 190, y - 3)
 
-    doc.setFontSize(14)
-    doc.setTextColor(30, 41, 59)
-    doc.setFont(undefined as unknown as string, 'bold')
-    doc.text('Total:', 130, yPos + 4)
-    doc.text(`${(quote.total_gross || quote.total).toFixed(2)} PLN`, 190, yPos + 4, { align: 'right' })
+    doc.setFontSize(11)
+    doc.setFont('helvetica', 'bold')
+    doc.setTextColor(30, 58, 95)
+    doc.text('RAZEM:', 120, y + 2)
+    doc.text(`${(quote.total_gross || quote.total).toFixed(2)} PLN`, 190, y + 2, { align: 'right' })
+    doc.setTextColor(0, 0, 0)
 
     // Notes
     if (quote.notes) {
-      yPos += 20
-      doc.setFontSize(12)
-      doc.setFont(undefined as unknown as string, 'normal')
-      doc.text('Notes:', 20, yPos)
-      doc.setFontSize(10)
-      doc.setTextColor(71, 85, 105)
+      if (y > 240) {
+        doc.addPage()
+        y = 20
+      } else {
+        y += 20
+      }
 
-      const splitNotes = doc.splitTextToSize(quote.notes, 170)
-      doc.text(splitNotes, 20, yPos + 7)
+      doc.setFontSize(10)
+      doc.setFont('helvetica', 'bold')
+      doc.text('Uwagi:', 20, y)
+      doc.setFont('helvetica', 'normal')
+
+      const splitNotes = doc.splitTextToSize(toAscii(quote.notes), 170)
+      doc.text(splitNotes, 20, y + 6)
     }
+
+    // Thank you message
+    const pageCount = doc.getNumberOfPages()
+    doc.setPage(pageCount)
+
+    doc.setFontSize(10)
+    doc.setTextColor(30, 58, 95)
+    doc.setFont('helvetica', 'bold')
+    doc.text('Dziekujemy za zainteresowanie!', 105, 265, { align: 'center' })
 
     // Footer
     doc.setFontSize(8)
-    doc.setTextColor(148, 163, 184) // slate-400
-    doc.text('Generated by BrickQuote', 105, 285, { align: 'center' })
+    doc.setFont('helvetica', 'normal')
+    doc.setTextColor(150, 150, 150)
+    doc.text('Wycena wygenerowana przez BrickQuote', 105, 280, { align: 'center' })
+    doc.text('Wycena ma charakter orientacyjny. Ostateczna cena moze roznic sie po ocenie zakresu prac na miejscu.', 105, 285, { align: 'center' })
 
     // Save
-    doc.save(`quote-${clientName.toLowerCase().replace(/\s+/g, '-')}-${quote.id.slice(0, 8)}.pdf`)
+    doc.save(`wycena-${clientName.toLowerCase().replace(/\s+/g, '-')}.pdf`)
   }
 
   return (
