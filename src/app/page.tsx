@@ -252,12 +252,12 @@ export default async function Home() {
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             <div>
-              <p className="text-4xl font-bold text-white mb-2">80%</p>
-              <p className="text-slate-400">Faster quote creation</p>
+              <p className="text-4xl font-bold text-white mb-2">Hours → 5 min</p>
+              <p className="text-slate-400">Quote creation time</p>
             </div>
             <div>
-              <p className="text-4xl font-bold text-white mb-2">5 min</p>
-              <p className="text-slate-400">Average time per quote</p>
+              <p className="text-4xl font-bold text-white mb-2">No visit</p>
+              <p className="text-slate-400">Quote from photos</p>
             </div>
             <div>
               <p className="text-4xl font-bold text-white mb-2">2x</p>
