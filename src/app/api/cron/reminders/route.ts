@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { createClient } from '@supabase/supabase-js'
 
+// Force dynamic rendering for this route
+export const dynamic = 'force-dynamic'
+
 // Helper to get client name from quote request (handles both array and object from Supabase)
 function getClientName(req: unknown): string {
   if (!req) return 'Unknown'
