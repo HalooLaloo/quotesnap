@@ -33,24 +33,44 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  // Publiczne ścieżki - nie wymagają logowania
-  const publicPaths = ['/login', '/register', '/request', '/quote', '/pricing', '/api', '/privacy', '/terms', '/contact']
+  // Public paths - no login required
+  const publicPaths = ['/login', '/register', '/request', '/quote', '/pricing', '/api', '/privacy', '/terms', '/contact', '/subscribe']
   const isPublicPath = publicPaths.some(path =>
     request.nextUrl.pathname.startsWith(path)
   )
 
-  // Przekierowanie niezalogowanych na login
+  // Redirect unauthenticated users to login
   if (!user && !isPublicPath && request.nextUrl.pathname !== '/') {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)
   }
 
-  // Przekierowanie zalogowanych z loginu na requests
+  // Redirect logged-in users from login/register
   if (user && (request.nextUrl.pathname === '/login' || request.nextUrl.pathname === '/register')) {
     const url = request.nextUrl.clone()
     url.pathname = '/requests'
     return NextResponse.redirect(url)
+  }
+
+  // Check subscription for protected routes (dashboard)
+  if (user && !isPublicPath && request.nextUrl.pathname !== '/') {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('subscription_status')
+      .eq('id', user.id)
+      .single()
+
+    const hasActiveSubscription =
+      profile?.subscription_status === 'active' ||
+      profile?.subscription_status === 'trialing'
+
+    // Redirect to subscribe if no active subscription
+    if (!hasActiveSubscription) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/subscribe'
+      return NextResponse.redirect(url)
+    }
   }
 
   return supabaseResponse
