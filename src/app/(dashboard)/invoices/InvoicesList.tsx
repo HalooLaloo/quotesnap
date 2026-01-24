@@ -226,7 +226,11 @@ export function InvoicesList({ invoices }: InvoicesListProps) {
                     <div className="flex items-center gap-3 mb-1">
                       <p className="text-white font-medium text-lg">
                         {invoice.client_name || 'Brak nazwy'}
-                        <span className={`ml-2 ${overdue ? 'text-red-400' : 'text-green-400'}`}>
+                        <span className={`ml-2 ${
+                          invoice.status === 'paid' ? 'text-green-400' :
+                          overdue ? 'text-red-400' :
+                          'text-orange-400'
+                        }`}>
                           {currencySymbol}{invoice.total_gross?.toFixed(2) || '0.00'}
                         </span>
                       </p>
@@ -250,7 +254,11 @@ export function InvoicesList({ invoices }: InvoicesListProps) {
                   </Link>
                   <div className="flex items-center gap-4 ml-4">
                     <div className="text-right">
-                      <p className={`text-lg font-bold ${overdue ? 'text-red-400' : 'text-white'}`}>
+                      <p className={`text-lg font-bold ${
+                        invoice.status === 'paid' ? 'text-green-400' :
+                        overdue ? 'text-red-400' :
+                        'text-orange-400'
+                      }`}>
                         {currencySymbol}{invoice.total_gross?.toFixed(2) || '0.00'}
                       </p>
                       <p className="text-slate-500 text-sm">
