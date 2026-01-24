@@ -59,7 +59,6 @@ export default async function DashboardPage() {
   // Calculate stats
   const pendingRequests = requests?.filter(r => r.status === 'pending').length || 0
   const sentQuotes = quotes?.filter(q => q.status === 'sent').length || 0
-  const acceptedQuotes = quotes?.filter(q => q.status === 'accepted').length || 0
   const viewedQuotes = quotes?.filter(q => q.status === 'sent' && q.viewed_at).length || 0
 
   const unpaidInvoices = invoices?.filter(i => i.status !== 'paid') || []
@@ -81,52 +80,6 @@ export default async function DashboardPage() {
     new Date(q.valid_until) > new Date()
   ) || []
 
-  // Recent activity (last 5 items combined)
-  const recentActivity = [
-    ...(requests?.slice(0, 5).map(r => ({
-      type: 'request' as const,
-      id: r.id,
-      title: r.client_name,
-      status: r.status,
-      date: r.created_at,
-      href: `/requests/${r.id}`,
-    })) || []),
-    ...(quotes?.slice(0, 5).map(q => ({
-      type: 'quote' as const,
-      id: q.id,
-      title: getClientName(q.qs_quote_requests),
-      status: q.viewed_at && q.status === 'sent' ? 'viewed' : q.status,
-      date: q.created_at,
-      href: `/quotes/${q.id}`,
-      amount: q.total_gross || q.total,
-    })) || []),
-    ...(invoices?.slice(0, 5).map(i => ({
-      type: 'invoice' as const,
-      id: i.id,
-      title: i.client_name,
-      status: i.status,
-      date: i.created_at,
-      href: `/invoices/${i.id}`,
-      amount: i.total_gross,
-    })) || []),
-  ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 8)
-
-  const statusColors: Record<string, string> = {
-    pending: 'bg-yellow-500/20 text-yellow-400',
-    sent: 'bg-blue-500/20 text-blue-400',
-    viewed: 'bg-purple-500/20 text-purple-400',
-    accepted: 'bg-green-500/20 text-green-400',
-    rejected: 'bg-red-500/20 text-red-400',
-    draft: 'bg-slate-500/20 text-slate-400',
-    paid: 'bg-green-500/20 text-green-400',
-    quoted: 'bg-blue-500/20 text-blue-400',
-  }
-
-  const typeLabels: Record<string, string> = {
-    request: 'Zapytanie',
-    quote: 'Wycena',
-    invoice: 'Faktura',
-  }
 
   return (
     <div className="p-8">
@@ -245,64 +198,6 @@ export default async function DashboardPage() {
           )}
         </div>
       )}
-
-      {/* Quick Stats Row */}
-      <div className="grid md:grid-cols-3 gap-4 mb-8">
-        <div className="card">
-          <h3 className="text-slate-400 text-sm mb-2">Konwersja wycen</h3>
-          <p className="text-3xl font-bold text-white">
-            {quotes?.length ? Math.round((acceptedQuotes / quotes.length) * 100) : 0}%
-          </p>
-          <p className="text-slate-500 text-sm">{acceptedQuotes} z {quotes?.length || 0} zaakceptowanych</p>
-        </div>
-        <div className="card">
-          <h3 className="text-slate-400 text-sm mb-2">Łącznie wycen</h3>
-          <p className="text-3xl font-bold text-white">{quotes?.length || 0}</p>
-          <p className="text-slate-500 text-sm">{acceptedQuotes} zaakceptowanych, {quotes?.filter(q => q.status === 'rejected').length || 0} odrzuconych</p>
-        </div>
-        <div className="card">
-          <h3 className="text-slate-400 text-sm mb-2">Łącznie faktur</h3>
-          <p className="text-3xl font-bold text-white">{invoices?.length || 0}</p>
-          <p className="text-slate-500 text-sm">{paidInvoices.length} opłaconych, {unpaidInvoices.length} oczekujących</p>
-        </div>
-      </div>
-
-      {/* Recent Activity */}
-      <div className="card">
-        <h2 className="text-xl font-semibold text-white mb-6">Ostatnia aktywność</h2>
-
-        {recentActivity.length > 0 ? (
-          <div className="space-y-3">
-            {recentActivity.map((item) => (
-              <Link
-                key={`${item.type}-${item.id}`}
-                href={item.href}
-                className="flex items-center justify-between p-3 bg-slate-700/50 rounded-lg hover:bg-slate-700 transition-colors"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="text-slate-500 text-xs w-16">{typeLabels[item.type]}</span>
-                  <span className="text-white font-medium">{item.title}</span>
-                  <span className={`px-2 py-0.5 text-xs rounded-full ${statusColors[item.status] || statusColors.draft}`}>
-                    {item.status}
-                  </span>
-                </div>
-                <div className="flex items-center gap-4">
-                  {'amount' in item && item.amount && (
-                    <span className="text-slate-300 font-medium">{currencySymbol}{item.amount.toFixed(2)}</span>
-                  )}
-                  <span className="text-slate-500 text-sm">
-                    {new Date(item.date).toLocaleDateString('pl-PL')}
-                  </span>
-                </div>
-              </Link>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-8 text-slate-400">
-            <p>Brak aktywności. Zacznij od udostępnienia linku do zapytań klientom!</p>
-          </div>
-        )}
-      </div>
     </div>
   )
 }
