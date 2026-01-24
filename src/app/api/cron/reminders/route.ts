@@ -2,6 +2,15 @@ import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { createClient } from '@supabase/supabase-js'
 
+// Helper to get client name from quote request (handles both array and object from Supabase)
+function getClientName(req: unknown): string {
+  if (!req) return 'Unknown'
+  if (Array.isArray(req)) {
+    return req[0]?.client_name || 'Unknown'
+  }
+  return (req as { client_name: string }).client_name || 'Unknown'
+}
+
 // This endpoint is called by Vercel Cron Jobs
 // Configure in vercel.json: { "crons": [{ "path": "/api/cron/reminders", "schedule": "0 8 * * *" }] }
 
@@ -132,7 +141,7 @@ export async function GET(request: NextRequest) {
 
                     <div style="background: #fff7ed; border-radius: 8px; padding: 16px; margin-bottom: 24px;">
                       ${expiringQuotes.slice(0, 5).map(q => {
-                        const clientName = (q.qs_quote_requests as { client_name: string } | null)?.client_name || 'Unknown'
+                        const clientName = getClientName(q.qs_quote_requests)
                         const total = q.total_gross || q.total || 0
                         const validDate = q.valid_until ? new Date(q.valid_until).toLocaleDateString('pl-PL') : ''
                         return `
