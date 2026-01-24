@@ -159,7 +159,7 @@ function InvoiceForm() {
     }
   }
 
-  const handleSubmit = async (asDraft: boolean = false) => {
+  const handleSubmit = async () => {
     if (!clientName.trim()) {
       setError('Client name is required')
       return
@@ -215,8 +215,8 @@ function InvoiceForm() {
           notes: notes || null,
           due_date: dueDate || null,
           payment_terms: paymentTerms || null,
-          status: asDraft ? 'draft' : 'sent',
-          sent_at: asDraft ? null : new Date().toISOString(),
+          status: 'draft',
+          sent_at: null,
           client_name: clientName,
           client_email: clientEmail || null,
           client_phone: clientPhone || null,
@@ -498,15 +498,11 @@ function InvoiceForm() {
 
       {/* Actions */}
       <div className="flex gap-4 justify-end">
+        <Link href="/invoices" className="btn-secondary">
+          Cancel
+        </Link>
         <button
-          onClick={() => handleSubmit(true)}
-          disabled={loading}
-          className="btn-secondary"
-        >
-          Save as Draft
-        </button>
-        <button
-          onClick={() => handleSubmit(false)}
+          onClick={handleSubmit}
           disabled={loading}
           className="btn-primary"
         >
