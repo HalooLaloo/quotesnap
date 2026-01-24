@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
 
     // Send email
     const { error: sendError } = await resend.emails.send({
-      from: 'BrickQuote <onboarding@resend.dev>',
+      from: 'BrickQuote <contact@brickquote.app>',
       to: clientEmail,
       subject: `Faktura ${invoice.invoice_number} od ${contractorName}`,
       html: emailHtml,

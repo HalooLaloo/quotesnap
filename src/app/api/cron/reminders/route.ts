@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
 
         try {
           await resend.emails.send({
-            from: 'BrickQuote <onboarding@resend.dev>',
+            from: 'BrickQuote <contact@brickquote.app>',
             to: profile.email,
             subject: `Masz ${overdueInvoices.length} przeterminowanych faktur`,
             html: `
@@ -126,7 +126,7 @@ export async function GET(request: NextRequest) {
       if (expiringQuotes && expiringQuotes.length > 0) {
         try {
           await resend.emails.send({
-            from: 'BrickQuote <onboarding@resend.dev>',
+            from: 'BrickQuote <contact@brickquote.app>',
             to: profile.email,
             subject: `${expiringQuotes.length} wycen wygasa w ciągu 2 dni`,
             html: `

@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
 
     // Wyślij email
     const { error: sendError } = await resend.emails.send({
-      from: 'BrickQuote <onboarding@resend.dev>', // Zmień na swoją domenę po weryfikacji
+      from: 'BrickQuote <contact@brickquote.app>', // Zmień na swoją domenę po weryfikacji
       to: clientEmail,
       subject: `Wycena od ${contractorName}`,
       html: emailHtml,

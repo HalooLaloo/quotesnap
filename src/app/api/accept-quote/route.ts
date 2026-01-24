@@ -126,7 +126,7 @@ export async function POST(request: NextRequest) {
       const statusColor = action === 'accept' ? '#22c55e' : '#ef4444'
 
       await resend.emails.send({
-        from: 'BrickQuote <onboarding@resend.dev>',
+        from: 'BrickQuote <contact@brickquote.app>',
         to: contractorEmail,
         subject: `Quote ${statusText} by ${clientName}`,
         html: `
