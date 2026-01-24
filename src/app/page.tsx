@@ -869,13 +869,13 @@ export default async function Home() {
             </div>
 
             <div className="flex gap-8 text-sm">
-              <a href="#" className="text-slate-400 hover:text-white transition">Privacy Policy</a>
-              <a href="#" className="text-slate-400 hover:text-white transition">Terms of Service</a>
-              <a href="#" className="text-slate-400 hover:text-white transition">Contact</a>
+              <Link href="/privacy" className="text-slate-400 hover:text-white transition">Privacy Policy</Link>
+              <Link href="/terms" className="text-slate-400 hover:text-white transition">Terms of Service</Link>
+              <Link href="/contact" className="text-slate-400 hover:text-white transition">Contact</Link>
             </div>
 
             <p className="text-slate-500 text-sm">
-              © 2025 BrickQuote. All rights reserved.
+              © 2026 BrickQuote. All rights reserved.
             </p>
           </div>
         </div>
