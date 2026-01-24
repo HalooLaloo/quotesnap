@@ -47,7 +47,7 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
   const [discountPercent, setDiscountPercent] = useState(0)
   const [vatPercent, setVatPercent] = useState(defaultTaxPercent)
   const [showVat, setShowVat] = useState(defaultTaxPercent > 0)
-  const [validDays, setValidDays] = useState(30)
+  const [validDays, setValidDays] = useState(2)
   const [availableFrom, setAvailableFrom] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -855,7 +855,7 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
               type="number"
               min="1"
               value={validDays}
-              onChange={(e) => setValidDays(parseInt(e.target.value) || 30)}
+              onChange={(e) => setValidDays(parseInt(e.target.value) || 2)}
               className="input"
             />
           </div>
