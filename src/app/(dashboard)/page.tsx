@@ -2,7 +2,9 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { COUNTRIES } from '@/lib/countries'
 
+// Force dynamic rendering to avoid static generation issues
 export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
 function getCurrencySymbol(currencyCode: string): string {
   const country = Object.values(COUNTRIES).find(c => c.currency === currencyCode)
