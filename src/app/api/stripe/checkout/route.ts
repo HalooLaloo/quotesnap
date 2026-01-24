@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create checkout session
-    const sessionConfig: Parameters<typeof stripe.checkout.sessions.create>[0] = {
+    const session = await stripe.checkout.sessions.create({
       customer: customerId,
       mode: 'subscription',
       payment_method_types: ['card'],
@@ -56,16 +56,10 @@ export async function POST(request: NextRequest) {
       metadata: { userId: user.id },
       subscription_data: {
         metadata: { userId: user.id },
+        ...(selectedPlan.trialDays > 0 && { trial_period_days: selectedPlan.trialDays }),
       },
       allow_promotion_codes: true,
-    }
-
-    // Add trial only for monthly plan
-    if (selectedPlan.trialDays > 0) {
-      sessionConfig.subscription_data!.trial_period_days = selectedPlan.trialDays
-    }
-
-    const session = await stripe.checkout.sessions.create(sessionConfig)
+    })
 
     return NextResponse.json({ url: session.url })
   } catch (error) {
