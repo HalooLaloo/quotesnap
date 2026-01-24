@@ -297,6 +297,12 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
       return
     }
 
+    // Wymagaj daty rozpoczęcia przy wysyłaniu
+    if (status === 'sent' && !availableFrom) {
+      setError('Wybierz datę rozpoczęcia prac przed wysłaniem')
+      return
+    }
+
     setError('')
     setLoading(true)
 
