@@ -73,28 +73,6 @@ export function QuotesList({ quotes }: QuotesListProps) {
     return quote.status === 'sent' && quote.viewed_at
   }
 
-  // Calculate stats
-  const stats = useMemo(() => {
-    let totalValue = 0
-    let acceptedValue = 0
-    let pendingCount = 0
-    let acceptedCount = 0
-
-    quotes.forEach(q => {
-      const amount = q.total_gross || q.total || 0
-      totalValue += amount
-      if (q.status === 'accepted') {
-        acceptedValue += amount
-        acceptedCount++
-      }
-      if (q.status === 'sent' || q.status === 'draft') {
-        pendingCount++
-      }
-    })
-
-    return { totalValue, acceptedValue, pendingCount, acceptedCount }
-  }, [quotes])
-
   // Filter quotes
   const filteredQuotes = useMemo(() => {
     return quotes.filter(quote => {
@@ -156,30 +134,6 @@ export function QuotesList({ quotes }: QuotesListProps) {
 
   return (
     <div className="card">
-      {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-slate-700/50 rounded-lg p-4">
-          <p className="text-slate-400 text-sm">Wartość wycen</p>
-          <p className="text-xl font-bold text-white">
-            {getCurrencySymbol(quotes[0]?.currency || 'PLN')}{stats.totalValue.toFixed(2)}
-          </p>
-        </div>
-        <div className="bg-slate-700/50 rounded-lg p-4">
-          <p className="text-slate-400 text-sm">Zaakceptowane</p>
-          <p className="text-xl font-bold text-green-400">
-            {stats.acceptedCount} ({getCurrencySymbol(quotes[0]?.currency || 'PLN')}{stats.acceptedValue.toFixed(2)})
-          </p>
-        </div>
-        <div className="bg-slate-700/50 rounded-lg p-4">
-          <p className="text-slate-400 text-sm">Oczekujące</p>
-          <p className="text-xl font-bold text-blue-400">{stats.pendingCount}</p>
-        </div>
-        <div className="bg-slate-700/50 rounded-lg p-4">
-          <p className="text-slate-400 text-sm">Łącznie wycen</p>
-          <p className="text-xl font-bold text-white">{quotes.length}</p>
-        </div>
-      </div>
-
       {/* Search */}
       <div className="flex flex-col md:flex-row gap-4 mb-6">
         <div className="flex-1 relative">
