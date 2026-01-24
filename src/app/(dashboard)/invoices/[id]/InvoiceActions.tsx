@@ -74,15 +74,19 @@ export function InvoiceActions({ invoice }: InvoiceActionsProps) {
   const handleMarkAsPaid = async () => {
     setLoading('paid')
     try {
-      const { error } = await supabase
-        .from('qs_invoices')
-        .update({
-          status: 'paid',
-          paid_at: new Date().toISOString(),
-        })
-        .eq('id', invoice.id)
+      const response = await fetch('/api/mark-invoice-paid', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ invoiceId: invoice.id }),
+      })
 
-      if (error) throw error
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Failed to mark as paid')
+      }
+
       router.refresh()
     } catch (err) {
       console.error('Error marking as paid:', err)
