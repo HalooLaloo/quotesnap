@@ -260,8 +260,8 @@ export default async function Home() {
               <p className="text-slate-400">Quote from photos</p>
             </div>
             <div>
-              <p className="text-4xl font-bold text-white mb-2">2x</p>
-              <p className="text-slate-400">More quotes sent</p>
+              <p className="text-4xl font-bold text-white mb-2">Zero</p>
+              <p className="text-slate-400">Paperwork</p>
             </div>
             <div>
               <p className="text-4xl font-bold text-white mb-2">24/7</p>
