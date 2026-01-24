@@ -30,18 +30,18 @@ export default async function Home() {
             </div>
 
             <div className="hidden md:flex items-center gap-8">
-              <a href="#jak-to-dziala" className="text-slate-400 hover:text-white text-sm font-medium transition">Jak to działa</a>
-              <a href="#funkcje" className="text-slate-400 hover:text-white text-sm font-medium transition">Funkcje</a>
-              <a href="#cennik" className="text-slate-400 hover:text-white text-sm font-medium transition">Cennik</a>
+              <a href="#how-it-works" className="text-slate-400 hover:text-white text-sm font-medium transition">How it works</a>
+              <a href="#features" className="text-slate-400 hover:text-white text-sm font-medium transition">Features</a>
+              <a href="#pricing" className="text-slate-400 hover:text-white text-sm font-medium transition">Pricing</a>
               <a href="#faq" className="text-slate-400 hover:text-white text-sm font-medium transition">FAQ</a>
             </div>
 
             <div className="flex items-center gap-3">
               <Link href="/login" className="text-slate-300 hover:text-white text-sm font-medium transition">
-                Zaloguj
+                Log in
               </Link>
               <Link href="/register" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
-                Rozpocznij za darmo
+                Start free trial
               </Link>
             </div>
           </div>
@@ -57,17 +57,17 @@ export default async function Home() {
               <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
-              <span className="text-sm text-blue-400 font-medium">Wspierane przez AI</span>
+              <span className="text-sm text-blue-400 font-medium">AI-Powered</span>
             </div>
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
-              Twórz profesjonalne wyceny
-              <span className="text-blue-400"> w kilka minut</span>
+              Create professional quotes
+              <span className="text-blue-400"> in minutes, not hours</span>
             </h1>
 
             <p className="text-xl text-slate-400 max-w-2xl mx-auto mb-8">
-              AI analizuje zdjęcia od klientów, sugeruje pozycje i generuje wyceny.
-              Ty tylko zatwierdzasz. Koniec z godzinami spędzonymi na mailach i arkuszach kalkulacyjnych.
+              AI analyzes client photos, suggests line items, and generates quotes automatically.
+              You just approve. Stop wasting time on spreadsheets and back-and-forth emails.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
@@ -75,16 +75,16 @@ export default async function Home() {
                 href="/register"
                 className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-xl text-lg font-semibold transition flex items-center justify-center gap-2"
               >
-                Rozpocznij za darmo
+                Start 14-day free trial
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                 </svg>
               </Link>
               <a
-                href="#jak-to-dziala"
+                href="#how-it-works"
                 className="w-full sm:w-auto border border-slate-600 hover:border-slate-500 text-white px-8 py-4 rounded-xl text-lg font-medium transition flex items-center justify-center gap-2"
               >
-                Zobacz jak to działa
+                See how it works
               </a>
             </div>
 
@@ -94,19 +94,19 @@ export default async function Home() {
                 <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
-                <span>Bez karty kredytowej</span>
+                <span>No credit card required</span>
               </div>
               <div className="flex items-center gap-2">
                 <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
-                <span>Gotowe w 5 minut</span>
+                <span>Setup in 5 minutes</span>
               </div>
               <div className="flex items-center gap-2">
                 <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
-                <span>Darmowy plan na zawsze</span>
+                <span>Cancel anytime</span>
               </div>
             </div>
           </div>
@@ -141,11 +141,11 @@ export default async function Home() {
                 {/* Dashboard header */}
                 <div className="flex items-center justify-between mb-6">
                   <div>
-                    <h3 className="text-white font-semibold">Twoje wyceny</h3>
-                    <p className="text-slate-500 text-sm">3 oczekujące na akceptację</p>
+                    <h3 className="text-white font-semibold">Your Quotes</h3>
+                    <p className="text-slate-500 text-sm">3 pending client approval</p>
                   </div>
                   <div className="flex gap-2">
-                    <div className="px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg">+ Nowa wycena</div>
+                    <div className="px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg">+ New Quote</div>
                   </div>
                 </div>
 
@@ -159,13 +159,13 @@ export default async function Home() {
                         </svg>
                       </div>
                       <div>
-                        <p className="text-white font-medium">Remont łazienki - ul. Kwiatowa 15</p>
-                        <p className="text-slate-500 text-sm">Jan Kowalski • Zaakceptowana</p>
+                        <p className="text-white font-medium">Bathroom Remodel - 123 Oak Street</p>
+                        <p className="text-slate-500 text-sm">John Smith • Accepted</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-white font-semibold">12 500 zł</p>
-                      <p className="text-green-400 text-xs">Zaakceptowana</p>
+                      <p className="text-white font-semibold">$8,500</p>
+                      <p className="text-green-400 text-xs">Accepted</p>
                     </div>
                   </div>
 
@@ -177,13 +177,13 @@ export default async function Home() {
                         </svg>
                       </div>
                       <div>
-                        <p className="text-white font-medium">Malowanie mieszkania 65m²</p>
-                        <p className="text-slate-500 text-sm">Anna Nowak • Oczekuje</p>
+                        <p className="text-white font-medium">Interior Painting - 2,500 sqft</p>
+                        <p className="text-slate-500 text-sm">Sarah Johnson • Pending</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-white font-semibold">4 200 zł</p>
-                      <p className="text-amber-400 text-xs">Wysłana</p>
+                      <p className="text-white font-semibold">$4,200</p>
+                      <p className="text-amber-400 text-xs">Sent</p>
                     </div>
                   </div>
 
@@ -197,14 +197,14 @@ export default async function Home() {
                       </div>
                       <div>
                         <p className="text-white font-medium flex items-center gap-2">
-                          Nowe zapytanie
+                          New Request
                           <span className="px-2 py-0.5 bg-blue-500 text-white text-xs rounded-full">AI</span>
                         </p>
-                        <p className="text-slate-500 text-sm">Kliknij, aby wygenerować wycenę z AI</p>
+                        <p className="text-slate-500 text-sm">Click to generate quote with AI</p>
                       </div>
                     </div>
                     <div className="relative">
-                      <div className="px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg">Generuj wycenę</div>
+                      <div className="px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg">Generate Quote</div>
                     </div>
                   </div>
                 </div>
@@ -221,8 +221,8 @@ export default async function Home() {
                     </svg>
                   </div>
                   <div>
-                    <p className="text-xs text-slate-400">Wycena zaakceptowana</p>
-                    <p className="text-sm font-medium text-white">+8 500 zł</p>
+                    <p className="text-xs text-slate-400">Quote accepted!</p>
+                    <p className="text-sm font-medium text-white">+$8,500</p>
                   </div>
                 </div>
               </div>
@@ -237,8 +237,8 @@ export default async function Home() {
                     </svg>
                   </div>
                   <div>
-                    <p className="text-xs text-slate-400">AI sugestia</p>
-                    <p className="text-sm font-medium text-white">+3 pozycje dodane</p>
+                    <p className="text-xs text-slate-400">AI suggestion</p>
+                    <p className="text-sm font-medium text-white">+3 items added</p>
                   </div>
                 </div>
               </div>
@@ -253,33 +253,33 @@ export default async function Home() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             <div>
               <p className="text-4xl font-bold text-white mb-2">80%</p>
-              <p className="text-slate-400">Szybsze tworzenie wycen</p>
+              <p className="text-slate-400">Faster quote creation</p>
             </div>
             <div>
               <p className="text-4xl font-bold text-white mb-2">5 min</p>
-              <p className="text-slate-400">Średni czas na wycenę</p>
+              <p className="text-slate-400">Average time per quote</p>
             </div>
             <div>
-              <p className="text-4xl font-bold text-white mb-2">0 zł</p>
-              <p className="text-slate-400">Na start, bez limitu</p>
+              <p className="text-4xl font-bold text-white mb-2">2x</p>
+              <p className="text-slate-400">More quotes sent</p>
             </div>
             <div>
               <p className="text-4xl font-bold text-white mb-2">24/7</p>
-              <p className="text-slate-400">Klienci mogą wysyłać zapytania</p>
+              <p className="text-slate-400">Clients can request quotes</p>
             </div>
           </div>
         </div>
       </section>
 
       {/* How it Works */}
-      <section id="jak-to-dziala" className="py-24 px-4">
+      <section id="how-it-works" className="py-24 px-4">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
-              Jak to działa?
+              How it works
             </h2>
             <p className="text-slate-400 max-w-2xl mx-auto text-lg">
-              Od zapytania klienta do zaakceptowanej wyceny w 4 prostych krokach
+              From client request to accepted quote in 4 simple steps
             </p>
           </div>
 
@@ -292,9 +292,9 @@ export default async function Home() {
                 </svg>
                 <div className="absolute -top-2 -right-2 w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold">1</div>
               </div>
-              <h3 className="text-lg font-semibold text-white mb-2">Udostępnij link</h3>
+              <h3 className="text-lg font-semibold text-white mb-2">Share your link</h3>
               <p className="text-slate-400 text-sm">
-                Wyślij klientowi unikalny link do formularza zapytania. Może załączyć zdjęcia i opis.
+                Send clients your unique request link. They can attach photos and describe their project.
               </p>
             </div>
 
@@ -306,9 +306,9 @@ export default async function Home() {
                 </svg>
                 <div className="absolute -top-2 -right-2 w-6 h-6 bg-purple-600 rounded-full flex items-center justify-center text-white text-xs font-bold">2</div>
               </div>
-              <h3 className="text-lg font-semibold text-white mb-2">AI rozmawia z klientem</h3>
+              <h3 className="text-lg font-semibold text-white mb-2">AI gathers details</h3>
               <p className="text-slate-400 text-sm">
-                Nasz chatbot AI zadaje pytania i zbiera wszystkie szczegóły projektu automatycznie.
+                Our AI chatbot asks smart questions and collects all project details automatically.
               </p>
             </div>
 
@@ -320,9 +320,9 @@ export default async function Home() {
                 </svg>
                 <div className="absolute -top-2 -right-2 w-6 h-6 bg-green-600 rounded-full flex items-center justify-center text-white text-xs font-bold">3</div>
               </div>
-              <h3 className="text-lg font-semibold text-white mb-2">Generuj wycenę jednym klikiem</h3>
+              <h3 className="text-lg font-semibold text-white mb-2">Generate quote instantly</h3>
               <p className="text-slate-400 text-sm">
-                AI analizuje zdjęcia i opis, sugeruje pozycje z Twojego cennika. Ty tylko zatwierdzasz.
+                AI analyzes photos and description, suggests line items from your price list. You just approve.
               </p>
             </div>
 
@@ -334,9 +334,9 @@ export default async function Home() {
                 </svg>
                 <div className="absolute -top-2 -right-2 w-6 h-6 bg-amber-600 rounded-full flex items-center justify-center text-white text-xs font-bold">4</div>
               </div>
-              <h3 className="text-lg font-semibold text-white mb-2">Wyślij i czekaj na akceptację</h3>
+              <h3 className="text-lg font-semibold text-white mb-2">Send & get accepted</h3>
               <p className="text-slate-400 text-sm">
-                Klient otrzymuje profesjonalny PDF i może zaakceptować wycenę online jednym klikiem.
+                Client receives a professional PDF and can accept your quote online with one click.
               </p>
             </div>
           </div>
@@ -344,20 +344,20 @@ export default async function Home() {
       </section>
 
       {/* AI Features Section */}
-      <section id="funkcje" className="py-24 px-4 bg-[#0d1f35]/50">
+      <section id="features" className="py-24 px-4 bg-[#0d1f35]/50">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500/10 border border-purple-500/20 mb-6">
               <svg className="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
               </svg>
-              <span className="text-sm text-purple-400 font-medium">Funkcje AI</span>
+              <span className="text-sm text-purple-400 font-medium">AI Features</span>
             </div>
             <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
-              AI robi za Ciebie brudną robotę
+              AI does the heavy lifting
             </h2>
             <p className="text-slate-400 max-w-2xl mx-auto text-lg">
-              Skup się na wykonaniu pracy, a nie na papierkowej robocie
+              Focus on the actual work, not the paperwork
             </p>
           </div>
 
@@ -369,9 +369,9 @@ export default async function Home() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-white mb-2">Analiza zdjęć</h3>
+              <h3 className="text-lg font-semibold text-white mb-2">Photo Analysis</h3>
               <p className="text-slate-400 text-sm">
-                AI rozpoznaje zakres prac na podstawie zdjęć klienta. Widzi stan ścian, wymiary, potrzebne naprawy.
+                AI recognizes scope of work from client photos. It sees wall conditions, dimensions, and needed repairs.
               </p>
             </div>
 
@@ -382,9 +382,9 @@ export default async function Home() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-white mb-2">Inteligentny chatbot</h3>
+              <h3 className="text-lg font-semibold text-white mb-2">Smart Chatbot</h3>
               <p className="text-slate-400 text-sm">
-                Chatbot zadaje klientowi celne pytania i zbiera wszystkie szczegóły projektu za Ciebie.
+                AI chatbot asks your clients the right questions and gathers all project details for you.
               </p>
             </div>
 
@@ -395,9 +395,9 @@ export default async function Home() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-white mb-2">Sugestie pozycji</h3>
+              <h3 className="text-lg font-semibold text-white mb-2">Line Item Suggestions</h3>
               <p className="text-slate-400 text-sm">
-                AI sugeruje wszystkie pozycje wyceny na podstawie opisu. Nawet te, o których mógłbyś zapomnieć.
+                AI suggests all quote items based on project description. Even the ones you might forget.
               </p>
             </div>
 
@@ -408,9 +408,9 @@ export default async function Home() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-white mb-2">Katalog usług</h3>
+              <h3 className="text-lg font-semibold text-white mb-2">Service Catalog</h3>
               <p className="text-slate-400 text-sm">
-                Stwórz swój cennik raz i używaj go wielokrotnie. AI też pomoże Ci go stworzyć od zera.
+                Create your price list once and reuse it forever. AI can even help you build it from scratch.
               </p>
             </div>
 
@@ -421,9 +421,9 @@ export default async function Home() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-white mb-2">Profesjonalne PDF</h3>
+              <h3 className="text-lg font-semibold text-white mb-2">Professional PDFs</h3>
               <p className="text-slate-400 text-sm">
-                Generuj eleganckie wyceny i faktury PDF z Twoim logo i danymi firmy jednym klikiem.
+                Generate beautiful quotes and invoices with your logo and company details in one click.
               </p>
             </div>
 
@@ -434,9 +434,9 @@ export default async function Home() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-white mb-2">Powiadomienia email</h3>
+              <h3 className="text-lg font-semibold text-white mb-2">Email Notifications</h3>
               <p className="text-slate-400 text-sm">
-                Wysyłaj wyceny mailem, a system poinformuje Cię gdy klient je otworzy lub zaakceptuje.
+                Send quotes via email and get notified when clients open them or accept.
               </p>
             </div>
           </div>
@@ -452,14 +452,14 @@ export default async function Home() {
                 <svg className="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
                 </svg>
-                <span className="text-sm text-green-400 font-medium">Dla Twoich klientów</span>
+                <span className="text-sm text-green-400 font-medium">Client Experience</span>
               </div>
               <h2 className="text-3xl sm:text-4xl font-bold text-white mb-6">
-                Klienci pokochają prostotę
+                Clients will love the simplicity
               </h2>
               <p className="text-slate-400 text-lg mb-8">
-                Koniec z niekończącą się wymianą maili. Klient wysyła zapytanie przez link,
-                przegląda wycenę online i akceptuje jednym klikiem. Profesjonalnie i bez komplikacji.
+                No more endless email chains. Clients submit requests through your link,
+                review quotes online, and accept with one click. Professional and hassle-free.
               </p>
 
               <div className="space-y-4">
@@ -470,8 +470,8 @@ export default async function Home() {
                     </svg>
                   </div>
                   <div>
-                    <h4 className="text-white font-medium mb-1">Formularz ze zdjęciami</h4>
-                    <p className="text-slate-400 text-sm">Klient może załączyć zdjęcia i szczegółowy opis projektu</p>
+                    <h4 className="text-white font-medium mb-1">Photo upload form</h4>
+                    <p className="text-slate-400 text-sm">Clients can attach photos and detailed project descriptions</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-4">
@@ -481,8 +481,8 @@ export default async function Home() {
                     </svg>
                   </div>
                   <div>
-                    <h4 className="text-white font-medium mb-1">Rozmowa z AI</h4>
-                    <p className="text-slate-400 text-sm">Chatbot dopyta o wszystkie szczegóły, żebyś Ty nie musiał</p>
+                    <h4 className="text-white font-medium mb-1">AI conversation</h4>
+                    <p className="text-slate-400 text-sm">Chatbot asks follow-up questions so you don't have to</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-4">
@@ -492,8 +492,8 @@ export default async function Home() {
                     </svg>
                   </div>
                   <div>
-                    <h4 className="text-white font-medium mb-1">Akceptacja online</h4>
-                    <p className="text-slate-400 text-sm">Klient przegląda wycenę i akceptuje bez drukowania czy skanowania</p>
+                    <h4 className="text-white font-medium mb-1">Online acceptance</h4>
+                    <p className="text-slate-400 text-sm">Clients review and accept quotes without printing or scanning</p>
                   </div>
                 </div>
               </div>
@@ -513,7 +513,7 @@ export default async function Home() {
                   <div className="p-4 space-y-3">
                     <div className="flex justify-center mb-4">
                       <div className="px-3 py-1 bg-[#1e3a5f] rounded-full text-xs text-slate-400">
-                        Dziś, 14:32
+                        Today, 2:32 PM
                       </div>
                     </div>
 
@@ -525,14 +525,14 @@ export default async function Home() {
                         </svg>
                       </div>
                       <div className="bg-[#1e3a5f] rounded-2xl rounded-tl-md p-3 max-w-[80%]">
-                        <p className="text-white text-sm">Cześć! Jaki metraż ma łazienka do remontu?</p>
+                        <p className="text-white text-sm">Hi! What's the square footage of the bathroom you want to remodel?</p>
                       </div>
                     </div>
 
                     {/* User message */}
                     <div className="flex justify-end">
                       <div className="bg-blue-600 rounded-2xl rounded-tr-md p-3 max-w-[80%]">
-                        <p className="text-white text-sm">Około 6m², chcę wymienić płytki i armaturę</p>
+                        <p className="text-white text-sm">About 65 sqft, I want new tiles and fixtures</p>
                       </div>
                     </div>
 
@@ -544,7 +544,7 @@ export default async function Home() {
                         </svg>
                       </div>
                       <div className="bg-[#1e3a5f] rounded-2xl rounded-tl-md p-3 max-w-[80%]">
-                        <p className="text-white text-sm">Rozumiem! Czy masz już wybrane płytki, czy potrzebujesz pomocy w wyborze?</p>
+                        <p className="text-white text-sm">Got it! Have you already picked out tiles, or do you need recommendations?</p>
                       </div>
                     </div>
 
@@ -569,7 +569,7 @@ export default async function Home() {
                   <div className="p-4 border-t border-[#1e3a5f]">
                     <div className="flex items-center gap-2">
                       <div className="flex-1 bg-[#1e3a5f] rounded-full px-4 py-2">
-                        <p className="text-slate-500 text-sm">Napisz wiadomość...</p>
+                        <p className="text-slate-500 text-sm">Type a message...</p>
                       </div>
                       <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
                         <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -590,10 +590,10 @@ export default async function Home() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
-              Co mówią nasi użytkownicy
+              Loved by contractors
             </h2>
             <p className="text-slate-400 max-w-2xl mx-auto text-lg">
-              Dołącz do grona zadowolonych wykonawców
+              Join hundreds of contractors who save hours every week
             </p>
           </div>
 
@@ -607,15 +607,15 @@ export default async function Home() {
                 ))}
               </div>
               <p className="text-slate-300 mb-6">
-                "Kiedyś wycena zajmowała mi 2 godziny. Teraz robię to w 10 minut. AI naprawdę rozumie co jest na zdjęciach i podpowiada wszystkie pozycje."
+                "Quotes used to take me 2 hours. Now I'm done in 10 minutes. The AI actually understands what's in the photos and suggests all the right items."
               </p>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
-                  <span className="text-blue-400 font-medium">MK</span>
+                  <span className="text-blue-400 font-medium">MJ</span>
                 </div>
                 <div>
-                  <p className="text-white font-medium">Marek Kowalczyk</p>
-                  <p className="text-slate-500 text-sm">Remonty kompleksowe, Warszawa</p>
+                  <p className="text-white font-medium">Mike Johnson</p>
+                  <p className="text-slate-500 text-sm">Johnson Renovations, Sydney</p>
                 </div>
               </div>
             </div>
@@ -629,15 +629,15 @@ export default async function Home() {
                 ))}
               </div>
               <p className="text-slate-300 mb-6">
-                "Najlepsze jest to, że klienci sami akceptują wyceny online. Zero dzwonienia, zero 'zaraz oddzwonię'. Wszystko jest jasne i przejrzyste."
+                "Best part is clients accept quotes online. No more 'I'll call you back' - they just click accept and it's done. Game changer."
               </p>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
-                  <span className="text-green-400 font-medium">AN</span>
+                  <span className="text-green-400 font-medium">SW</span>
                 </div>
                 <div>
-                  <p className="text-white font-medium">Anna Nowak</p>
-                  <p className="text-slate-500 text-sm">Malowanie wnętrz, Kraków</p>
+                  <p className="text-white font-medium">Sarah Williams</p>
+                  <p className="text-slate-500 text-sm">Premier Painting Co, Melbourne</p>
                 </div>
               </div>
             </div>
@@ -651,15 +651,15 @@ export default async function Home() {
                 ))}
               </div>
               <p className="text-slate-300 mb-6">
-                "Link do zapytań to świetna sprawa. Daję go klientom na stronie i oni sami wypełniają wszystko ze zdjęciami. Ja dostaję gotowe zapytanie."
+                "The request link is brilliant. I put it on my website and clients fill in everything with photos. I just get a ready-to-quote notification."
               </p>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center">
-                  <span className="text-purple-400 font-medium">PW</span>
+                  <span className="text-purple-400 font-medium">DT</span>
                 </div>
                 <div>
-                  <p className="text-white font-medium">Piotr Wiśniewski</p>
-                  <p className="text-slate-500 text-sm">Hydraulika, Gdańsk</p>
+                  <p className="text-white font-medium">David Thompson</p>
+                  <p className="text-slate-500 text-sm">Thompson Plumbing, Brisbane</p>
                 </div>
               </div>
             </div>
@@ -668,35 +668,48 @@ export default async function Home() {
       </section>
 
       {/* Pricing */}
-      <section id="cennik" className="py-24 px-4">
+      <section id="pricing" className="py-24 px-4">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
-              Prosty, uczciwy cennik
+              Simple, transparent pricing
             </h2>
             <p className="text-slate-400 max-w-2xl mx-auto text-lg">
-              Zacznij za darmo, rozwijaj się w swoim tempie
+              Start with a 14-day free trial. No credit card required.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            {/* Free Plan */}
-            <div className="bg-[#132039] border border-[#1e3a5f] rounded-xl p-8">
-              <h3 className="text-2xl font-bold text-white mb-2">Darmowy</h3>
-              <div className="flex items-baseline gap-1 mb-2">
-                <span className="text-4xl font-bold text-white">0 zł</span>
-                <span className="text-slate-400">/miesiąc</span>
+          <div className="max-w-lg mx-auto">
+            {/* Single Plan */}
+            <div className="bg-[#132039] border-2 border-blue-500 rounded-xl p-8 relative">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                <span className="bg-blue-600 text-white text-sm font-medium px-3 py-1 rounded-full">
+                  14-day free trial
+                </span>
               </div>
-              <p className="text-slate-400 text-sm mb-6">Na zawsze, bez limitu czasowego</p>
+
+              <div className="text-center mb-8">
+                <h3 className="text-2xl font-bold text-white mb-2">Pro</h3>
+                <div className="flex items-baseline justify-center gap-1 mb-2">
+                  <span className="text-5xl font-bold text-white">$29</span>
+                  <span className="text-slate-400">/month</span>
+                </div>
+                <p className="text-slate-400 text-sm">or $249/year (save $99)</p>
+              </div>
 
               <ul className="space-y-3 mb-8">
                 {[
-                  'Do 10 wycen miesięcznie',
-                  'Katalog usług',
-                  'Generowanie PDF',
-                  'Link do zapytań dla klientów',
-                  'Akceptacja wycen online',
-                  'Powiadomienia email',
+                  'Unlimited quotes & invoices',
+                  'AI photo analysis',
+                  'AI line item suggestions',
+                  'AI chatbot for clients',
+                  'Client request portal',
+                  'Online quote acceptance',
+                  'Professional PDF generation',
+                  'Email notifications',
+                  'Service catalog',
+                  'Payment tracking',
+                  'Priority support',
                 ].map((feature) => (
                   <li key={feature} className="flex items-center gap-2 text-sm">
                     <svg className="w-5 h-5 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -709,55 +722,23 @@ export default async function Home() {
 
               <Link
                 href="/register"
-                className="block text-center w-full border border-slate-600 hover:border-slate-500 text-white py-3 rounded-lg font-medium transition"
+                className="block text-center w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-lg font-semibold transition text-lg"
               >
-                Rozpocznij za darmo
-              </Link>
-            </div>
-
-            {/* Pro Plan */}
-            <div className="bg-[#132039] border-2 border-blue-500 rounded-xl p-8 relative">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                <span className="bg-blue-600 text-white text-sm font-medium px-3 py-1 rounded-full">
-                  Najpopularniejszy
-                </span>
-              </div>
-
-              <h3 className="text-2xl font-bold text-white mb-2">Pro</h3>
-              <div className="flex items-baseline gap-1 mb-2">
-                <span className="text-4xl font-bold text-white">49 zł</span>
-                <span className="text-slate-400">/miesiąc</span>
-              </div>
-              <p className="text-slate-400 text-sm mb-6">Dla profesjonalnych wykonawców</p>
-
-              <ul className="space-y-3 mb-8">
-                {[
-                  'Nieograniczone wyceny',
-                  'AI sugestie pozycji',
-                  'AI analiza zdjęć',
-                  'AI chatbot dla klientów',
-                  'Faktury i śledzenie płatności',
-                  'Własne logo na dokumentach',
-                  'Priorytetowe wsparcie',
-                ].map((feature, index) => (
-                  <li key={feature} className="flex items-center gap-2 text-sm">
-                    <svg className="w-5 h-5 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                    <span className={index < 4 ? "text-blue-300 font-medium" : "text-slate-300"}>{feature}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <Link
-                href="/register"
-                className="block text-center w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium transition"
-              >
-                Wypróbuj 14 dni za darmo
+                Start 14-day free trial
               </Link>
               <p className="text-xs text-slate-500 text-center mt-3">
-                Bez karty kredytowej
+                No credit card required • Cancel anytime
               </p>
+            </div>
+
+            {/* Money back guarantee */}
+            <div className="mt-8 text-center">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/10 border border-green-500/20">
+                <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+                <span className="text-sm text-green-400 font-medium">30-day money-back guarantee</span>
+              </div>
             </div>
           </div>
         </div>
@@ -768,35 +749,35 @@ export default async function Home() {
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
-              Często zadawane pytania
+              Frequently asked questions
             </h2>
           </div>
 
           <div className="space-y-4">
             {[
               {
-                q: 'Czy muszę podawać kartę kredytową, żeby zacząć?',
-                a: 'Nie! Plan darmowy jest całkowicie za darmo i nie wymaga karty. Możesz korzystać z niego bez limitu czasowego.',
+                q: 'Do I need a credit card to start the trial?',
+                a: 'No! Your 14-day trial is completely free and doesn\'t require any payment information. You only pay if you decide to continue after the trial.',
               },
               {
-                q: 'Jak działa AI sugestia pozycji?',
-                a: 'Kiedy klient wysyła zapytanie ze zdjęciami i opisem, AI analizuje treść i sugeruje pozycje z Twojego cennika, które pasują do projektu. Ty tylko zatwierdzasz lub modyfikujesz.',
+                q: 'How does the AI quote generation work?',
+                a: 'When a client submits a request with photos and description, our AI analyzes the content and suggests line items from your price list that match the project scope. You review and approve the suggestions, then send the quote.',
               },
               {
-                q: 'Czy mogę używać BrickQuote na telefonie?',
-                a: 'Tak! Aplikacja jest w pełni responsywna i działa świetnie na telefonach i tabletach. Twoi klienci też mogą wysyłać zapytania z telefonu.',
+                q: 'Can I use BrickQuote on my phone?',
+                a: 'Absolutely! BrickQuote is fully responsive and works great on phones and tablets. Your clients can also submit requests from their mobile devices.',
               },
               {
-                q: 'Co jeśli klient nie ma konta?',
-                a: 'Klient nie potrzebuje konta! Wysyłasz mu link, on wypełnia formularz, przegląda wycenę i akceptuje - wszystko bez rejestracji.',
+                q: 'Do my clients need an account?',
+                a: 'No, clients don\'t need to create an account. They use your unique link to submit requests, view quotes, and accept them - all without signing up.',
               },
               {
-                q: 'Czy mogę anulować subskrypcję w dowolnym momencie?',
-                a: 'Oczywiście. Możesz anulować kiedy chcesz, bez żadnych opłat. Twoje dane pozostaną bezpieczne i będziesz mógł wrócić do planu Pro w przyszłości.',
+                q: 'Can I cancel anytime?',
+                a: 'Yes, you can cancel your subscription at any time with no penalties. Your data stays safe, and you can reactivate anytime.',
               },
               {
-                q: 'Czy BrickQuote obsługuje faktury?',
-                a: 'Tak! Plan Pro pozwala tworzyć faktury bezpośrednio z zaakceptowanych wycen, wysyłać je do klientów i śledzić płatności.',
+                q: 'What currencies and countries do you support?',
+                a: 'We support USD, GBP, AUD, CAD, EUR, NZD and more. Tax settings (VAT, GST) are automatically configured based on your country.',
               },
             ].map((faq, index) => (
               <div key={index} className="bg-[#132039] border border-[#1e3a5f] rounded-xl p-6">
@@ -812,23 +793,23 @@ export default async function Home() {
       <section className="py-24 px-4">
         <div className="max-w-3xl mx-auto text-center">
           <h2 className="text-3xl sm:text-4xl font-bold text-white mb-6">
-            Gotowy, żeby oszczędzać czas na wycenach?
+            Ready to save hours on every quote?
           </h2>
           <p className="text-slate-400 text-lg mb-8">
-            Dołącz do setek wykonawców, którzy już używają BrickQuote.
-            Twoja pierwsza wycena może być gotowa za 5 minut.
+            Join hundreds of contractors who already use BrickQuote.
+            Start your free trial and send your first AI-powered quote today.
           </p>
           <Link
             href="/register"
             className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-xl text-lg font-semibold transition"
           >
-            Rozpocznij za darmo
+            Start 14-day free trial
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
             </svg>
           </Link>
           <p className="text-slate-500 text-sm mt-4">
-            Bez karty kredytowej • Gotowe w 5 minut • Darmowy plan na zawsze
+            No credit card required • Setup in 5 minutes • Cancel anytime
           </p>
         </div>
       </section>
@@ -851,13 +832,13 @@ export default async function Home() {
             </div>
 
             <div className="flex gap-8 text-sm">
-              <a href="#" className="text-slate-400 hover:text-white transition">Polityka prywatności</a>
-              <a href="#" className="text-slate-400 hover:text-white transition">Regulamin</a>
-              <a href="#" className="text-slate-400 hover:text-white transition">Kontakt</a>
+              <a href="#" className="text-slate-400 hover:text-white transition">Privacy Policy</a>
+              <a href="#" className="text-slate-400 hover:text-white transition">Terms of Service</a>
+              <a href="#" className="text-slate-400 hover:text-white transition">Contact</a>
             </div>
 
             <p className="text-slate-500 text-sm">
-              © 2025 BrickQuote. Wszelkie prawa zastrzeżone.
+              © 2025 BrickQuote. All rights reserved.
             </p>
           </div>
         </div>
