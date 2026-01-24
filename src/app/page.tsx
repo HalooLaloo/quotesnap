@@ -716,57 +716,131 @@ export default async function Home() {
             </p>
           </div>
 
-          <div className="max-w-lg mx-auto">
-            {/* Single Plan */}
-            <div className="bg-[#132039] border-2 border-blue-500 rounded-xl p-8 relative">
+          {/* Pricing Cards */}
+          <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            {/* Monthly */}
+            <div className="bg-[#132039] border border-[#1e3a5f] rounded-xl p-8 relative">
               <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                 <span className="bg-blue-600 text-white text-sm font-medium px-3 py-1 rounded-full">
                   3-day free trial
                 </span>
               </div>
 
-              <div className="text-center mb-8">
-                <h3 className="text-2xl font-bold text-white mb-2">Pro</h3>
+              <div className="text-center mb-6">
+                <h3 className="text-xl font-bold text-white mb-2">Monthly</h3>
                 <div className="flex items-baseline justify-center gap-1 mb-2">
-                  <span className="text-5xl font-bold text-white">$29</span>
+                  <span className="text-4xl font-bold text-white">$29</span>
                   <span className="text-slate-400">/month</span>
                 </div>
-                <p className="text-slate-400 text-sm">or $249/year (save $99)</p>
+                <p className="text-slate-400 text-sm">after 3-day free trial</p>
               </div>
 
-              <ul className="space-y-3 mb-8">
-                {[
-                  'Unlimited quotes & invoices',
-                  'AI photo analysis',
-                  'AI line item suggestions',
-                  'AI chatbot for clients',
-                  'Client request portal',
-                  'Online quote acceptance',
-                  'Professional PDF generation',
-                  'Email notifications',
-                  'Service catalog',
-                  'Payment tracking',
-                  'Priority support',
-                ].map((feature) => (
-                  <li key={feature} className="flex items-center gap-2 text-sm">
-                    <svg className="w-5 h-5 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                    <span className="text-slate-300">{feature}</span>
-                  </li>
-                ))}
+              <ul className="space-y-2 mb-6 text-sm">
+                <li className="flex items-center gap-2">
+                  <svg className="w-4 h-4 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span className="text-slate-300">All features included</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <svg className="w-4 h-4 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span className="text-slate-300">Cancel anytime</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <svg className="w-4 h-4 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span className="text-slate-300">Flexible billing</span>
+                </li>
               </ul>
 
               <Link
                 href="/register"
-                className="block text-center w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-lg font-semibold transition text-lg"
+                className="block text-center w-full bg-slate-700 hover:bg-slate-600 text-white py-3 rounded-lg font-semibold transition"
               >
-                Start 3-day free trial
+                Start free trial
               </Link>
-              <p className="text-xs text-slate-500 text-center mt-3">
-                Credit card required • Cancel anytime before trial ends
-              </p>
             </div>
+
+            {/* Yearly */}
+            <div className="bg-[#132039] border-2 border-green-500 rounded-xl p-8 relative">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                <span className="bg-green-500 text-white text-sm font-medium px-3 py-1 rounded-full">
+                  Best value - Save $99
+                </span>
+              </div>
+
+              <div className="text-center mb-6">
+                <h3 className="text-xl font-bold text-white mb-2">Yearly</h3>
+                <div className="flex items-baseline justify-center gap-1 mb-2">
+                  <span className="text-4xl font-bold text-white">$249</span>
+                  <span className="text-slate-400">/year</span>
+                </div>
+                <p className="text-slate-400 text-sm">
+                  <span className="line-through">$348</span> after 3-day free trial
+                </p>
+              </div>
+
+              <ul className="space-y-2 mb-6 text-sm">
+                <li className="flex items-center gap-2">
+                  <svg className="w-4 h-4 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span className="text-slate-300">All features included</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <svg className="w-4 h-4 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span className="text-slate-300">2 months free</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <svg className="w-4 h-4 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span className="text-slate-300">Priority support</span>
+                </li>
+              </ul>
+
+              <Link
+                href="/register"
+                className="block text-center w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-semibold transition"
+              >
+                Start free trial - Save $99
+              </Link>
+            </div>
+          </div>
+
+          {/* Features list below */}
+          <div className="mt-12 max-w-2xl mx-auto">
+            <h4 className="text-center text-white font-semibold mb-6">Everything included in both plans:</h4>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              {[
+                'Unlimited quotes',
+                'Unlimited invoices',
+                'AI photo analysis',
+                'AI suggestions',
+                'Client portal',
+                'Online acceptance',
+                'PDF generation',
+                'Email notifications',
+                'Service catalog',
+              ].map((feature) => (
+                <div key={feature} className="flex items-center gap-2 text-sm">
+                  <svg className="w-4 h-4 text-blue-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span className="text-slate-400">{feature}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <p className="text-xs text-slate-500 text-center mt-8">
+            Credit card required for trial • Cancel anytime before trial ends • 30-day money-back guarantee
+          </p>
 
             {/* Money back guarantee */}
             <div className="mt-8 text-center">
