@@ -328,7 +328,7 @@ export default async function Home() {
               </div>
               <h3 className="text-lg font-semibold text-white mb-2">AI gathers details</h3>
               <p className="text-slate-400 text-sm">
-                Our AI chatbot asks smart questions and collects all project details automatically.
+                AI chatbot asks smart questions and collects all project details. You get a clean summary with photos.
               </p>
             </div>
 
@@ -340,9 +340,9 @@ export default async function Home() {
                 </svg>
                 <div className="absolute -top-2 -right-2 w-6 h-6 bg-green-600 rounded-full flex items-center justify-center text-white text-xs font-bold">3</div>
               </div>
-              <h3 className="text-lg font-semibold text-white mb-2">Generate quote instantly</h3>
+              <h3 className="text-lg font-semibold text-white mb-2">One-click quote</h3>
               <p className="text-slate-400 text-sm">
-                AI analyzes photos and description, suggests line items from your price list. You just approve.
+                AI analyzes everything and suggests line items. Review, adjust if needed, and generate a professional PDF.
               </p>
             </div>
 
