@@ -6,22 +6,24 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { COUNTRIES } from '@/lib/countries'
 
-interface Invoice {
+interface Quote {
   id: string
-  invoice_number: string
-  client_name: string
-  client_email: string | null
-  total_gross: number
+  total: number
+  total_gross: number | null
   currency: string | null
   status: string
   created_at: string
-  due_date: string | null
-  sent_at: string | null
-  paid_at: string | null
+  valid_until: string | null
+  viewed_at: string | null
+  qs_quote_requests: {
+    client_name: string
+    client_email: string | null
+    description: string | null
+  } | null
 }
 
-interface InvoicesListProps {
-  invoices: Invoice[]
+interface QuotesListProps {
+  quotes: Quote[]
 }
 
 function getCurrencySymbol(currencyCode: string): string {
@@ -29,12 +31,12 @@ function getCurrencySymbol(currencyCode: string): string {
   return country?.currencySymbol || currencyCode
 }
 
-type StatusFilter = 'all' | 'draft' | 'sent' | 'paid' | 'overdue'
+type StatusFilter = 'all' | 'draft' | 'sent' | 'viewed' | 'accepted' | 'rejected' | 'expired'
 
-export function InvoicesList({ invoices }: InvoicesListProps) {
+export function QuotesList({ quotes }: QuotesListProps) {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
-  const [deleteModal, setDeleteModal] = useState<Invoice | null>(null)
+  const [deleteModal, setDeleteModal] = useState<Quote | null>(null)
   const [deleting, setDeleting] = useState(false)
   const router = useRouter()
   const supabase = createClient()
@@ -44,7 +46,7 @@ export function InvoicesList({ invoices }: InvoicesListProps) {
     setDeleting(true)
     try {
       const { error } = await supabase
-        .from('qs_invoices')
+        .from('qs_quotes')
         .delete()
         .eq('id', deleteModal.id)
 
@@ -52,91 +54,104 @@ export function InvoicesList({ invoices }: InvoicesListProps) {
       setDeleteModal(null)
       router.refresh()
     } catch (err) {
-      console.error('Error deleting invoice:', err)
-      alert('Nie udało się usunąć faktury')
+      console.error('Error deleting quote:', err)
+      alert('Nie udało się usunąć wyceny')
     } finally {
       setDeleting(false)
     }
   }
 
-  // Check if invoice is overdue
-  const isOverdue = (invoice: Invoice) => {
-    if (invoice.status === 'paid') return false
-    if (!invoice.due_date) return false
-    return new Date(invoice.due_date) < new Date()
+  // Check if quote is expired
+  const isExpired = (quote: Quote) => {
+    if (quote.status === 'accepted' || quote.status === 'rejected') return false
+    if (!quote.valid_until) return false
+    return new Date(quote.valid_until) < new Date()
+  }
+
+  // Check if quote was viewed
+  const isViewed = (quote: Quote) => {
+    return quote.status === 'sent' && quote.viewed_at
   }
 
   // Calculate stats
   const stats = useMemo(() => {
-    let totalPending = 0
-    let totalPaid = 0
-    let overdueCount = 0
-    let overdueAmount = 0
+    let totalValue = 0
+    let acceptedValue = 0
+    let pendingCount = 0
+    let acceptedCount = 0
 
-    invoices.forEach(inv => {
-      const amount = inv.total_gross || 0
-      if (inv.status === 'paid') {
-        totalPaid += amount
-      } else {
-        totalPending += amount
-        if (isOverdue(inv)) {
-          overdueCount++
-          overdueAmount += amount
-        }
+    quotes.forEach(q => {
+      const amount = q.total_gross || q.total || 0
+      totalValue += amount
+      if (q.status === 'accepted') {
+        acceptedValue += amount
+        acceptedCount++
+      }
+      if (q.status === 'sent' || q.status === 'draft') {
+        pendingCount++
       }
     })
 
-    return { totalPending, totalPaid, overdueCount, overdueAmount }
-  }, [invoices])
+    return { totalValue, acceptedValue, pendingCount, acceptedCount }
+  }, [quotes])
 
-  // Filter invoices
-  const filteredInvoices = useMemo(() => {
-    return invoices.filter(invoice => {
+  // Filter quotes
+  const filteredQuotes = useMemo(() => {
+    return quotes.filter(quote => {
       // Search filter
       if (search.trim()) {
         const searchLower = search.toLowerCase()
-        const matchesName = invoice.client_name?.toLowerCase().includes(searchLower)
-        const matchesNumber = invoice.invoice_number?.toLowerCase().includes(searchLower)
-        const matchesEmail = invoice.client_email?.toLowerCase().includes(searchLower)
-        if (!matchesName && !matchesNumber && !matchesEmail) return false
+        const matchesName = quote.qs_quote_requests?.client_name?.toLowerCase().includes(searchLower)
+        const matchesEmail = quote.qs_quote_requests?.client_email?.toLowerCase().includes(searchLower)
+        const matchesDesc = quote.qs_quote_requests?.description?.toLowerCase().includes(searchLower)
+        if (!matchesName && !matchesEmail && !matchesDesc) return false
       }
 
       // Status filter
-      if (statusFilter === 'overdue') {
-        return isOverdue(invoice)
+      if (statusFilter === 'expired') {
+        return isExpired(quote)
       }
-      if (statusFilter !== 'all' && invoice.status !== statusFilter) {
+      if (statusFilter === 'viewed') {
+        return isViewed(quote)
+      }
+      if (statusFilter !== 'all' && quote.status !== statusFilter) {
         return false
       }
 
       return true
     })
-  }, [invoices, search, statusFilter])
+  }, [quotes, search, statusFilter])
 
   // Count by status
   const statusCounts = useMemo(() => {
-    const counts = { all: invoices.length, draft: 0, sent: 0, paid: 0, overdue: 0 }
-    invoices.forEach(inv => {
-      if (inv.status === 'draft') counts.draft++
-      if (inv.status === 'sent') counts.sent++
-      if (inv.status === 'paid') counts.paid++
-      if (isOverdue(inv)) counts.overdue++
+    const counts = { all: quotes.length, draft: 0, sent: 0, viewed: 0, accepted: 0, rejected: 0, expired: 0 }
+    quotes.forEach(q => {
+      if (q.status === 'draft') counts.draft++
+      if (q.status === 'sent') counts.sent++
+      if (isViewed(q)) counts.viewed++
+      if (q.status === 'accepted') counts.accepted++
+      if (q.status === 'rejected') counts.rejected++
+      if (isExpired(q)) counts.expired++
     })
     return counts
-  }, [invoices])
+  }, [quotes])
 
-  const statusColors = {
+  const statusColors: Record<string, string> = {
     draft: 'bg-slate-500/20 text-slate-400',
     sent: 'bg-blue-500/20 text-blue-400',
-    paid: 'bg-green-500/20 text-green-400',
+    viewed: 'bg-purple-500/20 text-purple-400',
+    accepted: 'bg-green-500/20 text-green-400',
+    rejected: 'bg-red-500/20 text-red-400',
   }
 
   const filterTabs: { key: StatusFilter; label: string; color?: string }[] = [
     { key: 'all', label: 'Wszystkie' },
     { key: 'draft', label: 'Drafty' },
     { key: 'sent', label: 'Wysłane' },
-    { key: 'paid', label: 'Opłacone' },
-    { key: 'overdue', label: 'Przeterminowane', color: 'text-red-400' },
+    { key: 'viewed', label: 'Obejrzane', color: 'text-purple-400' },
+    { key: 'accepted', label: 'Zaakceptowane', color: 'text-green-400' },
+    { key: 'rejected', label: 'Odrzucone', color: 'text-red-400' },
+    { key: 'expired', label: 'Wygasłe', color: 'text-orange-400' },
   ]
 
   return (
@@ -144,30 +159,28 @@ export function InvoicesList({ invoices }: InvoicesListProps) {
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-slate-700/50 rounded-lg p-4">
-          <p className="text-slate-400 text-sm">Do zapłaty</p>
+          <p className="text-slate-400 text-sm">Wartość wycen</p>
           <p className="text-xl font-bold text-white">
-            {getCurrencySymbol(invoices[0]?.currency || 'PLN')}{stats.totalPending.toFixed(2)}
+            {getCurrencySymbol(quotes[0]?.currency || 'PLN')}{stats.totalValue.toFixed(2)}
           </p>
         </div>
         <div className="bg-slate-700/50 rounded-lg p-4">
-          <p className="text-slate-400 text-sm">Opłacone</p>
+          <p className="text-slate-400 text-sm">Zaakceptowane</p>
           <p className="text-xl font-bold text-green-400">
-            {getCurrencySymbol(invoices[0]?.currency || 'PLN')}{stats.totalPaid.toFixed(2)}
+            {stats.acceptedCount} ({getCurrencySymbol(quotes[0]?.currency || 'PLN')}{stats.acceptedValue.toFixed(2)})
           </p>
         </div>
         <div className="bg-slate-700/50 rounded-lg p-4">
-          <p className="text-slate-400 text-sm">Przeterminowane</p>
-          <p className="text-xl font-bold text-red-400">
-            {stats.overdueCount} ({getCurrencySymbol(invoices[0]?.currency || 'PLN')}{stats.overdueAmount.toFixed(2)})
-          </p>
+          <p className="text-slate-400 text-sm">Oczekujące</p>
+          <p className="text-xl font-bold text-blue-400">{stats.pendingCount}</p>
         </div>
         <div className="bg-slate-700/50 rounded-lg p-4">
-          <p className="text-slate-400 text-sm">Łącznie faktur</p>
-          <p className="text-xl font-bold text-white">{invoices.length}</p>
+          <p className="text-slate-400 text-sm">Łącznie wycen</p>
+          <p className="text-xl font-bold text-white">{quotes.length}</p>
         </div>
       </div>
 
-      {/* Search and Filter */}
+      {/* Search */}
       <div className="flex flex-col md:flex-row gap-4 mb-6">
         <div className="flex-1 relative">
           <svg
@@ -182,7 +195,7 @@ export function InvoicesList({ invoices }: InvoicesListProps) {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Szukaj po kliencie lub numerze faktury..."
+            placeholder="Szukaj po kliencie lub opisie..."
             className="input pl-10 w-full"
           />
         </div>
@@ -205,76 +218,92 @@ export function InvoicesList({ invoices }: InvoicesListProps) {
         ))}
       </div>
 
-      {/* Invoice List */}
-      {filteredInvoices.length > 0 ? (
+      {/* Quote List */}
+      {filteredQuotes.length > 0 ? (
         <div className="space-y-3">
-          {filteredInvoices.map((invoice) => {
-            const overdue = isOverdue(invoice)
-            const currencySymbol = getCurrencySymbol(invoice.currency || 'PLN')
+          {filteredQuotes.map((quote) => {
+            const expired = isExpired(quote)
+            const viewed = isViewed(quote)
+            const currencySymbol = getCurrencySymbol(quote.currency || 'PLN')
+            const total = quote.total_gross || quote.total || 0
+            const clientName = quote.qs_quote_requests?.client_name || 'Brak nazwy'
 
             return (
               <div
-                key={invoice.id}
+                key={quote.id}
                 className={`p-4 rounded-lg transition-colors ${
-                  overdue
+                  expired
+                    ? 'bg-orange-500/10 border border-orange-500/30'
+                    : quote.status === 'accepted'
+                    ? 'bg-green-500/10 border border-green-500/30'
+                    : quote.status === 'rejected'
                     ? 'bg-red-500/10 border border-red-500/30'
                     : 'bg-slate-700/50'
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <Link href={`/invoices/${invoice.id}`} className="flex-1 min-w-0 hover:opacity-80">
+                  <Link href={`/quotes/${quote.id}`} className="flex-1 min-w-0 hover:opacity-80">
                     <div className="flex items-center gap-3 mb-1">
                       <p className="text-white font-medium text-lg">
-                        {invoice.client_name || 'Brak nazwy'}
-                        <span className={`ml-2 ${overdue ? 'text-red-400' : 'text-green-400'}`}>
-                          {currencySymbol}{invoice.total_gross?.toFixed(2) || '0.00'}
+                        {clientName}
+                        <span className={`ml-2 ${
+                          quote.status === 'accepted' ? 'text-green-400' :
+                          quote.status === 'rejected' ? 'text-red-400' :
+                          'text-blue-400'
+                        }`}>
+                          {currencySymbol}{total.toFixed(2)}
                         </span>
                       </p>
                       <span className={`px-2 py-0.5 text-xs rounded-full ${
-                        statusColors[invoice.status as keyof typeof statusColors] || statusColors.draft
+                        viewed ? statusColors.viewed : statusColors[quote.status] || statusColors.draft
                       }`}>
-                        {invoice.status}
+                        {viewed ? 'viewed' : quote.status}
                       </span>
-                      {overdue && (
-                        <span className="px-2 py-0.5 text-xs rounded-full bg-red-500/20 text-red-400">
-                          Przeterminowana
+                      {viewed && (
+                        <span className="flex items-center gap-1 text-purple-400 text-xs" title={`Obejrzano ${new Date(quote.viewed_at!).toLocaleString('pl-PL')}`}>
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                          </svg>
+                        </span>
+                      )}
+                      {expired && (
+                        <span className="px-2 py-0.5 text-xs rounded-full bg-orange-500/20 text-orange-400">
+                          Wygasła
                         </span>
                       )}
                     </div>
                     <p className="text-slate-400 text-sm">
-                      {invoice.invoice_number}
-                      {invoice.client_email && (
-                        <span> • {invoice.client_email}</span>
+                      {quote.qs_quote_requests?.client_email || 'Brak email'}
+                      {quote.qs_quote_requests?.description && (
+                        <span className="text-slate-500"> • {quote.qs_quote_requests.description.slice(0, 50)}...</span>
                       )}
                     </p>
                   </Link>
                   <div className="flex items-center gap-4 ml-4">
                     <div className="text-right">
-                      <p className={`text-lg font-bold ${overdue ? 'text-red-400' : 'text-white'}`}>
-                        {currencySymbol}{invoice.total_gross?.toFixed(2) || '0.00'}
-                      </p>
                       <p className="text-slate-500 text-sm">
-                        {new Date(invoice.created_at).toLocaleDateString('pl-PL')}
+                        {new Date(quote.created_at).toLocaleDateString('pl-PL')}
                       </p>
-                      {invoice.due_date && (
-                        <p className={`text-xs ${overdue ? 'text-red-400' : 'text-slate-600'}`}>
-                          Termin: {new Date(invoice.due_date).toLocaleDateString('pl-PL')}
+                      {quote.valid_until && (
+                        <p className={`text-xs ${expired ? 'text-orange-400' : 'text-slate-600'}`}>
+                          Ważna do: {new Date(quote.valid_until).toLocaleDateString('pl-PL')}
                         </p>
                       )}
                     </div>
                     <button
                       onClick={(e) => {
                         e.preventDefault()
-                        setDeleteModal(invoice)
+                        setDeleteModal(quote)
                       }}
                       className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
-                      title="Usuń fakturę"
+                      title="Usuń wycenę"
                     >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                       </svg>
                     </button>
-                    <Link href={`/invoices/${invoice.id}`} className="text-slate-500 hover:text-white">
+                    <Link href={`/quotes/${quote.id}`} className="text-slate-500 hover:text-white">
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>
@@ -294,7 +323,7 @@ export function InvoicesList({ invoices }: InvoicesListProps) {
               </svg>
               <h3 className="text-lg font-medium text-white mb-2">Brak wyników</h3>
               <p className="text-slate-400">
-                Nie znaleziono faktur dla podanych kryteriów.
+                Nie znaleziono wycen dla podanych kryteriów.
               </p>
               <button
                 onClick={() => { setSearch(''); setStatusFilter('all') }}
@@ -306,13 +335,10 @@ export function InvoicesList({ invoices }: InvoicesListProps) {
           ) : (
             <>
               <svg className="w-16 h-16 text-slate-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
-              <h3 className="text-lg font-medium text-white mb-2">Brak faktur</h3>
-              <p className="text-slate-400 mb-4">Utwórz pierwszą fakturę z zaakceptowanej wyceny lub od zera.</p>
-              <Link href="/invoices/new" className="btn-primary">
-                Utwórz fakturę
-              </Link>
+              <h3 className="text-lg font-medium text-white mb-2">Brak wycen</h3>
+              <p className="text-slate-400">Wyceny pojawią się tutaj po utworzeniu z zapytań klientów.</p>
             </>
           )}
         </div>
@@ -329,13 +355,13 @@ export function InvoicesList({ invoices }: InvoicesListProps) {
                 </svg>
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-white">Usuń fakturę</h3>
+                <h3 className="text-lg font-semibold text-white">Usuń wycenę</h3>
                 <p className="text-slate-400 text-sm">Ta operacja jest nieodwracalna</p>
               </div>
             </div>
 
             <p className="text-slate-300 mb-6">
-              Czy na pewno chcesz usunąć fakturę <span className="font-semibold text-white">{deleteModal.invoice_number}</span> dla klienta <span className="font-semibold text-white">{deleteModal.client_name}</span>?
+              Czy na pewno chcesz usunąć wycenę dla klienta <span className="font-semibold text-white">{deleteModal.qs_quote_requests?.client_name || 'Nieznany'}</span>?
             </p>
 
             <div className="flex gap-3 justify-end">
@@ -357,7 +383,7 @@ export function InvoicesList({ invoices }: InvoicesListProps) {
                     Usuwanie...
                   </>
                 ) : (
-                  'Usuń fakturę'
+                  'Usuń wycenę'
                 )}
               </button>
             </div>
