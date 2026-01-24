@@ -36,7 +36,7 @@ function InvoiceForm() {
   const [vatPercent, setVatPercent] = useState(23)
   const [notes, setNotes] = useState('')
   const [dueDate, setDueDate] = useState('')
-  const [paymentTerms, setPaymentTerms] = useState('Bank transfer within 14 days')
+  const [paymentTerms, setPaymentTerms] = useState('Przelew bankowy w ciągu 2 dni')
 
   // Load user profile for currency settings
   useEffect(() => {
@@ -113,9 +113,9 @@ function InvoiceForm() {
         })))
       }
 
-      // Set due date to 14 days from now
+      // Set due date to 2 days from now
       const due = new Date()
-      due.setDate(due.getDate() + 14)
+      due.setDate(due.getDate() + 2)
       setDueDate(due.toISOString().split('T')[0])
 
     } catch (err) {
@@ -479,7 +479,7 @@ function InvoiceForm() {
               value={paymentTerms}
               onChange={(e) => setPaymentTerms(e.target.value)}
               className="input"
-              placeholder="e.g. Bank transfer within 14 days"
+              placeholder="np. Przelew bankowy w ciągu 2 dni"
             />
           </div>
         </div>
