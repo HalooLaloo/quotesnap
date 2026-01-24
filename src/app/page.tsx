@@ -75,7 +75,7 @@ export default async function Home() {
                 href="/register"
                 className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-xl text-lg font-semibold transition flex items-center justify-center gap-2"
               >
-                Start 14-day free trial
+                Start 3-day free trial
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                 </svg>
@@ -94,7 +94,7 @@ export default async function Home() {
                 <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
-                <span>No credit card required</span>
+                <span>3-day free trial</span>
               </div>
               <div className="flex items-center gap-2">
                 <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -675,7 +675,7 @@ export default async function Home() {
               Simple, transparent pricing
             </h2>
             <p className="text-slate-400 max-w-2xl mx-auto text-lg">
-              Start with a 14-day free trial. No credit card required.
+              Start with a 3-day free trial. Cancel anytime.
             </p>
           </div>
 
@@ -684,7 +684,7 @@ export default async function Home() {
             <div className="bg-[#132039] border-2 border-blue-500 rounded-xl p-8 relative">
               <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                 <span className="bg-blue-600 text-white text-sm font-medium px-3 py-1 rounded-full">
-                  14-day free trial
+                  3-day free trial
                 </span>
               </div>
 
@@ -724,10 +724,10 @@ export default async function Home() {
                 href="/register"
                 className="block text-center w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-lg font-semibold transition text-lg"
               >
-                Start 14-day free trial
+                Start 3-day free trial
               </Link>
               <p className="text-xs text-slate-500 text-center mt-3">
-                No credit card required • Cancel anytime
+                Credit card required • Cancel anytime before trial ends
               </p>
             </div>
 
@@ -756,8 +756,8 @@ export default async function Home() {
           <div className="space-y-4">
             {[
               {
-                q: 'Do I need a credit card to start the trial?',
-                a: 'No! Your 14-day trial is completely free and doesn\'t require any payment information. You only pay if you decide to continue after the trial.',
+                q: 'How does the free trial work?',
+                a: 'You get 3 days of full access to test everything. A credit card is required to start, but you won\'t be charged during the trial. Cancel anytime before it ends - no questions asked.',
               },
               {
                 q: 'How does the AI quote generation work?',
@@ -803,13 +803,13 @@ export default async function Home() {
             href="/register"
             className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-xl text-lg font-semibold transition"
           >
-            Start 14-day free trial
+            Start 3-day free trial
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
             </svg>
           </Link>
           <p className="text-slate-500 text-sm mt-4">
-            No credit card required • Setup in 5 minutes • Cancel anytime
+            3-day free trial • Setup in 5 minutes • Cancel anytime
           </p>
         </div>
       </section>
