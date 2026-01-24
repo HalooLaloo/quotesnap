@@ -32,7 +32,7 @@ export const PLANS = {
     price: 249,
     interval: 'year',
     priceId: process.env.STRIPE_YEARLY_PRICE_ID || '',
-    trialDays: 0, // No trial for yearly - they save $99
+    trialDays: 3,
     savings: 99,
     features: [
       'Everything in monthly',

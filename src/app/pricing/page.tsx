@@ -217,7 +217,7 @@ function PricingContent() {
               <>
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                   <span className="bg-green-500 text-white text-sm font-medium px-3 py-1 rounded-full">
-                    Best value - Save $99
+                    3-day trial + Save $99
                   </span>
                 </div>
 
@@ -228,7 +228,7 @@ function PricingContent() {
                     <span className="text-slate-400">/year</span>
                   </div>
                   <p className="text-slate-400 text-sm">
-                    <span className="line-through">$348</span> - 2 months free!
+                    Try free for 3 days, then $249/year <span className="text-green-400">(save $99)</span>
                   </p>
                 </div>
               </>
@@ -256,13 +256,11 @@ function PricingContent() {
                 ? 'Already subscribed'
                 : billingPeriod === 'monthly'
                 ? 'Start 3-day free trial'
-                : 'Subscribe now - Save $99'}
+                : 'Start 3-day free trial - Save $99'}
             </button>
 
             <p className="text-xs text-slate-500 text-center mt-3">
-              {billingPeriod === 'monthly'
-                ? 'Credit card required • Cancel anytime before trial ends'
-                : '30-day money-back guarantee • Cancel anytime'}
+              Credit card required • Cancel anytime before trial ends
             </p>
           </div>
 
