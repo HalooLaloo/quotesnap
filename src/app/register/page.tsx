@@ -18,12 +18,12 @@ export default function RegisterPage() {
     setError('')
 
     if (password !== confirmPassword) {
-      setError('Hasła nie są identyczne')
+      setError('Passwords do not match')
       return
     }
 
     if (password.length < 6) {
-      setError('Hasło musi mieć minimum 6 znaków')
+      setError('Password must be at least 6 characters')
       return
     }
 
@@ -85,19 +85,19 @@ export default function RegisterPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
               </div>
-              <h2 className="text-xl font-bold text-white mb-2">Sprawdź swoją skrzynkę</h2>
+              <h2 className="text-xl font-bold text-white mb-2">Check your inbox</h2>
               <p className="text-slate-400 mb-4">
-                Wysłaliśmy link potwierdzający na adres:<br />
+                We sent a confirmation link to:<br />
                 <span className="text-white font-medium">{email}</span>
               </p>
               <p className="text-slate-500 text-sm">
-                Kliknij link w mailu, aby aktywować konto.
+                Click the link in the email to activate your account.
               </p>
             </div>
           ) : (
             <>
               <h1 className="text-2xl font-bold text-white mb-6 text-center">
-                Stwórz konto
+                Create account
               </h1>
 
               <form onSubmit={handleRegister} className="space-y-4">
@@ -121,7 +121,7 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <label htmlFor="password" className="label">Hasło</label>
+              <label htmlFor="password" className="label">Password</label>
               <input
                 id="password"
                 type="password"
@@ -134,7 +134,7 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <label htmlFor="confirmPassword" className="label">Potwierdź hasło</label>
+              <label htmlFor="confirmPassword" className="label">Confirm password</label>
               <input
                 id="confirmPassword"
                 type="password"
@@ -151,14 +151,14 @@ export default function RegisterPage() {
               disabled={loading}
               className="btn-primary w-full"
             >
-              {loading ? 'Tworzenie konta...' : 'Stwórz konto'}
+              {loading ? 'Creating account...' : 'Create account'}
             </button>
           </form>
 
           <p className="mt-6 text-center text-slate-400 text-sm">
-            Masz już konto?{' '}
+            Already have an account?{' '}
             <Link href="/login" className="text-blue-400 hover:text-blue-300">
-              Zaloguj się
+              Sign in
             </Link>
           </p>
             </>

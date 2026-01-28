@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
-    // Pobierz wycenę z danymi klienta
+    // Fetch quote with client data
     const { data: quote, error: quoteError } = await supabase
       .from('qs_quotes')
       .select(`
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Pobierz dane wykonawcy
+    // Fetch contractor data
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('full_name, company_name, phone')
@@ -63,16 +63,16 @@ export async function POST(request: NextRequest) {
 
     console.log('Profile query result:', { profile, profileError, userId: user?.id })
 
-    const contractorName = profile?.company_name || profile?.full_name || 'Wykonawca'
+    const contractorName = profile?.company_name || profile?.full_name || 'Contractor'
     console.log('Contractor name:', contractorName)
     const items = (quote.items || []) as QuoteItem[]
 
     // Generate quote view URL
     const quoteUrl = `${protocol}://${host}/quote/${quote.token}`
 
-    // Generuj HTML emaila
+    // Generate email HTML
     const emailHtml = generateQuoteEmailHtml({
-      clientName: quote.qs_quote_requests?.client_name || 'Kliencie',
+      clientName: quote.qs_quote_requests?.client_name || 'Client',
       contractorName,
       contractorPhone: profile?.phone,
       items,
@@ -88,11 +88,11 @@ export async function POST(request: NextRequest) {
       quoteUrl,
     })
 
-    // Wyślij email
+    // Send email
     const { error: sendError } = await resend.emails.send({
-      from: 'BrickQuote <contact@brickquote.app>', // Zmień na swoją domenę po weryfikacji
+      from: 'BrickQuote <contact@brickquote.app>',
       to: clientEmail,
-      subject: `Wycena od ${contractorName}`,
+      subject: `Quote from ${contractorName}`,
       html: emailHtml,
     })
 
@@ -152,14 +152,14 @@ function generateQuoteEmailHtml(data: QuoteEmailData): string {
 
   const discountHtml = data.discountPercent > 0 ? `
     <tr>
-      <td colspan="3" style="padding: 8px 12px; text-align: right;">Rabat (${data.discountPercent}%):</td>
+      <td colspan="3" style="padding: 8px 12px; text-align: right;">Discount (${data.discountPercent}%):</td>
       <td style="padding: 8px 12px; text-align: right; color: #dc2626;">-${(data.subtotal * data.discountPercent / 100).toFixed(2)} PLN</td>
     </tr>
   ` : ''
 
   const vatHtml = data.vatPercent > 0 ? `
     <tr>
-      <td colspan="3" style="padding: 8px 12px; text-align: right;">Netto:</td>
+      <td colspan="3" style="padding: 8px 12px; text-align: right;">Net:</td>
       <td style="padding: 8px 12px; text-align: right;">${data.totalNet.toFixed(2)} PLN</td>
     </tr>
     <tr>
@@ -180,27 +180,27 @@ function generateQuoteEmailHtml(data: QuoteEmailData): string {
 
     <!-- Header -->
     <div style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); padding: 32px; text-align: center;">
-      <h1 style="color: white; margin: 0; font-size: 28px;">Wycena</h1>
-      <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0 0;">od ${data.contractorName}</p>
+      <h1 style="color: white; margin: 0; font-size: 28px;">Quote</h1>
+      <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0 0;">from ${data.contractorName}</p>
     </div>
 
     <!-- Content -->
     <div style="padding: 32px;">
       <p style="color: #374151; font-size: 16px; margin: 0 0 24px 0;">
-        Cześć <strong>${data.clientName}</strong>,
+        Hi <strong>${data.clientName}</strong>,
       </p>
       <p style="color: #6b7280; font-size: 15px; margin: 0 0 32px 0;">
-        Dziękuję za zainteresowanie. Poniżej znajdziesz szczegółową wycenę prac:
+        Thank you for your interest. Below you will find a detailed quote for the work:
       </p>
 
       <!-- Items table -->
       <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
         <thead>
           <tr style="background: #f9fafb;">
-            <th style="padding: 12px; text-align: left; font-weight: 600; color: #374151;">Usługa</th>
-            <th style="padding: 12px; text-align: center; font-weight: 600; color: #374151;">Ilość</th>
-            <th style="padding: 12px; text-align: right; font-weight: 600; color: #374151;">Cena</th>
-            <th style="padding: 12px; text-align: right; font-weight: 600; color: #374151;">Razem</th>
+            <th style="padding: 12px; text-align: left; font-weight: 600; color: #374151;">Service</th>
+            <th style="padding: 12px; text-align: center; font-weight: 600; color: #374151;">Qty</th>
+            <th style="padding: 12px; text-align: right; font-weight: 600; color: #374151;">Price</th>
+            <th style="padding: 12px; text-align: right; font-weight: 600; color: #374151;">Total</th>
           </tr>
         </thead>
         <tbody>
@@ -208,13 +208,13 @@ function generateQuoteEmailHtml(data: QuoteEmailData): string {
         </tbody>
         <tfoot>
           <tr>
-            <td colspan="3" style="padding: 8px 12px; text-align: right;">Suma częściowa:</td>
+            <td colspan="3" style="padding: 8px 12px; text-align: right;">Subtotal:</td>
             <td style="padding: 8px 12px; text-align: right;">${data.subtotal.toFixed(2)} PLN</td>
           </tr>
           ${discountHtml}
           ${vatHtml}
           <tr style="background: #f0fdf4;">
-            <td colspan="3" style="padding: 16px 12px; text-align: right; font-size: 18px; font-weight: 700; color: #166534;">ORIENTACYJNIE:</td>
+            <td colspan="3" style="padding: 16px 12px; text-align: right; font-size: 18px; font-weight: 700; color: #166534;">ESTIMATE:</td>
             <td style="padding: 16px 12px; text-align: right; font-size: 18px; font-weight: 700; color: #166534;">${data.total.toFixed(2)} PLN</td>
           </tr>
         </tfoot>
@@ -223,7 +223,7 @@ function generateQuoteEmailHtml(data: QuoteEmailData): string {
       ${data.notes ? `
         <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 16px; margin-bottom: 24px; border-radius: 0 8px 8px 0;">
           <p style="margin: 0; color: #92400e; font-size: 14px;">
-            <strong>Uwagi:</strong><br>
+            <strong>Notes:</strong><br>
             ${data.notes}
           </p>
         </div>
@@ -231,21 +231,21 @@ function generateQuoteEmailHtml(data: QuoteEmailData): string {
 
       ${data.availableFrom ? `
         <p style="color: #6b7280; font-size: 14px; margin: 0 0 12px 0;">
-          Możliwy termin rozpoczęcia prac: <strong>${new Date(data.availableFrom).toLocaleDateString('pl-PL')}</strong>
+          Available start date: <strong>${new Date(data.availableFrom).toLocaleDateString('en-US')}</strong>
         </p>
       ` : ''}
 
       ${data.validUntil ? `
         <p style="color: #6b7280; font-size: 14px; margin: 0 0 24px 0;">
-          Wycena ważna do: <strong>${new Date(data.validUntil).toLocaleDateString('pl-PL')}</strong>
+          Quote valid until: <strong>${new Date(data.validUntil).toLocaleDateString('en-US')}</strong>
         </p>
       ` : ''}
 
-      <!-- Info o cenie orientacyjnej -->
+      <!-- Estimate info -->
       <div style="background: #eff6ff; border-left: 4px solid #3b82f6; padding: 16px; margin-bottom: 24px; border-radius: 0 8px 8px 0;">
         <p style="margin: 0; color: #1e40af; font-size: 13px;">
-          <strong>Informacja:</strong> Powyższa wycena ma charakter orientacyjny i została przygotowana na podstawie przekazanego opisu.
-          Ostateczna cena może nieznacznie różnić się po osobistej wizji i dokładnej ocenie zakresu prac na miejscu.
+          <strong>Note:</strong> This quote is an estimate based on the information provided.
+          The final price may vary slightly after an on-site inspection and detailed assessment of the work scope.
         </p>
       </div>
 
@@ -269,7 +269,7 @@ function generateQuoteEmailHtml(data: QuoteEmailData): string {
     <!-- Footer -->
     <div style="background: #f9fafb; padding: 24px; text-align: center; border-top: 1px solid #e5e7eb;">
       <p style="color: #9ca3af; font-size: 13px; margin: 0;">
-        Wycena wygenerowana przez BrickQuote
+        Quote generated by BrickQuote
       </p>
     </div>
   </div>

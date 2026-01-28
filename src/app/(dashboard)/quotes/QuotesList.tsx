@@ -55,7 +55,7 @@ export function QuotesList({ quotes }: QuotesListProps) {
       router.refresh()
     } catch (err) {
       console.error('Error deleting quote:', err)
-      alert('Nie udało się usunąć wyceny')
+      alert('Failed to delete quote')
     } finally {
       setDeleting(false)
     }
@@ -123,13 +123,13 @@ export function QuotesList({ quotes }: QuotesListProps) {
   }
 
   const filterTabs: { key: StatusFilter; label: string; color?: string }[] = [
-    { key: 'all', label: 'Wszystkie' },
-    { key: 'draft', label: 'Drafty' },
-    { key: 'sent', label: 'Wysłane' },
-    { key: 'viewed', label: 'Obejrzane', color: 'text-purple-400' },
-    { key: 'accepted', label: 'Zaakceptowane', color: 'text-green-400' },
-    { key: 'rejected', label: 'Odrzucone', color: 'text-red-400' },
-    { key: 'expired', label: 'Wygasłe', color: 'text-orange-400' },
+    { key: 'all', label: 'All' },
+    { key: 'draft', label: 'Drafts' },
+    { key: 'sent', label: 'Sent' },
+    { key: 'viewed', label: 'Viewed', color: 'text-purple-400' },
+    { key: 'accepted', label: 'Accepted', color: 'text-green-400' },
+    { key: 'rejected', label: 'Rejected', color: 'text-red-400' },
+    { key: 'expired', label: 'Expired', color: 'text-orange-400' },
   ]
 
   return (
@@ -149,7 +149,7 @@ export function QuotesList({ quotes }: QuotesListProps) {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Szukaj po kliencie lub opisie..."
+            placeholder="Search by client or description..."
             className="input pl-10 w-full"
           />
         </div>
@@ -180,7 +180,7 @@ export function QuotesList({ quotes }: QuotesListProps) {
             const viewed = isViewed(quote)
             const currencySymbol = getCurrencySymbol(quote.currency || 'PLN')
             const total = quote.total_gross || quote.total || 0
-            const clientName = quote.qs_quote_requests?.client_name || 'Brak nazwy'
+            const clientName = quote.qs_quote_requests?.client_name || 'No name'
 
             return (
               <div
@@ -214,7 +214,7 @@ export function QuotesList({ quotes }: QuotesListProps) {
                         {viewed ? 'viewed' : quote.status}
                       </span>
                       {viewed && (
-                        <span className="flex items-center gap-1 text-purple-400 text-xs" title={`Obejrzano ${new Date(quote.viewed_at!).toLocaleString('pl-PL')}`}>
+                        <span className="flex items-center gap-1 text-purple-400 text-xs" title={`Viewed ${new Date(quote.viewed_at!).toLocaleString('en-US')}`}>
                           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -223,12 +223,12 @@ export function QuotesList({ quotes }: QuotesListProps) {
                       )}
                       {expired && (
                         <span className="px-2 py-0.5 text-xs rounded-full bg-orange-500/20 text-orange-400">
-                          Wygasła
+                          Expired
                         </span>
                       )}
                     </div>
                     <p className="text-slate-400 text-sm">
-                      {quote.qs_quote_requests?.client_email || 'Brak email'}
+                      {quote.qs_quote_requests?.client_email || 'No email'}
                       {quote.qs_quote_requests?.description && (
                         <span className="text-slate-500"> • {quote.qs_quote_requests.description.slice(0, 50)}...</span>
                       )}
@@ -237,11 +237,11 @@ export function QuotesList({ quotes }: QuotesListProps) {
                   <div className="flex items-center gap-4 ml-4">
                     <div className="text-right">
                       <p className="text-slate-500 text-sm">
-                        {new Date(quote.created_at).toLocaleDateString('pl-PL')}
+                        {new Date(quote.created_at).toLocaleDateString('en-US')}
                       </p>
                       {quote.valid_until && (
                         <p className={`text-xs ${expired ? 'text-orange-400' : 'text-slate-600'}`}>
-                          Ważna do: {new Date(quote.valid_until).toLocaleDateString('pl-PL')}
+                          Valid until: {new Date(quote.valid_until).toLocaleDateString('en-US')}
                         </p>
                       )}
                     </div>
@@ -251,7 +251,7 @@ export function QuotesList({ quotes }: QuotesListProps) {
                         setDeleteModal(quote)
                       }}
                       className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
-                      title="Usuń wycenę"
+                      title="Delete quote"
                     >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -275,15 +275,15 @@ export function QuotesList({ quotes }: QuotesListProps) {
               <svg className="w-12 h-12 text-slate-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
-              <h3 className="text-lg font-medium text-white mb-2">Brak wyników</h3>
+              <h3 className="text-lg font-medium text-white mb-2">No results</h3>
               <p className="text-slate-400">
-                Nie znaleziono wycen dla podanych kryteriów.
+                No quotes found for the given criteria.
               </p>
               <button
                 onClick={() => { setSearch(''); setStatusFilter('all') }}
                 className="text-blue-400 hover:text-blue-300 mt-2"
               >
-                Wyczyść filtry
+                Clear filters
               </button>
             </>
           ) : (
@@ -291,8 +291,8 @@ export function QuotesList({ quotes }: QuotesListProps) {
               <svg className="w-16 h-16 text-slate-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
-              <h3 className="text-lg font-medium text-white mb-2">Brak wycen</h3>
-              <p className="text-slate-400">Wyceny pojawią się tutaj po utworzeniu z zapytań klientów.</p>
+              <h3 className="text-lg font-medium text-white mb-2">No quotes</h3>
+              <p className="text-slate-400">Quotes will appear here after creating them from client requests.</p>
             </>
           )}
         </div>
@@ -309,13 +309,13 @@ export function QuotesList({ quotes }: QuotesListProps) {
                 </svg>
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-white">Usuń wycenę</h3>
-                <p className="text-slate-400 text-sm">Ta operacja jest nieodwracalna</p>
+                <h3 className="text-lg font-semibold text-white">Delete quote</h3>
+                <p className="text-slate-400 text-sm">This action cannot be undone</p>
               </div>
             </div>
 
             <p className="text-slate-300 mb-6">
-              Czy na pewno chcesz usunąć wycenę dla klienta <span className="font-semibold text-white">{deleteModal.qs_quote_requests?.client_name || 'Nieznany'}</span>?
+              Are you sure you want to delete the quote for <span className="font-semibold text-white">{deleteModal.qs_quote_requests?.client_name || 'Unknown'}</span>?
             </p>
 
             <div className="flex gap-3 justify-end">
@@ -324,7 +324,7 @@ export function QuotesList({ quotes }: QuotesListProps) {
                 disabled={deleting}
                 className="btn-secondary"
               >
-                Anuluj
+                Cancel
               </button>
               <button
                 onClick={handleDelete}
@@ -334,10 +334,10 @@ export function QuotesList({ quotes }: QuotesListProps) {
                 {deleting ? (
                   <>
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Usuwanie...
+                    Deleting...
                   </>
                 ) : (
-                  'Usuń wycenę'
+                  'Delete quote'
                 )}
               </button>
             </div>

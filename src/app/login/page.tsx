@@ -61,7 +61,7 @@ function LoginForm() {
   return (
     <div className="card">
       <h1 className="text-2xl font-bold text-white mb-6 text-center">
-        Witaj ponownie
+        Welcome back
       </h1>
 
       <form onSubmit={handleLogin} className="space-y-4">
@@ -90,7 +90,7 @@ function LoginForm() {
         </div>
 
         <div>
-          <label htmlFor="password" className="label">Hasło</label>
+          <label htmlFor="password" className="label">Password</label>
           <input
             id="password"
             type="password"
@@ -107,14 +107,14 @@ function LoginForm() {
           disabled={loading}
           className="btn-primary w-full"
         >
-          {loading ? 'Logowanie...' : 'Zaloguj się'}
+          {loading ? 'Signing in...' : 'Sign in'}
         </button>
       </form>
 
       <p className="mt-6 text-center text-slate-400 text-sm">
-        Nie masz konta?{' '}
+        Don&apos;t have an account?{' '}
         <Link href="/register" className="text-blue-400 hover:text-blue-300">
-          Zarejestruj się
+          Sign up
         </Link>
       </p>
     </div>
