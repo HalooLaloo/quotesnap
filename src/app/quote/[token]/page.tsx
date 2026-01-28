@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import { QuoteItem } from '@/lib/types'
 import { QuoteActions } from './QuoteActions'
 import { TrackQuoteView } from './TrackQuoteView'
-import { COUNTRIES, DEFAULT_COUNTRY } from '@/lib/countries'
+import { COUNTRIES } from '@/lib/countries'
 
 // Helper to get currency symbol from currency code
 function getCurrencySymbol(currencyCode: string): string {

@@ -158,7 +158,7 @@ export function AcceptedQuotes({ quotes }: AcceptedQuotesProps) {
           ) : (
             <div className="text-center py-8 text-slate-400">
               {search ? (
-                <p>No quotes found matching "{search}"</p>
+                <p>No quotes found matching &quot;{search}&quot;</p>
               ) : (
                 <p>No accepted quotes yet</p>
               )}

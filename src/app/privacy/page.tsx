@@ -31,7 +31,7 @@ export default function PrivacyPolicy() {
           <section className="space-y-4">
             <h2 className="text-xl font-semibold text-white">1. Introduction</h2>
             <p>
-              BrickQuote ("we", "our", or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our service.
+              BrickQuote (&quot;we&quot;, &quot;our&quot;, or &quot;us&quot;) is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our service.
             </p>
           </section>
 
@@ -114,7 +114,7 @@ export default function PrivacyPolicy() {
           <section className="space-y-4">
             <h2 className="text-xl font-semibold text-white">10. Changes to This Policy</h2>
             <p>
-              We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new policy on this page and updating the "Last updated" date.
+              We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new policy on this page and updating the &quot;Last updated&quot; date.
             </p>
           </section>
 

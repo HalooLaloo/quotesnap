@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 
 interface QuoteActionsProps {
   token: string
@@ -11,7 +10,6 @@ export function QuoteActions({ token }: QuoteActionsProps) {
   const [loading, setLoading] = useState<'accept' | 'reject' | null>(null)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
-  const router = useRouter()
 
   const handleAction = async (action: 'accept' | 'reject') => {
     setLoading(action)

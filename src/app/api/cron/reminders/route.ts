@@ -109,7 +109,7 @@ export async function GET(request: NextRequest) {
             `,
           })
           results.overdueInvoices += overdueInvoices.length
-        } catch (err) {
+        } catch {
           results.errors.push(`Failed to send overdue email to ${profile.email}`)
         }
       }
@@ -172,7 +172,7 @@ export async function GET(request: NextRequest) {
             `,
           })
           results.expiringQuotes += expiringQuotes.length
-        } catch (err) {
+        } catch {
           results.errors.push(`Failed to send expiring quotes email to ${profile.email}`)
         }
       }

@@ -38,7 +38,6 @@ export default async function InvoiceDetailPage({
     .eq('id', user?.id)
     .single()
 
-  const contractorName = profile?.company_name || profile?.full_name || ''
   const currencySymbol = getCurrencySymbol(invoice.currency || 'USD')
 
   const statusColors: Record<string, string> = {

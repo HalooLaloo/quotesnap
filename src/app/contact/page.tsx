@@ -26,7 +26,7 @@ export default function Contact() {
         <div className="max-w-xl mx-auto text-center">
           <h1 className="text-3xl font-bold text-white mb-4">Contact Us</h1>
           <p className="text-slate-400 mb-12">
-            Have questions or need help? We're here for you.
+            Have questions or need help? We&apos;re here for you.
           </p>
 
           <div className="space-y-6">

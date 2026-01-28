@@ -619,7 +619,7 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
         <div className="card">
           <h2 className="text-lg font-semibold text-white mb-4">Add Your Services</h2>
           <p className="text-slate-400 text-sm mb-4">
-            Add services that AI didn't suggest
+            Add services that AI didn&apos;t suggest
           </p>
 
           {/* Services from price list */}
@@ -733,7 +733,7 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
             if (clientQuestion) {
               return (
                 <div className="mb-4 p-3 bg-blue-600/10 rounded-lg border border-blue-500/30">
-                  <p className="text-xs text-blue-400 mb-1">Client's question:</p>
+                  <p className="text-xs text-blue-400 mb-1">Client&apos;s question:</p>
                   <p className="text-slate-300 text-sm whitespace-pre-wrap">{clientQuestion}</p>
                 </div>
               )

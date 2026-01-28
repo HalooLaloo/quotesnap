@@ -22,7 +22,6 @@ function InvoiceForm() {
   const [currency, setCurrency] = useState('USD')
   const [currencySymbol, setCurrencySymbol] = useState('$')
   const [taxLabel, setTaxLabel] = useState('Sales Tax')
-  const [defaultTax, setDefaultTax] = useState(0)
 
   // Invoice data
   const [clientName, setClientName] = useState('')
@@ -55,7 +54,6 @@ function InvoiceForm() {
           setCurrency(profile.currency || country.currency)
           setCurrencySymbol(country.currencySymbol)
           setTaxLabel(country.taxLabel)
-          setDefaultTax(country.defaultTaxPercent)
           setVatPercent(country.defaultTaxPercent)
         }
       }

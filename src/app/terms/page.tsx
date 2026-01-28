@@ -72,7 +72,7 @@ export default function TermsOfService() {
               <li>Use the service for any illegal purpose</li>
               <li>Upload malicious code or content</li>
               <li>Attempt to gain unauthorized access to our systems</li>
-              <li>Interfere with other users' access to the service</li>
+              <li>Interfere with other users&apos; access to the service</li>
               <li>Resell or redistribute the service without permission</li>
               <li>Use the service to send spam or unsolicited messages</li>
             </ul>
@@ -95,7 +95,7 @@ export default function TermsOfService() {
           <section className="space-y-4">
             <h2 className="text-xl font-semibold text-white">8. Limitation of Liability</h2>
             <p>
-              BrickQuote is provided "as is" without warranties of any kind. We are not liable for any indirect, incidental, special, or consequential damages. Our total liability is limited to the amount you paid us in the 12 months preceding the claim.
+              BrickQuote is provided &quot;as is&quot; without warranties of any kind. We are not liable for any indirect, incidental, special, or consequential damages. Our total liability is limited to the amount you paid us in the 12 months preceding the claim.
             </p>
           </section>
 

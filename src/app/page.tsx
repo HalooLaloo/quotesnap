@@ -519,7 +519,7 @@ export default async function Home() {
                   </div>
                   <div>
                     <h4 className="text-white font-medium mb-1">AI conversation</h4>
-                    <p className="text-slate-400 text-sm">Chatbot asks follow-up questions so you don't have to</p>
+                    <p className="text-slate-400 text-sm">Chatbot asks follow-up questions so you don&apos;t have to</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-4">
@@ -562,7 +562,7 @@ export default async function Home() {
                         </svg>
                       </div>
                       <div className="bg-[#1e3a5f] rounded-2xl rounded-tl-md p-3 max-w-[80%]">
-                        <p className="text-white text-sm">Hi! What's the square footage of the bathroom you want to remodel?</p>
+                        <p className="text-white text-sm">Hi! What&apos;s the square footage of the bathroom you want to remodel?</p>
                       </div>
                     </div>
 
@@ -644,7 +644,7 @@ export default async function Home() {
                 ))}
               </div>
               <p className="text-slate-300 mb-6">
-                "Quotes used to take me 2 hours. Now I'm done in 10 minutes. The AI actually understands what's in the photos and suggests all the right items."
+                &quot;Quotes used to take me 2 hours. Now I&apos;m done in 10 minutes. The AI actually understands what&apos;s in the photos and suggests all the right items.&quot;
               </p>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
@@ -666,7 +666,7 @@ export default async function Home() {
                 ))}
               </div>
               <p className="text-slate-300 mb-6">
-                "Best part is clients accept quotes online. No more 'I'll call you back' - they just click accept and it's done. Game changer."
+                &quot;Best part is clients accept quotes online. No more &apos;I&apos;ll call you back&apos; - they just click accept and it&apos;s done. Game changer.&quot;
               </p>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
@@ -688,7 +688,7 @@ export default async function Home() {
                 ))}
               </div>
               <p className="text-slate-300 mb-6">
-                "The request link is brilliant. I put it on my website and clients fill in everything with photos. I just get a ready-to-quote notification."
+                &quot;The request link is brilliant. I put it on my website and clients fill in everything with photos. I just get a ready-to-quote notification.&quot;
               </p>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center">

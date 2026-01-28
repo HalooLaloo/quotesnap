@@ -86,7 +86,7 @@ export default function SubscribePage() {
             Start your 3-day free trial
           </h1>
           <p className="text-slate-400 text-lg">
-            Choose your plan. You won't be charged during the trial period.
+            Choose your plan. You won&apos;t be charged during the trial period.
           </p>
         </div>
 

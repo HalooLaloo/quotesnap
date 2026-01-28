@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { UNITS } from '@/lib/types'
-import { COUNTRIES, COUNTRY_LIST, CountryConfig } from '@/lib/countries'
+import { COUNTRIES, COUNTRY_LIST } from '@/lib/countries'
 
 interface SuggestedService {
   name: string
@@ -231,7 +231,7 @@ export function OnboardingWizard({ onClose, userId }: OnboardingWizardProps) {
                 Welcome to BrickQuote!
               </h1>
               <p className="text-slate-400 mb-8 max-w-sm mx-auto">
-                AI will create your service price list and you'll be ready to send professional quotes.
+                AI will create your service price list and you&apos;ll be ready to send professional quotes.
               </p>
               <div className="flex items-center justify-center gap-2 text-slate-500 text-sm">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -541,7 +541,7 @@ export function OnboardingWizard({ onClose, userId }: OnboardingWizardProps) {
               </div>
 
               <p className="text-slate-500 text-xs text-center">
-                You can also find this link in your dashboard under "Requests"
+                You can also find this link in your dashboard under &quot;Requests&quot;
               </p>
             </div>
           )}
@@ -561,7 +561,7 @@ export function OnboardingWizard({ onClose, userId }: OnboardingWizardProps) {
                 onClick={() => setCurrentStep('country')}
                 className="btn-primary px-8"
               >
-                Let's go →
+                Let&apos;s go →
               </button>
             </div>
           )}

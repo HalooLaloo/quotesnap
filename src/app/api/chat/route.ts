@@ -129,7 +129,7 @@ export async function POST(request: NextRequest) {
     // Rate limiting - max 20 messages per hour per IP
     if (chatRateLimiter) {
       const ip = getClientIP(request)
-      const { success, remaining } = await chatRateLimiter.limit(ip)
+      const { success } = await chatRateLimiter.limit(ip)
 
       if (!success) {
         return NextResponse.json(
