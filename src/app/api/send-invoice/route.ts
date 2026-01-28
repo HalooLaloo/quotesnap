@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
     const { error: sendError } = await resend.emails.send({
       from: 'BrickQuote <contact@brickquote.app>',
       to: clientEmail,
-      subject: `Faktura ${invoice.invoice_number} od ${contractorName}`,
+      subject: `Invoice ${invoice.invoice_number} from ${contractorName}`,
       html: emailHtml,
     })
 
@@ -157,14 +157,14 @@ function generateInvoiceEmailHtml(data: InvoiceEmailData): string {
 
   const discountHtml = data.discountPercent > 0 ? `
     <tr>
-      <td colspan="3" style="padding: 8px 12px; text-align: right;">Rabat (${data.discountPercent}%):</td>
+      <td colspan="3" style="padding: 8px 12px; text-align: right;">Discount (${data.discountPercent}%):</td>
       <td style="padding: 8px 12px; text-align: right; color: #dc2626;">-${(data.subtotal * data.discountPercent / 100).toFixed(2)} PLN</td>
     </tr>
   ` : ''
 
   const vatHtml = data.vatPercent > 0 ? `
     <tr>
-      <td colspan="3" style="padding: 8px 12px; text-align: right;">Netto:</td>
+      <td colspan="3" style="padding: 8px 12px; text-align: right;">Net:</td>
       <td style="padding: 8px 12px; text-align: right;">${data.totalNet.toFixed(2)} PLN</td>
     </tr>
     <tr>
@@ -175,9 +175,9 @@ function generateInvoiceEmailHtml(data: InvoiceEmailData): string {
 
   const bankInfoHtml = (data.bankName || data.bankAccount) ? `
     <div style="background: #f3f4f6; border-radius: 8px; padding: 16px; margin-bottom: 24px;">
-      <h3 style="margin: 0 0 12px 0; color: #374151; font-size: 14px; font-weight: 600;">Dane do przelewu:</h3>
+      <h3 style="margin: 0 0 12px 0; color: #374151; font-size: 14px; font-weight: 600;">Bank transfer details:</h3>
       ${data.bankName ? `<p style="margin: 0 0 4px 0; color: #6b7280; font-size: 14px;">Bank: <strong style="color: #374151;">${data.bankName}</strong></p>` : ''}
-      ${data.bankAccount ? `<p style="margin: 0; color: #6b7280; font-size: 14px;">Nr konta: <strong style="color: #374151; font-family: monospace;">${data.bankAccount}</strong></p>` : ''}
+      ${data.bankAccount ? `<p style="margin: 0; color: #6b7280; font-size: 14px;">Account: <strong style="color: #374151; font-family: monospace;">${data.bankAccount}</strong></p>` : ''}
     </div>
   ` : ''
 
@@ -193,27 +193,27 @@ function generateInvoiceEmailHtml(data: InvoiceEmailData): string {
 
     <!-- Header -->
     <div style="background: linear-gradient(135deg, #22c55e, #16a34a); padding: 32px; text-align: center;">
-      <h1 style="color: white; margin: 0; font-size: 28px;">Faktura</h1>
+      <h1 style="color: white; margin: 0; font-size: 28px;">Invoice</h1>
       <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0 0;">${data.invoiceNumber}</p>
     </div>
 
     <!-- Content -->
     <div style="padding: 32px;">
       <p style="color: #374151; font-size: 16px; margin: 0 0 24px 0;">
-        Cześć <strong>${data.clientName}</strong>,
+        Hi <strong>${data.clientName}</strong>,
       </p>
       <p style="color: #6b7280; font-size: 15px; margin: 0 0 32px 0;">
-        Przesyłam fakturę za wykonane usługi. Poniżej znajdziesz szczegóły:
+        Please find below the invoice for services provided:
       </p>
 
       <!-- Items table -->
       <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
         <thead>
           <tr style="background: #f9fafb;">
-            <th style="padding: 12px; text-align: left; font-weight: 600; color: #374151;">Opis</th>
-            <th style="padding: 12px; text-align: center; font-weight: 600; color: #374151;">Ilość</th>
-            <th style="padding: 12px; text-align: right; font-weight: 600; color: #374151;">Cena</th>
-            <th style="padding: 12px; text-align: right; font-weight: 600; color: #374151;">Razem</th>
+            <th style="padding: 12px; text-align: left; font-weight: 600; color: #374151;">Description</th>
+            <th style="padding: 12px; text-align: center; font-weight: 600; color: #374151;">Qty</th>
+            <th style="padding: 12px; text-align: right; font-weight: 600; color: #374151;">Price</th>
+            <th style="padding: 12px; text-align: right; font-weight: 600; color: #374151;">Total</th>
           </tr>
         </thead>
         <tbody>
@@ -221,13 +221,13 @@ function generateInvoiceEmailHtml(data: InvoiceEmailData): string {
         </tbody>
         <tfoot>
           <tr>
-            <td colspan="3" style="padding: 8px 12px; text-align: right;">Suma częściowa:</td>
+            <td colspan="3" style="padding: 8px 12px; text-align: right;">Subtotal:</td>
             <td style="padding: 8px 12px; text-align: right;">${data.subtotal.toFixed(2)} PLN</td>
           </tr>
           ${discountHtml}
           ${vatHtml}
           <tr style="background: #f0fdf4;">
-            <td colspan="3" style="padding: 16px 12px; text-align: right; font-size: 18px; font-weight: 700; color: #166534;">DO ZAPŁATY:</td>
+            <td colspan="3" style="padding: 16px 12px; text-align: right; font-size: 18px; font-weight: 700; color: #166534;">AMOUNT DUE:</td>
             <td style="padding: 16px 12px; text-align: right; font-size: 18px; font-weight: 700; color: #166534;">${data.totalGross.toFixed(2)} PLN</td>
           </tr>
         </tfoot>
@@ -238,7 +238,7 @@ function generateInvoiceEmailHtml(data: InvoiceEmailData): string {
       ${data.dueDate ? `
         <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 16px; margin-bottom: 24px; border-radius: 0 8px 8px 0;">
           <p style="margin: 0; color: #92400e; font-size: 14px;">
-            <strong>Termin płatności:</strong> ${new Date(data.dueDate).toLocaleDateString('pl-PL')}
+            <strong>Due date:</strong> ${new Date(data.dueDate).toLocaleDateString('en-US')}
           </p>
         </div>
       ` : ''}
@@ -246,7 +246,7 @@ function generateInvoiceEmailHtml(data: InvoiceEmailData): string {
       ${data.notes ? `
         <div style="background: #eff6ff; border-left: 4px solid #3b82f6; padding: 16px; margin-bottom: 24px; border-radius: 0 8px 8px 0;">
           <p style="margin: 0; color: #1e40af; font-size: 14px;">
-            <strong>Uwagi:</strong><br>
+            <strong>Notes:</strong><br>
             ${data.notes}
           </p>
         </div>
@@ -256,14 +256,14 @@ function generateInvoiceEmailHtml(data: InvoiceEmailData): string {
       <div style="text-align: center; margin: 32px 0;">
         ${data.invoiceUrl ? `
           <a href="${data.invoiceUrl}" style="display: inline-block; background: #22c55e; color: white; padding: 16px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px; margin-bottom: 16px;">
-            Zobacz fakturę online
+            View Invoice Online
           </a>
-          <p style="color: #6b7280; font-size: 13px; margin: 16px 0;">Lub skopiuj link: ${data.invoiceUrl}</p>
+          <p style="color: #6b7280; font-size: 13px; margin: 16px 0;">Or copy link: ${data.invoiceUrl}</p>
         ` : ''}
-        <p style="color: #374151; margin: 16px 0 16px 0;">Pytania? Skontaktuj się:</p>
+        <p style="color: #374151; margin: 16px 0 16px 0;">Questions? Contact us:</p>
         ${data.contractorPhone ? `
           <a href="tel:${data.contractorPhone}" style="display: inline-block; background: #3b82f6; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600;">
-            Zadzwoń: ${data.contractorPhone}
+            Call: ${data.contractorPhone}
           </a>
         ` : ''}
       </div>
@@ -272,7 +272,7 @@ function generateInvoiceEmailHtml(data: InvoiceEmailData): string {
     <!-- Footer -->
     <div style="background: #f9fafb; padding: 24px; text-align: center; border-top: 1px solid #e5e7eb;">
       <p style="color: #9ca3af; font-size: 13px; margin: 0;">
-        Faktura wygenerowana przez BrickQuote
+        Invoice generated by BrickQuote
       </p>
     </div>
   </div>
