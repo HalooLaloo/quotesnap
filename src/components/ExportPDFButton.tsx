@@ -56,8 +56,8 @@ interface ExportPDFButtonProps {
 export function ExportPDFButton({ quote, contractorName }: ExportPDFButtonProps) {
   const handleExport = () => {
     const doc = new jsPDF()
-    const clientName = toAscii(quote.qs_quote_requests?.client_name || 'Klient')
-    const contractor = toAscii(contractorName || 'Wykonawca')
+    const clientName = toAscii(quote.qs_quote_requests?.client_name || 'Client')
+    const contractor = toAscii(contractorName || 'Contractor')
 
     // Header - Slate blue
     doc.setFillColor(30, 58, 95) // #1e3a5f
@@ -70,7 +70,7 @@ export function ExportPDFButton({ quote, contractorName }: ExportPDFButtonProps)
 
     doc.setFontSize(11)
     doc.setFont('helvetica', 'normal')
-    doc.text('Wycena', 190, 20, { align: 'right' })
+    doc.text('Quote', 190, 20, { align: 'right' })
 
     // Quote info
     let y = 45
@@ -79,13 +79,13 @@ export function ExportPDFButton({ quote, contractorName }: ExportPDFButtonProps)
 
     // Left column - Contractor
     doc.setFont('helvetica', 'bold')
-    doc.text('Wykonawca:', 20, y)
+    doc.text('Contractor:', 20, y)
     doc.setFont('helvetica', 'normal')
     doc.text(contractor, 20, y + 6)
 
     // Right column - Client
     doc.setFont('helvetica', 'bold')
-    doc.text('Klient:', 120, y)
+    doc.text('Client:', 120, y)
     doc.setFont('helvetica', 'normal')
     doc.text(clientName, 120, y + 6)
     if (quote.qs_quote_requests?.client_phone) {
@@ -99,17 +99,17 @@ export function ExportPDFButton({ quote, contractorName }: ExportPDFButtonProps)
     y = 85
     doc.setFontSize(10)
     doc.setTextColor(100, 100, 100)
-    const createdDate = new Date(quote.created_at).toLocaleDateString('pl-PL')
-    doc.text(`Data wyceny: ${createdDate}`, 20, y)
+    const createdDate = new Date(quote.created_at).toLocaleDateString('en-US')
+    doc.text(`Quote date: ${createdDate}`, 20, y)
 
     if (quote.valid_until) {
-      const validDate = new Date(quote.valid_until).toLocaleDateString('pl-PL')
-      doc.text(`Wazna do: ${validDate}`, 80, y)
+      const validDate = new Date(quote.valid_until).toLocaleDateString('en-US')
+      doc.text(`Valid until: ${validDate}`, 80, y)
     }
 
     if (quote.available_from) {
-      const availableDate = new Date(quote.available_from).toLocaleDateString('pl-PL')
-      doc.text(`Dostepnosc od: ${availableDate}`, 140, y)
+      const availableDate = new Date(quote.available_from).toLocaleDateString('en-US')
+      doc.text(`Available from: ${availableDate}`, 140, y)
     }
 
     // Items table
@@ -117,13 +117,13 @@ export function ExportPDFButton({ quote, contractorName }: ExportPDFButtonProps)
     const tableData = quote.items.map((item) => [
       toAscii(item.service_name),
       `${item.quantity} ${toAscii(item.unit)}`,
-      `${item.unit_price.toFixed(2)} PLN`,
-      `${item.total.toFixed(2)} PLN`,
+      `${item.unit_price.toFixed(2)}`,
+      `${item.total.toFixed(2)}`,
     ])
 
     autoTable(doc, {
       startY: y,
-      head: [['Usluga', 'Ilosc', 'Cena jedn.', 'Wartosc']],
+      head: [['Service', 'Qty', 'Unit Price', 'Amount']],
       body: tableData,
       theme: 'striped',
       headStyles: {
@@ -154,27 +154,27 @@ export function ExportPDFButton({ quote, contractorName }: ExportPDFButtonProps)
     doc.setTextColor(0, 0, 0)
 
     // Subtotal
-    doc.text('Suma:', summaryX, y)
-    doc.text(`${quote.subtotal.toFixed(2)} PLN`, 190, y, { align: 'right' })
+    doc.text('Subtotal:', summaryX, y)
+    doc.text(`${quote.subtotal.toFixed(2)}`, 190, y, { align: 'right' })
 
     // Discount
     if (quote.discount_percent > 0) {
       y += 7
-      doc.text(`Rabat (${quote.discount_percent}%):`, summaryX, y)
+      doc.text(`Discount (${quote.discount_percent}%):`, summaryX, y)
       doc.setTextColor(220, 38, 38)
-      doc.text(`-${(quote.subtotal * quote.discount_percent / 100).toFixed(2)} PLN`, 190, y, { align: 'right' })
+      doc.text(`-${(quote.subtotal * quote.discount_percent / 100).toFixed(2)}`, 190, y, { align: 'right' })
       doc.setTextColor(0, 0, 0)
     }
 
     // VAT
     if (quote.vat_percent && quote.vat_percent > 0) {
       y += 7
-      doc.text('Netto:', summaryX, y)
-      doc.text(`${quote.total_net?.toFixed(2)} PLN`, 190, y, { align: 'right' })
+      doc.text('Net:', summaryX, y)
+      doc.text(`${quote.total_net?.toFixed(2)}`, 190, y, { align: 'right' })
 
       y += 7
       doc.text(`VAT (${quote.vat_percent}%):`, summaryX, y)
-      doc.text(`${((quote.total_net || 0) * quote.vat_percent / 100).toFixed(2)} PLN`, 190, y, { align: 'right' })
+      doc.text(`${((quote.total_net || 0) * quote.vat_percent / 100).toFixed(2)}`, 190, y, { align: 'right' })
     }
 
     // Total
@@ -186,8 +186,8 @@ export function ExportPDFButton({ quote, contractorName }: ExportPDFButtonProps)
     doc.setFontSize(11)
     doc.setFont('helvetica', 'bold')
     doc.setTextColor(30, 58, 95)
-    doc.text('RAZEM:', 120, y + 2)
-    doc.text(`${(quote.total_gross || quote.total).toFixed(2)} PLN`, 190, y + 2, { align: 'right' })
+    doc.text('TOTAL:', 120, y + 2)
+    doc.text(`${(quote.total_gross || quote.total).toFixed(2)}`, 190, y + 2, { align: 'right' })
     doc.setTextColor(0, 0, 0)
 
     // Notes
@@ -201,7 +201,7 @@ export function ExportPDFButton({ quote, contractorName }: ExportPDFButtonProps)
 
       doc.setFontSize(10)
       doc.setFont('helvetica', 'bold')
-      doc.text('Uwagi:', 20, y)
+      doc.text('Notes:', 20, y)
       doc.setFont('helvetica', 'normal')
 
       const splitNotes = doc.splitTextToSize(toAscii(quote.notes), 170)
@@ -215,17 +215,17 @@ export function ExportPDFButton({ quote, contractorName }: ExportPDFButtonProps)
     doc.setFontSize(10)
     doc.setTextColor(30, 58, 95)
     doc.setFont('helvetica', 'bold')
-    doc.text('Dziekujemy za zainteresowanie!', 105, 265, { align: 'center' })
+    doc.text('Thank you for your interest!', 105, 265, { align: 'center' })
 
     // Footer
     doc.setFontSize(8)
     doc.setFont('helvetica', 'normal')
     doc.setTextColor(150, 150, 150)
-    doc.text('Wycena wygenerowana przez BrickQuote', 105, 280, { align: 'center' })
-    doc.text('Wycena ma charakter orientacyjny. Ostateczna cena moze roznic sie po ocenie zakresu prac na miejscu.', 105, 285, { align: 'center' })
+    doc.text('Quote generated by BrickQuote', 105, 280, { align: 'center' })
+    doc.text('This quote is an estimate. Final price may vary after on-site assessment.', 105, 285, { align: 'center' })
 
     // Save
-    doc.save(`wycena-${clientName.toLowerCase().replace(/\s+/g, '-')}.pdf`)
+    doc.save(`quote-${clientName.toLowerCase().replace(/\s+/g, '-')}.pdf`)
   }
 
   return (

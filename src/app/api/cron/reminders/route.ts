@@ -73,35 +73,35 @@ export async function GET(request: NextRequest) {
           await resend.emails.send({
             from: 'BrickQuote <contact@brickquote.app>',
             to: profile.email,
-            subject: `Masz ${overdueInvoices.length} przeterminowanych faktur`,
+            subject: `You have ${overdueInvoices.length} overdue invoice${overdueInvoices.length > 1 ? 's' : ''}`,
             html: `
               <!DOCTYPE html>
               <html>
               <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f3f4f6; margin: 0; padding: 20px;">
                 <div style="max-width: 500px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
                   <div style="background: #ef4444; padding: 24px; text-align: center;">
-                    <h1 style="color: white; margin: 0; font-size: 24px;">Przeterminowane faktury</h1>
+                    <h1 style="color: white; margin: 0; font-size: 24px;">Overdue Invoices</h1>
                   </div>
                   <div style="padding: 32px;">
                     <p style="color: #374151; font-size: 16px; margin: 0 0 16px 0;">
-                      Masz <strong>${overdueInvoices.length}</strong> przeterminowanych faktur na łączną kwotę <strong>${totalOverdue.toFixed(2)} PLN</strong>.
+                      You have <strong>${overdueInvoices.length}</strong> overdue invoice${overdueInvoices.length > 1 ? 's' : ''} totaling <strong>${totalOverdue.toFixed(2)}</strong>.
                     </p>
 
                     <div style="background: #fef2f2; border-radius: 8px; padding: 16px; margin-bottom: 24px;">
                       ${overdueInvoices.slice(0, 5).map(inv => `
                         <p style="color: #991b1b; font-size: 14px; margin: 8px 0;">
-                          <strong>${inv.invoice_number}</strong> - ${inv.client_name}: ${inv.total_gross?.toFixed(2)} PLN
+                          <strong>${inv.invoice_number}</strong> - ${inv.client_name}: ${inv.total_gross?.toFixed(2)}
                         </p>
                       `).join('')}
-                      ${overdueInvoices.length > 5 ? `<p style="color: #6b7280; font-size: 12px; margin: 8px 0;">...i ${overdueInvoices.length - 5} więcej</p>` : ''}
+                      ${overdueInvoices.length > 5 ? `<p style="color: #6b7280; font-size: 12px; margin: 8px 0;">...and ${overdueInvoices.length - 5} more</p>` : ''}
                     </div>
 
                     <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://brickquote.app'}/invoices" style="display: block; background: #ef4444; color: white; padding: 14px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; text-align: center;">
-                      Zobacz faktury
+                      View Invoices
                     </a>
                   </div>
                   <div style="background: #f9fafb; padding: 16px; text-align: center; border-top: 1px solid #e5e7eb;">
-                    <p style="color: #9ca3af; font-size: 12px; margin: 0;">BrickQuote - Przypomnienie</p>
+                    <p style="color: #9ca3af; font-size: 12px; margin: 0;">BrickQuote - Reminder</p>
                   </div>
                 </div>
               </body>
@@ -128,43 +128,43 @@ export async function GET(request: NextRequest) {
           await resend.emails.send({
             from: 'BrickQuote <contact@brickquote.app>',
             to: profile.email,
-            subject: `${expiringQuotes.length} wycen wygasa w ciągu 2 dni`,
+            subject: `${expiringQuotes.length} quote${expiringQuotes.length > 1 ? 's' : ''} expiring in 2 days`,
             html: `
               <!DOCTYPE html>
               <html>
               <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f3f4f6; margin: 0; padding: 20px;">
                 <div style="max-width: 500px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
                   <div style="background: #f97316; padding: 24px; text-align: center;">
-                    <h1 style="color: white; margin: 0; font-size: 24px;">Wygasające wyceny</h1>
+                    <h1 style="color: white; margin: 0; font-size: 24px;">Expiring Quotes</h1>
                   </div>
                   <div style="padding: 32px;">
                     <p style="color: #374151; font-size: 16px; margin: 0 0 16px 0;">
-                      <strong>${expiringQuotes.length}</strong> Twoich wycen wygasa w ciągu najbliższych 2 dni.
+                      <strong>${expiringQuotes.length}</strong> of your quote${expiringQuotes.length > 1 ? 's' : ''} will expire in the next 2 days.
                     </p>
 
                     <div style="background: #fff7ed; border-radius: 8px; padding: 16px; margin-bottom: 24px;">
                       ${expiringQuotes.slice(0, 5).map(q => {
                         const clientName = getClientName(q.qs_quote_requests)
                         const total = q.total_gross || q.total || 0
-                        const validDate = q.valid_until ? new Date(q.valid_until).toLocaleDateString('pl-PL') : ''
+                        const validDate = q.valid_until ? new Date(q.valid_until).toLocaleDateString('en-US') : ''
                         return `
                           <p style="color: #9a3412; font-size: 14px; margin: 8px 0;">
-                            <strong>${clientName}</strong>: ${total.toFixed(2)} PLN (do ${validDate})
+                            <strong>${clientName}</strong>: ${total.toFixed(2)} (expires ${validDate})
                           </p>
                         `
                       }).join('')}
                     </div>
 
                     <p style="color: #6b7280; font-size: 14px; margin: 0 0 24px 0;">
-                      Skontaktuj się z klientami, aby przypomnieć im o wycenie przed jej wygaśnięciem.
+                      Contact your clients to remind them about the quote before it expires.
                     </p>
 
                     <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://brickquote.app'}/quotes" style="display: block; background: #f97316; color: white; padding: 14px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; text-align: center;">
-                      Zobacz wyceny
+                      View Quotes
                     </a>
                   </div>
                   <div style="background: #f9fafb; padding: 16px; text-align: center; border-top: 1px solid #e5e7eb;">
-                    <p style="color: #9ca3af; font-size: 12px; margin: 0;">BrickQuote - Przypomnienie</p>
+                    <p style="color: #9ca3af; font-size: 12px; margin: 0;">BrickQuote - Reminder</p>
                   </div>
                 </div>
               </body>

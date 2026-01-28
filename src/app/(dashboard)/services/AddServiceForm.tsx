@@ -89,7 +89,7 @@ export function AddServiceForm() {
         </div>
 
         <div>
-          <label htmlFor="price" className="label">Price (PLN)</label>
+          <label htmlFor="price" className="label">Price per unit</label>
           <input
             id="price"
             type="number"

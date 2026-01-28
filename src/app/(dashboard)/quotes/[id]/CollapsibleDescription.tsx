@@ -19,7 +19,7 @@ interface ParsedSummary {
   clientQuestion?: string
 }
 
-// Usuń markdown formatting (**, *, etc.)
+// Remove markdown formatting (**, *, etc.)
 function cleanMarkdown(text: string): string {
   return text
     .replace(/\*\*/g, '')  // Remove **
@@ -32,57 +32,57 @@ function cleanMarkdown(text: string): string {
 function parseSummary(text: string): ParsedSummary {
   const result: ParsedSummary = {}
 
-  // Najpierw oczyść cały tekst z markdown
+  // First clean the entire text of markdown
   const cleanText = cleanMarkdown(text)
 
-  // Extract RODZAJ PRAC
-  const workTypeMatch = cleanText.match(/RODZAJ PRAC:\s*([^\n]+)/i)
+  // Extract TYPE OF WORK (English) or RODZAJ PRAC (Polish - legacy)
+  const workTypeMatch = cleanText.match(/(?:TYPE OF WORK|RODZAJ PRAC):\s*([^\n]+)/i)
   if (workTypeMatch) result.workType = workTypeMatch[1].trim()
 
-  // Extract ZAKRES PRAC (bullet points)
-  const scopeMatch = cleanText.match(/ZAKRES PRAC:\s*\n((?:- [^\n]+\n?)+)/i)
+  // Extract SCOPE OF WORK (English) or ZAKRES PRAC (Polish - legacy)
+  const scopeMatch = cleanText.match(/(?:SCOPE OF WORK|ZAKRES PRAC):\s*\n((?:- [^\n]+\n?)+)/i)
   if (scopeMatch) {
     result.scope = scopeMatch[1].split('\n').filter(l => l.startsWith('-')).map(l => l.replace(/^-\s*/, '').trim())
   }
 
-  // Extract WYMIARY
-  const dimensionsMatch = cleanText.match(/WYMIARY:\s*\n((?:- [^\n]+\n?)+)/i)
+  // Extract DIMENSIONS (English) or WYMIARY (Polish - legacy)
+  const dimensionsMatch = cleanText.match(/(?:DIMENSIONS|WYMIARY):\s*\n((?:- [^\n]+\n?)+)/i)
   if (dimensionsMatch) {
     result.dimensions = dimensionsMatch[1].split('\n').filter(l => l.startsWith('-')).map(l => l.replace(/^-\s*/, '').trim())
   }
 
-  // Extract STAN OBECNY
-  const stateMatch = cleanText.match(/STAN OBECNY:\s*\n((?:- [^\n]+\n?)+)/i)
+  // Extract CURRENT CONDITION (English) or STAN OBECNY (Polish - legacy)
+  const stateMatch = cleanText.match(/(?:CURRENT CONDITION|STAN OBECNY):\s*\n((?:- [^\n]+\n?)+)/i)
   if (stateMatch) {
     result.currentState = stateMatch[1].split('\n').filter(l => l.startsWith('-')).map(l => l.replace(/^-\s*/, '').trim())
   }
 
-  // Extract PRACE PRZYGOTOWAWCZE
-  const prepMatch = cleanText.match(/PRACE PRZYGOTOWAWCZE:\s*\n((?:- [^\n]+\n?)+)/i)
+  // Extract PREPARATORY WORK (English) or PRACE PRZYGOTOWAWCZE (Polish - legacy)
+  const prepMatch = cleanText.match(/(?:PREPARATORY WORK|PRACE PRZYGOTOWAWCZE):\s*\n((?:- [^\n]+\n?)+)/i)
   if (prepMatch) {
     result.preparation = prepMatch[1].split('\n').filter(l => l.startsWith('-')).map(l => l.replace(/^-\s*/, '').trim())
   }
 
-  // Extract MATERIAŁY
-  const materialsMatch = cleanText.match(/MATERIA[ŁL]Y:\s*([^\n]+)/i)
+  // Extract MATERIALS (English) or MATERIAŁY (Polish - legacy)
+  const materialsMatch = cleanText.match(/(?:MATERIALS|MATERIA[ŁL]Y):\s*([^\n]+)/i)
   if (materialsMatch) result.materials = materialsMatch[1].trim()
 
-  // Extract LOKALIZACJA
-  const locationMatch = cleanText.match(/LOKALIZACJA:\s*([^\n]+)/i)
+  // Extract LOCATION (English) or LOKALIZACJA (Polish - legacy)
+  const locationMatch = cleanText.match(/(?:LOCATION|LOKALIZACJA):\s*([^\n]+)/i)
   if (locationMatch) result.location = locationMatch[1].trim()
 
-  // Extract TERMIN
-  const timelineMatch = cleanText.match(/TERMIN:\s*([^\n]+)/i)
+  // Extract TIMELINE (English) or TERMIN (Polish - legacy)
+  const timelineMatch = cleanText.match(/(?:TIMELINE|TERMIN):\s*([^\n]+)/i)
   if (timelineMatch) result.timeline = timelineMatch[1].trim()
 
-  // Extract UWAGI DODATKOWE
-  const notesMatch = cleanText.match(/UWAGI DODATKOWE:\s*\n((?:- [^\n]+\n?)+)/i)
+  // Extract ADDITIONAL NOTES (English) or UWAGI DODATKOWE (Polish - legacy)
+  const notesMatch = cleanText.match(/(?:ADDITIONAL NOTES|UWAGI DODATKOWE):\s*\n((?:- [^\n]+\n?)+)/i)
   if (notesMatch) {
     result.notes = notesMatch[1].split('\n').filter(l => l.startsWith('-')).map(l => l.replace(/^-\s*/, '').trim())
   }
 
-  // Extract PYTANIE DO WYKONAWCY
-  const questionMatch = cleanText.match(/PYTANIE DO WYKONAWCY:\s*([^\n]+(?:\n(?!---|[A-ZŻŹĆĄŚĘŁÓŃ]+:)[^\n]+)*)/i)
+  // Extract QUESTION FOR CONTRACTOR (English) or PYTANIE DO WYKONAWCY (Polish - legacy)
+  const questionMatch = cleanText.match(/(?:QUESTION FOR CONTRACTOR|PYTANIE DO WYKONAWCY):\s*([^\n]+(?:\n(?!---|[A-ZŻŹĆĄŚĘŁÓŃ]+:)[^\n]+)*)/i)
   if (questionMatch) result.clientQuestion = questionMatch[1].trim()
 
   return result
@@ -91,12 +91,12 @@ function parseSummary(text: string): ParsedSummary {
 export function CollapsibleDescription({ description }: CollapsibleDescriptionProps) {
   const [isExpanded, setIsExpanded] = useState(false)
 
-  // Extract summary (before ---ROZMOWA---)
-  const summaryMatch = description.match(/^([\s\S]*?)(?=---ROZMOWA---|$)/)
+  // Extract summary (before ---CONVERSATION--- or ---ROZMOWA---)
+  const summaryMatch = description.match(/^([\s\S]*?)(?=---(?:CONVERSATION|ROZMOWA)---|$)/)
   const summaryText = summaryMatch ? summaryMatch[1].trim() : ''
 
-  // Extract conversation (after ---ROZMOWA---)
-  const conversationMatch = description.match(/---ROZMOWA---([\s\S]*)$/)
+  // Extract conversation (after ---CONVERSATION--- or ---ROZMOWA---)
+  const conversationMatch = description.match(/---(?:CONVERSATION|ROZMOWA)---([\s\S]*)$/)
   const conversation = conversationMatch ? conversationMatch[1].trim() : ''
 
   // Parse structured summary

@@ -146,19 +146,19 @@ export function InvoicesList({ invoices }: InvoicesListProps) {
         <div className="bg-slate-700/50 rounded-lg p-4">
           <p className="text-slate-400 text-sm">Pending</p>
           <p className="text-xl font-bold text-white">
-            {getCurrencySymbol(invoices[0]?.currency || 'PLN')}{stats.totalPending.toFixed(2)}
+            {getCurrencySymbol(invoices[0]?.currency || 'USD')}{stats.totalPending.toFixed(2)}
           </p>
         </div>
         <div className="bg-slate-700/50 rounded-lg p-4">
           <p className="text-slate-400 text-sm">Paid</p>
           <p className="text-xl font-bold text-green-400">
-            {getCurrencySymbol(invoices[0]?.currency || 'PLN')}{stats.totalPaid.toFixed(2)}
+            {getCurrencySymbol(invoices[0]?.currency || 'USD')}{stats.totalPaid.toFixed(2)}
           </p>
         </div>
         <div className="bg-slate-700/50 rounded-lg p-4">
           <p className="text-slate-400 text-sm">Overdue</p>
           <p className="text-xl font-bold text-red-400">
-            {stats.overdueCount} ({getCurrencySymbol(invoices[0]?.currency || 'PLN')}{stats.overdueAmount.toFixed(2)})
+            {stats.overdueCount} ({getCurrencySymbol(invoices[0]?.currency || 'USD')}{stats.overdueAmount.toFixed(2)})
           </p>
         </div>
         <div className="bg-slate-700/50 rounded-lg p-4">
@@ -210,7 +210,7 @@ export function InvoicesList({ invoices }: InvoicesListProps) {
         <div className="space-y-3">
           {filteredInvoices.map((invoice) => {
             const overdue = isOverdue(invoice)
-            const currencySymbol = getCurrencySymbol(invoice.currency || 'PLN')
+            const currencySymbol = getCurrencySymbol(invoice.currency || 'USD')
 
             return (
               <div

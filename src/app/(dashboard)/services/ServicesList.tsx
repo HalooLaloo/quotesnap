@@ -137,7 +137,7 @@ export function ServicesList({ services }: ServicesListProps) {
                 <div>
                   <p className="text-white font-medium">{service.name}</p>
                   <p className="text-slate-400 text-sm">
-                    {service.price.toFixed(2)} PLN / {UNITS[service.unit as keyof typeof UNITS]}
+                    {service.price.toFixed(2)} / {UNITS[service.unit as keyof typeof UNITS]}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">

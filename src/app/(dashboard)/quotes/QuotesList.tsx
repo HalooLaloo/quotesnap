@@ -178,7 +178,7 @@ export function QuotesList({ quotes }: QuotesListProps) {
           {filteredQuotes.map((quote) => {
             const expired = isExpired(quote)
             const viewed = isViewed(quote)
-            const currencySymbol = getCurrencySymbol(quote.currency || 'PLN')
+            const currencySymbol = getCurrencySymbol(quote.currency || 'USD')
             const total = quote.total_gross || quote.total || 0
             const clientName = quote.qs_quote_requests?.client_name || 'No name'
 

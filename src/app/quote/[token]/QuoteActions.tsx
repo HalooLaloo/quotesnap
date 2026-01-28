@@ -34,14 +34,14 @@ export function QuoteActions({ token }: QuoteActionsProps) {
       if (!contentType || !contentType.includes('application/json')) {
         const text = await response.text()
         console.error('Non-JSON response:', text)
-        throw new Error('Wystąpił błąd serwera. Spróbuj ponownie.')
+        throw new Error('Server error occurred. Please try again.')
       }
 
       const data = await response.json()
       console.log('Response data:', data)
 
       if (!response.ok) {
-        throw new Error(data.error || 'Nie udało się przetworzyć')
+        throw new Error(data.error || 'Failed to process')
       }
 
       setSuccess(true)
@@ -51,7 +51,7 @@ export function QuoteActions({ token }: QuoteActionsProps) {
       }, 500)
     } catch (err) {
       console.error('Accept quote error:', err)
-      setError(err instanceof Error ? err.message : 'Coś poszło nie tak')
+      setError(err instanceof Error ? err.message : 'Something went wrong')
       setLoading(null)
     }
   }
@@ -63,7 +63,7 @@ export function QuoteActions({ token }: QuoteActionsProps) {
           <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
-          <span className="text-green-400 font-medium">Zapisano! Odświeżanie...</span>
+          <span className="text-green-400 font-medium">Saved! Refreshing...</span>
         </div>
       </div>
     )
@@ -71,7 +71,7 @@ export function QuoteActions({ token }: QuoteActionsProps) {
 
   return (
     <div className="card">
-      <h3 className="font-medium text-white mb-4 text-center">Twoja decyzja</h3>
+      <h3 className="font-medium text-white mb-4 text-center">Your decision</h3>
 
       {error && (
         <div className="bg-red-500/10 border border-red-500/50 text-red-400 px-4 py-3 rounded-lg text-sm mb-4">
@@ -88,14 +88,14 @@ export function QuoteActions({ token }: QuoteActionsProps) {
           {loading === 'reject' ? (
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              <span>Przetwarzanie...</span>
+              <span>Processing...</span>
             </div>
           ) : (
             <>
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
-              Odrzuć
+              Reject
             </>
           )}
         </button>
@@ -108,21 +108,21 @@ export function QuoteActions({ token }: QuoteActionsProps) {
           {loading === 'accept' ? (
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              <span>Przetwarzanie...</span>
+              <span>Processing...</span>
             </div>
           ) : (
             <>
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
-              Akceptuję wycenę
+              Accept Quote
             </>
           )}
         </button>
       </div>
 
       <p className="text-slate-500 text-xs text-center mt-4">
-        Akceptując, wyrażasz zgodę na realizację prac. Wykonawca zostanie powiadomiony.
+        By accepting, you agree to proceed with the work. The contractor will be notified.
       </p>
     </div>
   )

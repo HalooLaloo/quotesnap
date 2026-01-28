@@ -127,7 +127,7 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
       }
     } catch (err) {
       console.error('AI suggest error:', err)
-      setError('Nie udało się wygenerować sugestii')
+      setError('Failed to generate suggestions')
     }
 
     setAiLoading(false)
@@ -299,7 +299,7 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
 
     // Wymagaj daty rozpoczęcia przy wysyłaniu
     if (status === 'sent' && !availableFrom) {
-      setError('Wybierz datę rozpoczęcia prac przed wysłaniem')
+      setError('Select start date before sending')
       return
     }
 
@@ -483,9 +483,9 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
                       >
                         <option value="m²">m²</option>
                         <option value="mb">mb</option>
-                        <option value="szt.">szt.</option>
-                        <option value="godz.">godz.</option>
-                        <option value="ryczałt">ryczałt</option>
+                        <option value="pcs">pcs</option>
+                        <option value="hr">hr</option>
+                        <option value="flat">flat</option>
                       </select>
                       <span className="text-slate-500 text-sm">×</span>
                       <input
@@ -727,7 +727,7 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
 
           {/* Show client's additional question if exists */}
           {request && (() => {
-            const questionMatch = request.description.match(/PYTANIE DO WYKONAWCY:\s*([\s\S]+?)(?=\n\n|---ROZMOWA---|$)/)
+            const questionMatch = request.description.match(/QUESTION FOR CONTRACTOR:\s*([\s\S]+?)(?=\n\n|---CONVERSATION---|$)/)
             const clientQuestion = questionMatch?.[1]?.trim()
 
             if (clientQuestion) {
@@ -836,10 +836,10 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
 
             <div className="border-t border-slate-700 pt-3">
               <div className="flex justify-between text-xl font-bold text-white">
-                <span>Orientacyjnie</span>
+                <span>Estimate</span>
                 <span>{currencySymbol}{total.toFixed(2)}</span>
               </div>
-              <p className="text-slate-500 text-xs mt-1">Cena może się nieznacznie zmienić po wizji lokalnej</p>
+              <p className="text-slate-500 text-xs mt-1">Price may vary slightly after on-site inspection</p>
             </div>
           </div>
 

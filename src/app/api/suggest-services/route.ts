@@ -5,77 +5,77 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 })
 
-const SYSTEM_PROMPT = `Jesteś ekspertem od usług remontowo-budowlanych w Polsce. Twoim zadaniem jest przeanalizować opis wykonawcy i zaproponować listę usług które świadczy.
+const SYSTEM_PROMPT = `You are an expert in renovation and construction services. Your task is to analyze the contractor's description and suggest a list of services they provide.
 
-Na podstawie opisu wykonawcy, zwróć listę konkretnych usług z odpowiednimi jednostkami i sugerowanymi cenami rynkowymi.
+Based on the contractor's description, return a list of specific services with appropriate units and suggested market prices.
 
-## ZASADY:
-1. Zaproponuj 5-15 konkretnych usług na podstawie opisu
-2. Używaj POLSKICH nazw usług, profesjonalnych ale zrozumiałych
-3. Dobierz odpowiednią jednostkę:
-   - m2 = metr kwadratowy (podłogi, ściany, płytki, malowanie)
-   - mb = metr bieżący (listwy, rury, kable, cokoły)
-   - szt = sztuka (drzwi, okna, gniazdka, lampy, punkty)
-   - godz = godzina (prace specjalistyczne, konsultacje)
-   - ryczalt = ryczałt (kompleksowe usługi, transport)
-4. Ceny rynkowe dla Polski (2024) - realistyczne, średnie stawki
-5. Bądź KONKRETNY - nie "prace wykończeniowe" tylko "Malowanie ścian", "Układanie paneli"
-6. Jeśli wykonawca wspomina o specjalizacji - dodaj więcej usług z tej dziedziny
+## RULES:
+1. Suggest 5-15 specific services based on the description
+2. Use professional but understandable service names
+3. Choose the appropriate unit:
+   - m2 = square meter (floors, walls, tiles, painting)
+   - mb = linear meter (trim, pipes, cables, baseboards)
+   - pcs = piece (doors, windows, outlets, lamps, points)
+   - hr = hour (specialized work, consultations)
+   - flat = flat rate (comprehensive services, transport)
+4. Market prices - realistic, average rates
+5. Be SPECIFIC - not "finishing work" but "Wall painting", "Panel flooring installation"
+6. If contractor mentions a specialization - add more services from that field
 
-## PRZYKŁADY USŁUG według branży:
+## EXAMPLE SERVICES by trade:
 
-MALARZ:
-- Malowanie ścian (m2) - 15-25 PLN
-- Malowanie sufitów (m2) - 18-30 PLN
-- Gruntowanie ścian (m2) - 8-12 PLN
-- Gładzie gipsowe (m2) - 35-50 PLN
-- Tapetowanie (m2) - 30-50 PLN
+PAINTER:
+- Wall painting (m2) - $3-5
+- Ceiling painting (m2) - $4-6
+- Wall priming (m2) - $2-3
+- Skim coating (m2) - $8-12
+- Wallpapering (m2) - $7-12
 
-PŁYTKARZ:
-- Układanie płytek ściennych (m2) - 80-120 PLN
-- Układanie płytek podłogowych (m2) - 70-100 PLN
-- Fugowanie płytek (m2) - 15-25 PLN
-- Hydroizolacja (m2) - 30-50 PLN
-- Skuwanie starych płytek (m2) - 30-50 PLN
+TILER:
+- Wall tile installation (m2) - $18-28
+- Floor tile installation (m2) - $16-24
+- Tile grouting (m2) - $3-6
+- Waterproofing (m2) - $7-12
+- Old tile removal (m2) - $7-12
 
-STOLARZ:
-- Meble na wymiar (ryczalt) - od 2000 PLN
-- Montaż kuchni (ryczalt) - 800-1500 PLN
-- Montaż szafy wnękowej (ryczalt) - 500-1000 PLN
-- Renowacja mebli (godz) - 80-120 PLN
-- Montaż drzwi wewnętrznych (szt) - 150-250 PLN
+CARPENTER:
+- Custom furniture (flat) - from $500
+- Kitchen installation (flat) - $200-350
+- Built-in wardrobe installation (flat) - $120-250
+- Furniture restoration (hr) - $20-30
+- Interior door installation (pcs) - $35-60
 
-HYDRAULIK:
-- Montaż baterii (szt) - 100-200 PLN
-- Montaż WC (szt) - 200-400 PLN
-- Montaż umywalki (szt) - 150-250 PLN
-- Wymiana rur (mb) - 80-150 PLN
-- Podłączenie pralki/zmywarki (szt) - 100-150 PLN
+PLUMBER:
+- Faucet installation (pcs) - $25-50
+- Toilet installation (pcs) - $50-100
+- Sink installation (pcs) - $35-60
+- Pipe replacement (mb) - $20-35
+- Washer/dishwasher connection (pcs) - $25-35
 
-ELEKTRYK:
-- Montaż gniazdka (szt) - 50-80 PLN
-- Montaż włącznika (szt) - 40-70 PLN
-- Montaż lampy (szt) - 60-100 PLN
-- Prowadzenie przewodów (mb) - 30-50 PLN
-- Montaż rozdzielni (szt) - 400-800 PLN
+ELECTRICIAN:
+- Outlet installation (pcs) - $12-20
+- Switch installation (pcs) - $10-17
+- Light fixture installation (pcs) - $15-25
+- Wire routing (mb) - $7-12
+- Panel installation (pcs) - $100-200
 
-## FORMAT ODPOWIEDZI (TYLKO JSON):
+## RESPONSE FORMAT (JSON ONLY):
 {
   "services": [
     {
-      "name": "Malowanie ścian",
+      "name": "Wall painting",
       "unit": "m2",
-      "price": 20
+      "price": 4
     },
     {
-      "name": "Montaż drzwi wewnętrznych",
-      "unit": "szt",
-      "price": 200
+      "name": "Interior door installation",
+      "unit": "pcs",
+      "price": 50
     }
   ]
 }
 
-PAMIĘTAJ: Zwróć TYLKO JSON, bez żadnego dodatkowego tekstu czy markdown.`
+REMEMBER: Return ONLY JSON, without any additional text or markdown.`
 
 export async function POST(request: NextRequest) {
   try {
@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
 
     if (!description || description.trim().length < 10) {
       return NextResponse.json(
-        { error: 'Opis jest za krótki' },
+        { error: 'Description is too short' },
         { status: 400 }
       )
     }
@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
       model: 'gpt-4o-mini',
       messages: [
         { role: 'system', content: SYSTEM_PROMPT },
-        { role: 'user', content: `Opis wykonawcy:\n${description}` },
+        { role: 'user', content: `Contractor description:\n${description}` },
       ],
       temperature: 0.5,
       max_tokens: 1500,
@@ -115,13 +115,13 @@ export async function POST(request: NextRequest) {
     } catch {
       console.error('Failed to parse AI response:', content)
       return NextResponse.json(
-        { error: 'Nie udało się przetworzyć odpowiedzi AI' },
+        { error: 'Failed to process AI response' },
         { status: 500 }
       )
     }
 
     // Validate services
-    const validUnits = ['m2', 'mb', 'szt', 'godz', 'ryczalt']
+    const validUnits = ['m2', 'mb', 'pcs', 'hr', 'flat']
     const services = (parsed.services || [])
       .filter((s: { name?: string; unit?: string; price?: number }) =>
         s.name &&
@@ -136,7 +136,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Suggest services API error:', error)
     return NextResponse.json(
-      { error: 'Wystąpił błąd podczas generowania sugestii' },
+      { error: 'An error occurred while generating suggestions' },
       { status: 500 }
     )
   }

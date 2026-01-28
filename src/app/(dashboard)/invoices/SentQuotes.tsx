@@ -59,13 +59,13 @@ export function SentQuotes({ quotes }: SentQuotesProps) {
         >
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
         </svg>
-        Pozostałe wyceny ({quotes.length})
+        Other quotes ({quotes.length})
       </button>
 
       {isExpanded && (
         <div className="mt-4 space-y-2">
           {quotes.map((quote) => {
-            const currencySymbol = getCurrencySymbol(quote.currency || 'PLN')
+            const currencySymbol = getCurrencySymbol(quote.currency || 'USD')
             const total = quote.total_gross || quote.total || 0
             const client = getClientData(quote)
 
@@ -86,7 +86,7 @@ export function SentQuotes({ quotes }: SentQuotesProps) {
                   href={`/invoices/new?from_quote=${quote.id}`}
                   className="text-slate-400 hover:text-white text-sm"
                 >
-                  Stwórz fakturę
+                  Create Invoice
                 </Link>
               </div>
             )

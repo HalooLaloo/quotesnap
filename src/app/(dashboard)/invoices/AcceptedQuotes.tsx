@@ -113,7 +113,7 @@ export function AcceptedQuotes({ quotes }: AcceptedQuotesProps) {
           {filteredQuotes.length > 0 ? (
             <div className="space-y-3">
               {filteredQuotes.map((quote) => {
-                const currencySymbol = getCurrencySymbol(quote.currency || 'PLN')
+                const currencySymbol = getCurrencySymbol(quote.currency || 'USD')
                 const total = quote.total_gross || quote.total || 0
                 const client = getClientData(quote)
 

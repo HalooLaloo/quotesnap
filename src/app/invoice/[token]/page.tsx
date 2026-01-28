@@ -45,7 +45,7 @@ export default async function PublicInvoicePage({
 
   const contractorName = profile?.company_name || profile?.full_name || 'Contractor'
   const items = (invoice.items || []) as InvoiceItem[]
-  const currencySymbol = getCurrencySymbol(invoice.currency || 'PLN')
+  const currencySymbol = getCurrencySymbol(invoice.currency || 'USD')
 
   const statusInfo = {
     draft: { label: 'Draft', color: 'bg-slate-500/20 text-slate-400' },

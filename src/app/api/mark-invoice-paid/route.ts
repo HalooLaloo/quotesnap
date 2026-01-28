@@ -75,28 +75,28 @@ export async function POST(request: NextRequest) {
         await resend.emails.send({
           from: 'BrickQuote <contact@brickquote.app>',
           to: workerEmail,
-          subject: `Faktura opłacona - ${invoice.client_name}`,
+          subject: `Invoice paid - ${invoice.client_name}`,
           html: `
             <!DOCTYPE html>
             <html>
             <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f3f4f6; margin: 0; padding: 20px;">
               <div style="max-width: 500px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
                 <div style="background: #22c55e; padding: 24px; text-align: center;">
-                  <h1 style="color: white; margin: 0; font-size: 24px;">Faktura opłacona!</h1>
+                  <h1 style="color: white; margin: 0; font-size: 24px;">Invoice Paid!</h1>
                 </div>
                 <div style="padding: 32px;">
                   <p style="color: #374151; font-size: 16px; margin: 0 0 16px 0;">
-                    Faktura <strong>${invoice.invoice_number}</strong> dla klienta <strong>${invoice.client_name}</strong> została oznaczona jako opłacona.
+                    Invoice <strong>${invoice.invoice_number}</strong> for client <strong>${invoice.client_name}</strong> has been marked as paid.
                   </p>
 
                   <div style="background: #f0fdf4; border-radius: 8px; padding: 16px; margin-bottom: 24px; border: 1px solid #bbf7d0;">
                     <p style="color: #166534; font-size: 24px; font-weight: bold; margin: 0; text-align: center;">
-                      +${invoice.total_gross?.toFixed(2) || invoice.total_net?.toFixed(2)} PLN
+                      +${invoice.total_gross?.toFixed(2) || invoice.total_net?.toFixed(2)}
                     </p>
                   </div>
 
                   <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://brickquote.app'}/invoices/${invoice.id}" style="display: block; background: #22c55e; color: white; padding: 14px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; text-align: center;">
-                    Zobacz fakturę
+                    View Invoice
                   </a>
                 </div>
                 <div style="background: #f9fafb; padding: 16px; text-align: center; border-top: 1px solid #e5e7eb;">

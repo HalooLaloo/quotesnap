@@ -21,9 +21,9 @@ export default async function QuotesPage() {
   return (
     <div className="p-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white">Wyceny</h1>
+        <h1 className="text-3xl font-bold text-white">Quotes</h1>
         <p className="text-slate-400 mt-1">
-          Przeglądaj i zarządzaj wszystkimi wycenami.
+          View and manage all your quotes.
         </p>
       </div>
 

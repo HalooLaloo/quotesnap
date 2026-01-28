@@ -98,8 +98,8 @@ export default async function RequestsPage({
         {requests && requests.length > 0 ? (
           <div className="space-y-3">
             {requests.map((request) => {
-              // Extract work type from description (RODZAJ PRAC: xxx)
-              const workTypeMatch = request.description.match(/RODZAJ PRAC:\s*([^\n]+)/i)
+              // Extract work type from description (TYPE OF WORK or RODZAJ PRAC)
+              const workTypeMatch = request.description.match(/(?:TYPE OF WORK|RODZAJ PRAC):\s*([^\n]+)/i)
               const workType = workTypeMatch ? workTypeMatch[1].trim() : request.description.slice(0, 80)
 
               // Status labels

@@ -3,6 +3,12 @@ import { Resend } from 'resend'
 import { createClient } from '@/lib/supabase/server'
 import { headers } from 'next/headers'
 import { InvoiceItem } from '@/lib/types'
+import { COUNTRIES } from '@/lib/countries'
+
+function getCurrencySymbol(currencyCode: string): string {
+  const country = Object.values(COUNTRIES).find(c => c.currency === currencyCode)
+  return country?.currencySymbol || currencyCode
+}
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -60,6 +66,7 @@ export async function POST(request: NextRequest) {
     const invoiceUrl = `${protocol}://${host}/invoice/${invoice.token}`
 
     // Generate email HTML
+    const currencySymbol = getCurrencySymbol(invoice.currency || 'USD')
     const emailHtml = generateInvoiceEmailHtml({
       clientName: invoice.client_name || 'Client',
       contractorName,
@@ -77,6 +84,7 @@ export async function POST(request: NextRequest) {
       bankName: profile?.bank_name,
       bankAccount: profile?.bank_account,
       paymentTerms: invoice.payment_terms,
+      currencySymbol,
     })
 
     // Send email
@@ -135,9 +143,11 @@ interface InvoiceEmailData {
   bankName?: string
   bankAccount?: string
   paymentTerms?: string
+  currencySymbol: string
 }
 
 function generateInvoiceEmailHtml(data: InvoiceEmailData): string {
+  const cs = data.currencySymbol
   const itemsHtml = data.items.map(item => `
     <tr>
       <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">
@@ -147,10 +157,10 @@ function generateInvoiceEmailHtml(data: InvoiceEmailData): string {
         ${item.quantity} ${item.unit}
       </td>
       <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: right;">
-        ${item.unit_price.toFixed(2)} PLN
+        ${cs}${item.unit_price.toFixed(2)}
       </td>
       <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: right; font-weight: 600;">
-        ${item.total.toFixed(2)} PLN
+        ${cs}${item.total.toFixed(2)}
       </td>
     </tr>
   `).join('')
@@ -158,18 +168,18 @@ function generateInvoiceEmailHtml(data: InvoiceEmailData): string {
   const discountHtml = data.discountPercent > 0 ? `
     <tr>
       <td colspan="3" style="padding: 8px 12px; text-align: right;">Discount (${data.discountPercent}%):</td>
-      <td style="padding: 8px 12px; text-align: right; color: #dc2626;">-${(data.subtotal * data.discountPercent / 100).toFixed(2)} PLN</td>
+      <td style="padding: 8px 12px; text-align: right; color: #dc2626;">-${cs}${(data.subtotal * data.discountPercent / 100).toFixed(2)}</td>
     </tr>
   ` : ''
 
   const vatHtml = data.vatPercent > 0 ? `
     <tr>
       <td colspan="3" style="padding: 8px 12px; text-align: right;">Net:</td>
-      <td style="padding: 8px 12px; text-align: right;">${data.totalNet.toFixed(2)} PLN</td>
+      <td style="padding: 8px 12px; text-align: right;">${cs}${data.totalNet.toFixed(2)}</td>
     </tr>
     <tr>
       <td colspan="3" style="padding: 8px 12px; text-align: right;">VAT (${data.vatPercent}%):</td>
-      <td style="padding: 8px 12px; text-align: right;">+${(data.totalNet * data.vatPercent / 100).toFixed(2)} PLN</td>
+      <td style="padding: 8px 12px; text-align: right;">+${cs}${(data.totalNet * data.vatPercent / 100).toFixed(2)}</td>
     </tr>
   ` : ''
 
@@ -222,13 +232,13 @@ function generateInvoiceEmailHtml(data: InvoiceEmailData): string {
         <tfoot>
           <tr>
             <td colspan="3" style="padding: 8px 12px; text-align: right;">Subtotal:</td>
-            <td style="padding: 8px 12px; text-align: right;">${data.subtotal.toFixed(2)} PLN</td>
+            <td style="padding: 8px 12px; text-align: right;">${cs}${data.subtotal.toFixed(2)}</td>
           </tr>
           ${discountHtml}
           ${vatHtml}
           <tr style="background: #f0fdf4;">
             <td colspan="3" style="padding: 16px 12px; text-align: right; font-size: 18px; font-weight: 700; color: #166534;">AMOUNT DUE:</td>
-            <td style="padding: 16px 12px; text-align: right; font-size: 18px; font-weight: 700; color: #166534;">${data.totalGross.toFixed(2)} PLN</td>
+            <td style="padding: 16px 12px; text-align: right; font-size: 18px; font-weight: 700; color: #166534;">${cs}${data.totalGross.toFixed(2)}</td>
           </tr>
         </tfoot>
       </table>

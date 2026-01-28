@@ -5,6 +5,12 @@ import { QuoteItem } from '@/lib/types'
 import { CollapsibleDescription } from './CollapsibleDescription'
 import { ExportPDFButton } from '@/components/ExportPDFButton'
 import { StatusTimeline, getQuoteTimelineSteps } from '@/components/StatusTimeline'
+import { COUNTRIES } from '@/lib/countries'
+
+function getCurrencySymbol(currencyCode: string): string {
+  const country = Object.values(COUNTRIES).find(c => c.currency === currencyCode)
+  return country?.currencySymbol || currencyCode
+}
 
 export default async function QuoteDetailPage({
   params,
@@ -42,6 +48,7 @@ export default async function QuoteDetailPage({
     .single()
 
   const contractorName = profile?.company_name || profile?.full_name || ''
+  const currencySymbol = getCurrencySymbol(quote.currency || 'USD')
 
   const statusColors: Record<string, string> = {
     draft: 'bg-slate-500/20 text-slate-400',
@@ -63,15 +70,15 @@ export default async function QuoteDetailPage({
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
-          Powrót do wycen
+          Back to Quotes
         </Link>
         <div className="flex items-start justify-between mt-2">
           <div>
             <h1 className="text-3xl font-bold text-white">
-              Wycena dla {quote.qs_quote_requests?.client_name || 'Klienta'}
+              Quote for {quote.qs_quote_requests?.client_name || 'Client'}
             </h1>
             <p className="text-slate-400 mt-1">
-              Utworzono {new Date(quote.created_at).toLocaleDateString('pl-PL', {
+              Created {new Date(quote.created_at).toLocaleDateString('en-US', {
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric',
@@ -83,10 +90,10 @@ export default async function QuoteDetailPage({
           <div className="flex items-center gap-3">
             <ExportPDFButton quote={quote} contractorName={contractorName} />
             <span className={`px-3 py-1 rounded-full text-sm font-medium ${statusColors[quote.status] || 'bg-slate-500/20 text-slate-400'}`}>
-              {quote.status === 'draft' ? 'Szkic' :
-               quote.status === 'sent' ? 'Wysłana' :
-               quote.status === 'accepted' ? 'Zaakceptowana' :
-               quote.status === 'rejected' ? 'Odrzucona' : quote.status}
+              {quote.status === 'draft' ? 'Draft' :
+               quote.status === 'sent' ? 'Sent' :
+               quote.status === 'accepted' ? 'Accepted' :
+               quote.status === 'rejected' ? 'Rejected' : quote.status}
             </span>
           </div>
         </div>
@@ -97,7 +104,7 @@ export default async function QuoteDetailPage({
         <div className="lg:col-span-2 space-y-6">
           {/* Items */}
           <div className="card">
-            <h2 className="text-lg font-semibold text-white mb-4">Pozycje wyceny</h2>
+            <h2 className="text-lg font-semibold text-white mb-4">Quote Items</h2>
 
             {items.length > 0 ? (
               <div className="space-y-3">
@@ -121,10 +128,10 @@ export default async function QuoteDetailPage({
                       </div>
                       <div className="text-right">
                         <div className="text-slate-400 text-sm">
-                          {item.quantity} {item.unit} × {item.unit_price.toFixed(2)} PLN
+                          {item.quantity} {item.unit} × {currencySymbol}{item.unit_price.toFixed(2)}
                         </div>
                         <div className="font-semibold text-white">
-                          {item.total.toFixed(2)} PLN
+                          {currencySymbol}{item.total.toFixed(2)}
                         </div>
                       </div>
                     </div>
@@ -132,14 +139,14 @@ export default async function QuoteDetailPage({
                 ))}
               </div>
             ) : (
-              <p className="text-slate-400 text-center py-8">Brak pozycji</p>
+              <p className="text-slate-400 text-center py-8">No items</p>
             )}
           </div>
 
           {/* Notes */}
           {quote.notes && (
             <div className="card">
-              <h2 className="text-lg font-semibold text-white mb-4">Uwagi</h2>
+              <h2 className="text-lg font-semibold text-white mb-4">Notes</h2>
               <p className="text-slate-300 whitespace-pre-wrap">{quote.notes}</p>
             </div>
           )}
@@ -147,7 +154,7 @@ export default async function QuoteDetailPage({
           {/* Original request */}
           {quote.qs_quote_requests?.description && (
             <div className="card">
-              <h2 className="text-lg font-semibold text-white mb-4">Opis zlecenia</h2>
+              <h2 className="text-lg font-semibold text-white mb-4">Job Description</h2>
               <CollapsibleDescription description={quote.qs_quote_requests.description} />
             </div>
           )}
@@ -157,20 +164,20 @@ export default async function QuoteDetailPage({
         <div className="space-y-6">
           {/* Summary */}
           <div className="card">
-            <h2 className="text-lg font-semibold text-white mb-4">Podsumowanie</h2>
+            <h2 className="text-lg font-semibold text-white mb-4">Summary</h2>
 
             <div className="space-y-3">
               <div className="flex justify-between text-slate-300">
-                <span>Suma częściowa</span>
-                <span>{quote.subtotal?.toFixed(2) || '0.00'} PLN</span>
+                <span>Subtotal</span>
+                <span>{currencySymbol}{quote.subtotal?.toFixed(2) || '0.00'}</span>
               </div>
 
               {quote.discount_percent > 0 && (
                 <>
                   <div className="flex justify-between text-slate-300">
-                    <span>Rabat ({quote.discount_percent}%)</span>
+                    <span>Discount ({quote.discount_percent}%)</span>
                     <span className="text-red-400">
-                      -{(quote.subtotal * quote.discount_percent / 100).toFixed(2)} PLN
+                      -{currencySymbol}{(quote.subtotal * quote.discount_percent / 100).toFixed(2)}
                     </span>
                   </div>
                 </>
@@ -178,17 +185,17 @@ export default async function QuoteDetailPage({
 
               <div className="border-t border-slate-700 pt-3">
                 <div className="flex justify-between text-xl font-bold text-white">
-                  <span>Orientacyjnie</span>
-                  <span>{quote.total?.toFixed(2) || '0.00'} PLN</span>
+                  <span>Estimate</span>
+                  <span>{quote.total?.toFixed(2) || '0.00'}</span>
                 </div>
-                <p className="text-slate-500 text-xs mt-1">Cena może się nieznacznie zmienić</p>
+                <p className="text-slate-500 text-xs mt-1">Price may vary slightly</p>
               </div>
             </div>
 
             {quote.valid_until && (
               <div className="mt-4 pt-4 border-t border-slate-700">
                 <p className="text-slate-400 text-sm">
-                  Ważna do: <span className="text-white">{new Date(quote.valid_until).toLocaleDateString('pl-PL')}</span>
+                  Valid until: <span className="text-white">{new Date(quote.valid_until).toLocaleDateString('en-US')}</span>
                 </p>
               </div>
             )}
@@ -197,7 +204,7 @@ export default async function QuoteDetailPage({
           {/* Contact info */}
           {quote.qs_quote_requests && (
             <div className="card">
-              <h2 className="text-lg font-semibold text-white mb-4">Dane klienta</h2>
+              <h2 className="text-lg font-semibold text-white mb-4">Client Details</h2>
               <div className="space-y-3">
                 <p className="text-white font-medium">{quote.qs_quote_requests.client_name}</p>
                 {quote.qs_quote_requests.client_email && (
@@ -230,9 +237,9 @@ export default async function QuoteDetailPage({
           {/* Create Invoice button for accepted quotes */}
           {quote.status === 'accepted' && (
             <div className="card bg-blue-600/10 border-blue-500/30">
-              <h3 className="text-blue-400 font-medium mb-2">Praca wykonana?</h3>
+              <h3 className="text-blue-400 font-medium mb-2">Work completed?</h3>
               <p className="text-slate-400 text-sm mb-4">
-                Stwórz fakturę na podstawie tej wyceny.
+                Create an invoice based on this quote.
               </p>
               <Link
                 href={`/invoices/new?from_quote=${quote.id}`}
@@ -241,7 +248,7 @@ export default async function QuoteDetailPage({
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
-                Stwórz fakturę
+                Create Invoice
               </Link>
             </div>
           )}

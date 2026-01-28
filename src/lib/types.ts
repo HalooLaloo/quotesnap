@@ -1,10 +1,10 @@
-// Typy dla BrickQuote
+// Types for BrickQuote
 
 export interface Service {
   id: string
   user_id: string
   name: string
-  unit: 'm2' | 'mb' | 'szt' | 'godz' | 'ryczalt'
+  unit: 'm2' | 'mb' | 'pcs' | 'hr' | 'flat'
   price: number
   created_at: string
 }
@@ -63,13 +63,13 @@ export interface Quote {
   created_at: string
 }
 
-// Jednostki z etykietami
+// Units with labels
 export const UNITS: Record<Service['unit'], string> = {
   m2: 'm²',
-  mb: 'mb',
-  szt: 'szt.',
-  godz: 'godz.',
-  ryczalt: 'ryczałt',
+  mb: 'lf',
+  pcs: 'pcs',
+  hr: 'hr',
+  flat: 'flat',
 }
 
 // Invoice types

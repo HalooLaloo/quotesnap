@@ -8,7 +8,7 @@ import { COUNTRIES, COUNTRY_LIST, CountryConfig } from '@/lib/countries'
 
 interface SuggestedService {
   name: string
-  unit: 'm2' | 'mb' | 'szt' | 'godz' | 'ryczalt'
+  unit: 'm2' | 'mb' | 'pcs' | 'hr' | 'flat'
   price: number
   selected: boolean
 }
@@ -38,7 +38,7 @@ export function OnboardingWizard({ onClose, userId }: OnboardingWizardProps) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [services, setServices] = useState<SuggestedService[]>([])
-  const [customService, setCustomService] = useState<{ name: string; unit: 'm2' | 'mb' | 'szt' | 'godz' | 'ryczalt'; price: string }>({ name: '', unit: 'm2', price: '' })
+  const [customService, setCustomService] = useState<{ name: string; unit: 'm2' | 'mb' | 'pcs' | 'hr' | 'flat'; price: string }>({ name: '', unit: 'm2', price: '' })
   const [copied, setCopied] = useState(false)
   const router = useRouter()
   const supabase = createClient()
@@ -81,7 +81,7 @@ export function OnboardingWizard({ onClose, userId }: OnboardingWizardProps) {
 
   const handleAnalyze = async () => {
     if (description.trim().length < 10) {
-      setError('Napisz trochę więcej o swojej pracy')
+      setError('Please write a bit more about your work')
       return
     }
 
@@ -98,7 +98,7 @@ export function OnboardingWizard({ onClose, userId }: OnboardingWizardProps) {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || 'Wystąpił błąd')
+        throw new Error(data.error || 'An error occurred')
       }
 
       setServices(
@@ -109,7 +109,7 @@ export function OnboardingWizard({ onClose, userId }: OnboardingWizardProps) {
       )
       setCurrentStep('services')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Wystąpił błąd')
+      setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {
       setLoading(false)
     }
@@ -389,7 +389,7 @@ export function OnboardingWizard({ onClose, userId }: OnboardingWizardProps) {
                   />
                   <select
                     value={customService.unit}
-                    onChange={(e) => setCustomService(prev => ({ ...prev, unit: e.target.value as 'm2' | 'mb' | 'szt' | 'godz' | 'ryczalt' }))}
+                    onChange={(e) => setCustomService(prev => ({ ...prev, unit: e.target.value as 'm2' | 'mb' | 'pcs' | 'hr' | 'flat' }))}
                     className="input w-20 text-sm py-2"
                   >
                     {Object.entries(UNITS).map(([value, label]) => (

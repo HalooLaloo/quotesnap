@@ -32,15 +32,15 @@ export async function POST(request: NextRequest) {
 
     const resend = new Resend(process.env.RESEND_API_KEY)
 
-    // Pobierz email wykonawcy
+    // Get contractor email
     let contractorEmail: string | undefined
 
-    // Najpierw spróbuj z auth.admin
+    // First try with auth.admin
     try {
       const { data: userData } = await supabase.auth.admin.getUserById(contractorId)
       contractorEmail = userData?.user?.email
     } catch {
-      // Fallback do tabeli profiles
+      // Fallback to profiles table
       const { data: profile } = await supabase
         .from('qs_profiles')
         .select('email')
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
       contractorEmail = profile?.email
     }
 
-    // Jeśli nie znaleziono w qs_profiles, spróbuj profiles
+    // If not found in qs_profiles, try profiles
     if (!contractorEmail) {
       const { data: profile } = await supabase
         .from('profiles')
@@ -64,12 +64,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true, skipped: true })
     }
 
-    // Skróć opis do pierwszych 200 znaków
+    // Shorten description to first 200 characters
     const shortDescription = description
       ? description.substring(0, 200) + (description.length > 200 ? '...' : '')
       : 'No description provided'
 
-    // Wyślij email
+    // Send email
     const { error: sendError } = await resend.emails.send({
       from: 'BrickQuote <contact@brickquote.app>',
       to: contractorEmail,
@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
               </div>
 
               <a href="https://brickquote.app/requests" style="display: block; background: #ea580c; color: white; padding: 14px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; text-align: center;">
-                Zobacz zapytanie
+                View Request
               </a>
             </div>
             <div style="background: #f9fafb; padding: 16px; text-align: center; border-top: 1px solid #e5e7eb;">
@@ -107,14 +107,14 @@ export async function POST(request: NextRequest) {
 
     if (sendError) {
       console.error('Failed to send notification email:', sendError)
-      // Nie zwracamy błędu - notyfikacja nie jest krytyczna
+      // Don't return error - notification is not critical
       return NextResponse.json({ success: true, emailSent: false })
     }
 
     return NextResponse.json({ success: true, emailSent: true })
   } catch (error) {
     console.error('Notify request API error:', error)
-    // Nie zwracamy błędu - notyfikacja nie jest krytyczna
+    // Don't return error - notification is not critical
     return NextResponse.json({ success: true, error: 'Notification failed' })
   }
 }

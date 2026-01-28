@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { createClient } from '@supabase/supabase-js'
+import { COUNTRIES } from '@/lib/countries'
+
+function getCurrencySymbol(currencyCode: string): string {
+  const country = Object.values(COUNTRIES).find(c => c.currency === currencyCode)
+  return country?.currencySymbol || currencyCode
+}
 
 export async function POST(request: NextRequest) {
   console.log('=== ACCEPT-QUOTE API CALLED ===')
@@ -14,7 +20,7 @@ export async function POST(request: NextRequest) {
     if (!process.env.SUPABASE_SERVICE_ROLE_KEY || !process.env.NEXT_PUBLIC_SUPABASE_URL) {
       console.error('Missing required environment variables')
       return NextResponse.json(
-        { error: 'Błąd konfiguracji serwera' },
+        { error: 'Server configuration error' },
         { status: 500 }
       )
     }
@@ -66,7 +72,7 @@ export async function POST(request: NextRequest) {
     if (quoteError || !quote) {
       console.error('Quote not found:', quoteError)
       return NextResponse.json(
-        { error: 'Nie znaleziono wyceny' },
+        { error: 'Quote not found' },
         { status: 404 }
       )
     }
@@ -93,7 +99,7 @@ export async function POST(request: NextRequest) {
     if (updateError) {
       console.error('Update quote error:', updateError)
       return NextResponse.json(
-        { error: 'Nie udało się zaktualizować wyceny' },
+        { error: 'Failed to update quote' },
         { status: 500 }
       )
     }
@@ -124,6 +130,7 @@ export async function POST(request: NextRequest) {
       const clientName = quote.qs_quote_requests?.client_name || 'Client'
       const statusText = action === 'accept' ? 'accepted' : 'rejected'
       const statusColor = action === 'accept' ? '#22c55e' : '#ef4444'
+      const currencySymbol = getCurrencySymbol(quote.currency || 'USD')
 
       await resend.emails.send({
         from: 'BrickQuote <contact@brickquote.app>',
@@ -142,7 +149,7 @@ export async function POST(request: NextRequest) {
                   <strong>${clientName}</strong> has ${statusText} your quote.
                 </p>
                 <p style="color: #6b7280; font-size: 14px; margin: 0 0 24px 0;">
-                  Quote total: <strong>${quote.total.toFixed(2)} PLN</strong>
+                  Quote total: <strong>${currencySymbol}${quote.total.toFixed(2)}</strong>
                 </p>
                 ${action === 'accept' ? `
                   <p style="color: #166534; font-size: 14px; margin: 0; background: #f0fdf4; padding: 16px; border-radius: 8px;">
@@ -173,7 +180,7 @@ export async function POST(request: NextRequest) {
     // Return more details in development
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     return NextResponse.json(
-      { error: `Błąd: ${errorMessage}` },
+      { error: `Error: ${errorMessage}` },
       { status: 500 }
     )
   }

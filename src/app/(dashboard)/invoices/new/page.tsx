@@ -30,13 +30,13 @@ function InvoiceForm() {
   const [clientPhone, setClientPhone] = useState('')
   const [clientAddress, setClientAddress] = useState('')
   const [items, setItems] = useState<InvoiceItem[]>([
-    { description: '', quantity: 1, unit: 'szt', unit_price: 0, total: 0 }
+    { description: '', quantity: 1, unit: 'pcs', unit_price: 0, total: 0 }
   ])
   const [discountPercent, setDiscountPercent] = useState(0)
   const [vatPercent, setVatPercent] = useState(23)
   const [notes, setNotes] = useState('')
   const [dueDate, setDueDate] = useState('')
-  const [paymentTerms, setPaymentTerms] = useState('Przelew bankowy w ciągu 7 dni')
+  const [paymentTerms, setPaymentTerms] = useState('Bank transfer within 7 days')
 
   // Load user profile for currency settings
   useEffect(() => {
@@ -150,7 +150,7 @@ function InvoiceForm() {
   }
 
   const addItem = () => {
-    setItems(prev => [...prev, { description: '', quantity: 1, unit: 'szt', unit_price: 0, total: 0 }])
+    setItems(prev => [...prev, { description: '', quantity: 1, unit: 'pcs', unit_price: 0, total: 0 }])
   }
 
   const removeItem = (index: number) => {
@@ -479,7 +479,7 @@ function InvoiceForm() {
               value={paymentTerms}
               onChange={(e) => setPaymentTerms(e.target.value)}
               className="input"
-              placeholder="np. Przelew bankowy w ciągu 7 dni"
+              placeholder="e.g. Bank transfer within 7 days"
             />
           </div>
         </div>

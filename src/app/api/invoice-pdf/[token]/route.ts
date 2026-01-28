@@ -3,6 +3,12 @@ import { createClient } from '@supabase/supabase-js'
 import { jsPDF } from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import { InvoiceItem } from '@/lib/types'
+import { COUNTRIES } from '@/lib/countries'
+
+function getCurrencySymbol(currencyCode: string): string {
+  const country = Object.values(COUNTRIES).find(c => c.currency === currencyCode)
+  return country?.currencySymbol || currencyCode
+}
 
 // Force Node.js runtime for PDF generation
 export const runtime = 'nodejs'
@@ -61,6 +67,7 @@ export async function GET(
     const contractorName = toAscii(profile?.company_name || profile?.full_name || 'Contractor')
     const clientName = toAscii(invoice.client_name || 'Client')
     const items = (invoice.items || []) as InvoiceItem[]
+    const currencySymbol = getCurrencySymbol(invoice.currency || 'USD')
 
     // Create PDF
     const doc = new jsPDF()
@@ -132,8 +139,8 @@ export async function GET(
     const tableData = items.map(item => [
       toAscii(item.description),
       `${item.quantity} ${toAscii(item.unit)}`,
-      `${item.unit_price.toFixed(2)} PLN`,
-      `${item.total.toFixed(2)} PLN`
+      `${currencySymbol}${item.unit_price.toFixed(2)}`,
+      `${currencySymbol}${item.total.toFixed(2)}`
     ])
 
     autoTable(doc, {
@@ -170,27 +177,27 @@ export async function GET(
 
     // Subtotal
     doc.text('Subtotal:', summaryX, y)
-    doc.text(`${invoice.subtotal?.toFixed(2)} PLN`, 190, y, { align: 'right' })
+    doc.text(`${currencySymbol}${invoice.subtotal?.toFixed(2)}`, 190, y, { align: 'right' })
 
     // Discount
     if (invoice.discount_percent > 0) {
       y += 7
       doc.text(`Discount (${invoice.discount_percent}%):`, summaryX, y)
       doc.setTextColor(220, 38, 38)
-      doc.text(`-${(invoice.subtotal * invoice.discount_percent / 100).toFixed(2)} PLN`, 190, y, { align: 'right' })
+      doc.text(`-${currencySymbol}${(invoice.subtotal * invoice.discount_percent / 100).toFixed(2)}`, 190, y, { align: 'right' })
       doc.setTextColor(0, 0, 0)
     }
 
     // Net
     y += 7
     doc.text('Net:', summaryX, y)
-    doc.text(`${invoice.total_net?.toFixed(2)} PLN`, 190, y, { align: 'right' })
+    doc.text(`${currencySymbol}${invoice.total_net?.toFixed(2)}`, 190, y, { align: 'right' })
 
     // VAT
     if (invoice.vat_percent > 0) {
       y += 7
       doc.text(`VAT (${invoice.vat_percent}%):`, summaryX, y)
-      doc.text(`${(invoice.total_net * invoice.vat_percent / 100).toFixed(2)} PLN`, 190, y, { align: 'right' })
+      doc.text(`${currencySymbol}${(invoice.total_net * invoice.vat_percent / 100).toFixed(2)}`, 190, y, { align: 'right' })
     }
 
     // Total
@@ -203,7 +210,7 @@ export async function GET(
     doc.setFont('helvetica', 'bold')
     doc.setTextColor(30, 58, 95)
     doc.text('AMOUNT DUE:', 120, y + 2)
-    doc.text(`${invoice.total_gross?.toFixed(2)} PLN`, 190, y + 2, { align: 'right' })
+    doc.text(`${currencySymbol}${invoice.total_gross?.toFixed(2)}`, 190, y + 2, { align: 'right' })
     doc.setTextColor(0, 0, 0)
 
     // Payment details
