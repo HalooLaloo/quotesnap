@@ -53,7 +53,7 @@ export function InvoicesList({ invoices }: InvoicesListProps) {
       router.refresh()
     } catch (err) {
       console.error('Error deleting invoice:', err)
-      alert('Nie udało się usunąć faktury')
+      alert('Failed to delete invoice')
     } finally {
       setDeleting(false)
     }
@@ -132,11 +132,11 @@ export function InvoicesList({ invoices }: InvoicesListProps) {
   }
 
   const filterTabs: { key: StatusFilter; label: string; color?: string }[] = [
-    { key: 'all', label: 'Wszystkie' },
-    { key: 'draft', label: 'Drafty' },
-    { key: 'sent', label: 'Wysłane' },
-    { key: 'paid', label: 'Opłacone' },
-    { key: 'overdue', label: 'Przeterminowane', color: 'text-red-400' },
+    { key: 'all', label: 'All' },
+    { key: 'draft', label: 'Drafts' },
+    { key: 'sent', label: 'Sent' },
+    { key: 'paid', label: 'Paid' },
+    { key: 'overdue', label: 'Overdue', color: 'text-red-400' },
   ]
 
   return (
@@ -144,25 +144,25 @@ export function InvoicesList({ invoices }: InvoicesListProps) {
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-slate-700/50 rounded-lg p-4">
-          <p className="text-slate-400 text-sm">Do zapłaty</p>
+          <p className="text-slate-400 text-sm">Pending</p>
           <p className="text-xl font-bold text-white">
             {getCurrencySymbol(invoices[0]?.currency || 'PLN')}{stats.totalPending.toFixed(2)}
           </p>
         </div>
         <div className="bg-slate-700/50 rounded-lg p-4">
-          <p className="text-slate-400 text-sm">Opłacone</p>
+          <p className="text-slate-400 text-sm">Paid</p>
           <p className="text-xl font-bold text-green-400">
             {getCurrencySymbol(invoices[0]?.currency || 'PLN')}{stats.totalPaid.toFixed(2)}
           </p>
         </div>
         <div className="bg-slate-700/50 rounded-lg p-4">
-          <p className="text-slate-400 text-sm">Przeterminowane</p>
+          <p className="text-slate-400 text-sm">Overdue</p>
           <p className="text-xl font-bold text-red-400">
             {stats.overdueCount} ({getCurrencySymbol(invoices[0]?.currency || 'PLN')}{stats.overdueAmount.toFixed(2)})
           </p>
         </div>
         <div className="bg-slate-700/50 rounded-lg p-4">
-          <p className="text-slate-400 text-sm">Łącznie faktur</p>
+          <p className="text-slate-400 text-sm">Total invoices</p>
           <p className="text-xl font-bold text-white">{invoices.length}</p>
         </div>
       </div>
@@ -182,7 +182,7 @@ export function InvoicesList({ invoices }: InvoicesListProps) {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Szukaj po kliencie lub numerze faktury..."
+            placeholder="Search by client or invoice number..."
             className="input pl-10 w-full"
           />
         </div>
@@ -225,7 +225,7 @@ export function InvoicesList({ invoices }: InvoicesListProps) {
                   <Link href={`/invoices/${invoice.id}`} className="flex-1 min-w-0 hover:opacity-80">
                     <div className="flex items-center gap-3 mb-1">
                       <p className="text-white font-medium text-lg">
-                        {invoice.client_name || 'Brak nazwy'}
+                        {invoice.client_name || 'No name'}
                         <span className={`ml-2 ${
                           invoice.status === 'paid' ? 'text-green-400' :
                           overdue ? 'text-red-400' :
@@ -241,7 +241,7 @@ export function InvoicesList({ invoices }: InvoicesListProps) {
                       </span>
                       {overdue && (
                         <span className="px-2 py-0.5 text-xs rounded-full bg-red-500/20 text-red-400">
-                          Przeterminowana
+                          Overdue
                         </span>
                       )}
                     </div>
@@ -262,11 +262,11 @@ export function InvoicesList({ invoices }: InvoicesListProps) {
                         {currencySymbol}{invoice.total_gross?.toFixed(2) || '0.00'}
                       </p>
                       <p className="text-slate-500 text-sm">
-                        {new Date(invoice.created_at).toLocaleDateString('pl-PL')}
+                        {new Date(invoice.created_at).toLocaleDateString('en-US')}
                       </p>
                       {invoice.due_date && (
                         <p className={`text-xs ${overdue ? 'text-red-400' : 'text-slate-600'}`}>
-                          Termin: {new Date(invoice.due_date).toLocaleDateString('pl-PL')}
+                          Due: {new Date(invoice.due_date).toLocaleDateString('en-US')}
                         </p>
                       )}
                     </div>
@@ -276,7 +276,7 @@ export function InvoicesList({ invoices }: InvoicesListProps) {
                         setDeleteModal(invoice)
                       }}
                       className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
-                      title="Usuń fakturę"
+                      title="Delete invoice"
                     >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -300,15 +300,15 @@ export function InvoicesList({ invoices }: InvoicesListProps) {
               <svg className="w-12 h-12 text-slate-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
-              <h3 className="text-lg font-medium text-white mb-2">Brak wyników</h3>
+              <h3 className="text-lg font-medium text-white mb-2">No results</h3>
               <p className="text-slate-400">
-                Nie znaleziono faktur dla podanych kryteriów.
+                No invoices found for the given criteria.
               </p>
               <button
                 onClick={() => { setSearch(''); setStatusFilter('all') }}
                 className="text-blue-400 hover:text-blue-300 mt-2"
               >
-                Wyczyść filtry
+                Clear filters
               </button>
             </>
           ) : (
@@ -316,10 +316,10 @@ export function InvoicesList({ invoices }: InvoicesListProps) {
               <svg className="w-16 h-16 text-slate-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
-              <h3 className="text-lg font-medium text-white mb-2">Brak faktur</h3>
-              <p className="text-slate-400 mb-4">Utwórz pierwszą fakturę z zaakceptowanej wyceny lub od zera.</p>
+              <h3 className="text-lg font-medium text-white mb-2">No invoices</h3>
+              <p className="text-slate-400 mb-4">Create your first invoice from an accepted quote or from scratch.</p>
               <Link href="/invoices/new" className="btn-primary">
-                Utwórz fakturę
+                Create invoice
               </Link>
             </>
           )}
@@ -337,13 +337,13 @@ export function InvoicesList({ invoices }: InvoicesListProps) {
                 </svg>
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-white">Usuń fakturę</h3>
-                <p className="text-slate-400 text-sm">Ta operacja jest nieodwracalna</p>
+                <h3 className="text-lg font-semibold text-white">Delete invoice</h3>
+                <p className="text-slate-400 text-sm">This action cannot be undone</p>
               </div>
             </div>
 
             <p className="text-slate-300 mb-6">
-              Czy na pewno chcesz usunąć fakturę <span className="font-semibold text-white">{deleteModal.invoice_number}</span> dla klienta <span className="font-semibold text-white">{deleteModal.client_name}</span>?
+              Are you sure you want to delete invoice <span className="font-semibold text-white">{deleteModal.invoice_number}</span> for <span className="font-semibold text-white">{deleteModal.client_name}</span>?
             </p>
 
             <div className="flex gap-3 justify-end">
@@ -352,7 +352,7 @@ export function InvoicesList({ invoices }: InvoicesListProps) {
                 disabled={deleting}
                 className="btn-secondary"
               >
-                Anuluj
+                Cancel
               </button>
               <button
                 onClick={handleDelete}
@@ -362,10 +362,10 @@ export function InvoicesList({ invoices }: InvoicesListProps) {
                 {deleting ? (
                   <>
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Usuwanie...
+                    Deleting...
                   </>
                 ) : (
-                  'Usuń fakturę'
+                  'Delete invoice'
                 )}
               </button>
             </div>
