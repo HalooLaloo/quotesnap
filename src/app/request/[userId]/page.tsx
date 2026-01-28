@@ -20,7 +20,7 @@ export default function ClientRequestPage() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
-      content: 'Cześć! 👋 Jestem asystentem, który pomoże Ci opisać zakres prac remontowych.\n\n📸 Możesz wysłać zdjęcia - przeanalizuję je i pomogę dokładniej określić zakres prac oraz przygotować lepszą wycenę.\n\nPowiedz mi, co chciałbyś zrobić? Na przykład: pomalować pokój, wyremontować łazienkę, położyć płytki...',
+      content: 'Hi! 👋 I\'m an assistant who will help you describe the scope of work.\n\n📸 You can send photos - I\'ll analyze them and help determine the scope of work more accurately for a better quote.\n\nTell me, what would you like to do? For example: paint a room, renovate a bathroom, install tiles...',
     },
   ])
   const [input, setInput] = useState('')
@@ -209,7 +209,7 @@ export default function ClientRequestPage() {
     // Dodaj wiadomość użytkownika
     const newMessage: Message = {
       role: 'user',
-      content: userMessage || (imageUrls.length > 0 ? `[${imageUrls.length} zdjęć]` : ''),
+      content: userMessage || (imageUrls.length > 0 ? `[${imageUrls.length} photos]` : ''),
       images: imageUrls.length > 0 ? imageUrls : undefined,
     }
     const newMessages: Message[] = [...messages, newMessage]
@@ -237,12 +237,12 @@ export default function ClientRequestPage() {
       if (response.status === 429) {
         setMessages([...newMessages, {
           role: 'assistant',
-          content: '⚠️ Przekroczono limit wiadomości. Ze względów bezpieczeństwa ograniczamy liczbę wiadomości. Spróbuj ponownie za godzinę lub skontaktuj się bezpośrednio z wykonawcą.',
+          content: '⚠️ Message limit exceeded. For security reasons, we limit the number of messages. Please try again in an hour or contact the contractor directly.',
         }])
       } else if (data.error) {
         setMessages([...newMessages, {
           role: 'assistant',
-          content: 'Przepraszam, wystąpił błąd. Spróbuj ponownie.',
+          content: 'Sorry, an error occurred. Please try again.',
         }])
       } else {
         setMessages([...newMessages, {
@@ -264,7 +264,7 @@ export default function ClientRequestPage() {
       console.error('Error:', error)
       setMessages([...newMessages, {
         role: 'assistant',
-        content: 'Przepraszam, wystąpił błąd połączenia. Spróbuj ponownie.',
+        content: 'Sorry, a connection error occurred. Please try again.',
       }])
     }
 
@@ -280,20 +280,20 @@ export default function ClientRequestPage() {
 
   const handleSubmitRequest = async () => {
     if (!contactData.client_name.trim()) {
-      alert('Podaj swoje imię')
+      alert('Please enter your name')
       return
     }
 
     setSubmitting(true)
 
-    // Przygotuj pełny opis z rozmowy i podsumowania
+    // Prepare full description from conversation and summary
     const conversationLog = messages
-      .map(m => `${m.role === 'user' ? 'Klient' : 'Asystent'}: ${m.content}`)
+      .map(m => `${m.role === 'user' ? 'Client' : 'Assistant'}: ${m.content}`)
       .join('\n\n')
 
-    // Dodaj pytanie klienta do opisu jeśli zostało podane
+    // Add client question to description if provided
     const clientQuestion = contactData.client_question.trim()
-      ? `\n\nPYTANIE DO WYKONAWCY: ${contactData.client_question.trim()}`
+      ? `\n\nQUESTION FOR CONTRACTOR: ${contactData.client_question.trim()}`
       : ''
 
     const fullDescription = `${summary}${clientQuestion}\n\n---ROZMOWA---\n${conversationLog}`
@@ -316,7 +316,7 @@ export default function ClientRequestPage() {
 
     if (error) {
       console.error('Error:', error)
-      alert('Wystąpił błąd. Spróbuj ponownie.')
+      alert('An error occurred. Please try again.')
     } else {
       // Wyślij powiadomienie email do wykonawcy (nie blokujemy na tym)
       fetch('/api/notify-request', {
@@ -344,9 +344,9 @@ export default function ClientRequestPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-white mb-2">Zapytanie wysłane!</h1>
+          <h1 className="text-2xl font-bold text-white mb-2">Request sent!</h1>
           <p className="text-slate-400 mb-6">
-            Dziękujemy! Wykonawca otrzymał Twoje zapytanie i wkrótce przygotuje wycenę.
+            Thank you! The contractor has received your request and will prepare a quote soon.
           </p>
         </div>
       </div>
@@ -369,7 +369,7 @@ export default function ClientRequestPage() {
           </div>
           <div className="flex-1">
             <h1 className="text-white font-semibold">BrickQuote</h1>
-            <p className="text-slate-400 text-sm">Asystent wycen</p>
+            <p className="text-slate-400 text-sm">Quote Assistant</p>
           </div>
         </div>
       </header>
@@ -395,7 +395,7 @@ export default function ClientRequestPage() {
                       <img
                         key={imgIndex}
                         src={img}
-                        alt={`Zdjęcie ${imgIndex + 1}`}
+                        alt={`Photo ${imgIndex + 1}`}
                         className="rounded-lg max-h-32 object-cover cursor-pointer hover:opacity-90"
                         onClick={() => window.open(img, '_blank')}
                       />
@@ -430,21 +430,21 @@ export default function ClientRequestPage() {
         <div className="bg-slate-800 border-t border-slate-700 px-4 py-6">
           <div className="max-w-2xl mx-auto">
             <div className="card bg-green-600/10 border-green-500/30 mb-4">
-              <h3 className="text-white font-semibold mb-2">✅ Zakres prac ustalony!</h3>
+              <h3 className="text-white font-semibold mb-2">✅ Scope of work established!</h3>
               <p className="text-slate-300 text-sm">
-                Teraz podaj swoje dane kontaktowe, żeby wykonawca mógł się z Tobą skontaktować z wyceną.
+                Now provide your contact details so the contractor can reach you with a quote.
               </p>
             </div>
 
             <div className="space-y-4">
               <div>
-                <label className="label">Twoje imię *</label>
+                <label className="label">Your name *</label>
                 <input
                   type="text"
                   value={contactData.client_name}
                   onChange={(e) => setContactData({ ...contactData, client_name: e.target.value })}
                   className="input"
-                  placeholder="Jan Kowalski"
+                  placeholder="John Smith"
                 />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -471,33 +471,33 @@ export default function ClientRequestPage() {
               </div>
 
               <div>
-                <label className="label">Miejscowość</label>
+                <label className="label">City</label>
                 <input
                   type="text"
                   value={contactData.client_city}
                   onChange={(e) => setContactData({ ...contactData, client_city: e.target.value })}
                   className="input"
-                  placeholder="Warszawa"
+                  placeholder="New York"
                 />
               </div>
 
-              {/* Pytanie do wykonawcy */}
+              {/* Question for contractor */}
               <div>
-                <label className="label">Masz pytanie do wykonawcy? (opcjonalne)</label>
+                <label className="label">Question for the contractor? (optional)</label>
                 <textarea
                   value={contactData.client_question}
                   onChange={(e) => setContactData({ ...contactData, client_question: e.target.value })}
                   className="input min-h-[80px] resize-none"
-                  placeholder="Np. Czy macie doświadczenie z takimi pracami? Jaki jest orientacyjny czas realizacji?"
+                  placeholder="E.g., Do you have experience with this type of work? What's the estimated timeline?"
                   rows={3}
                 />
               </div>
 
-              {/* Opcjonalne zdjęcia */}
+              {/* Optional photos */}
               <div>
-                <label className="label">Dodatkowe zdjęcia (opcjonalne)</label>
+                <label className="label">Additional photos (optional)</label>
                 <p className="text-slate-500 text-xs mb-2">
-                  Możesz dodać więcej zdjęć, które pomogą w przygotowaniu dokładniejszej wyceny
+                  You can add more photos to help prepare a more accurate quote
                 </p>
 
                 {/* Podgląd dodanych zdjęć */}
@@ -507,11 +507,11 @@ export default function ClientRequestPage() {
                       <div key={`chat-${index}`} className="relative">
                         <img
                           src={url}
-                          alt={`Zdjęcie z chatu ${index + 1}`}
+                          alt={`Chat photo ${index + 1}`}
                           className="h-16 w-16 rounded-lg object-cover opacity-60"
                         />
                         <div className="absolute inset-0 flex items-center justify-center">
-                          <span className="text-xs text-white bg-black/50 px-1 rounded">z chatu</span>
+                          <span className="text-xs text-white bg-black/50 px-1 rounded">from chat</span>
                         </div>
                       </div>
                     ))}
@@ -519,7 +519,7 @@ export default function ClientRequestPage() {
                       <div key={`contact-${index}`} className="relative group">
                         <img
                           src={url}
-                          alt={`Zdjęcie ${index + 1}`}
+                          alt={`Photo ${index + 1}`}
                           className="h-16 w-16 rounded-lg object-cover"
                         />
                         <button
@@ -556,14 +556,14 @@ export default function ClientRequestPage() {
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                       </svg>
-                      Przesyłanie...
+                      Uploading...
                     </>
                   ) : (
                     <>
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                       </svg>
-                      Dodaj zdjęcia
+                      Add photos
                     </>
                   )}
                 </button>
@@ -574,7 +574,7 @@ export default function ClientRequestPage() {
                 disabled={submitting || uploadingImage}
                 className="btn-primary w-full py-3"
               >
-                {submitting ? 'Wysyłanie...' : 'Wyślij zapytanie o wycenę'}
+                {submitting ? 'Sending...' : 'Send quote request'}
               </button>
             </div>
           </div>
@@ -596,8 +596,8 @@ export default function ClientRequestPage() {
                 </div>
                 <div className="text-slate-400 text-sm whitespace-nowrap">
                   {userMessagesCount >= estimatedTotalQuestions
-                    ? 'Prawie gotowe!'
-                    : `Pytanie ${userMessagesCount} z ~${estimatedTotalQuestions}`}
+                    ? 'Almost done!'
+                    : `Question ${userMessagesCount} of ~${estimatedTotalQuestions}`}
                 </div>
               </div>
             )}
@@ -609,7 +609,7 @@ export default function ClientRequestPage() {
                   <div key={index} className="relative">
                     <img
                       src={img}
-                      alt={`Podgląd ${index + 1}`}
+                      alt={`Preview ${index + 1}`}
                       className="h-20 rounded-lg object-cover"
                     />
                     <button
@@ -641,7 +641,7 @@ export default function ClientRequestPage() {
                 onClick={() => fileInputRef.current?.click()}
                 disabled={loading || uploadingImage}
                 className="p-3 rounded-xl bg-slate-700 text-slate-300 hover:bg-slate-600 hover:text-white transition-colors disabled:opacity-50"
-                title="Dodaj zdjęcia - AI przeanalizuje i pomoże w wycenie"
+                title="Add photos - AI will analyze and help with the quote"
               >
                 {uploadingImage ? (
                   <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -661,7 +661,7 @@ export default function ClientRequestPage() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Napisz wiadomość lub dodaj zdjęcie..."
+                placeholder="Type a message or add a photo..."
                 disabled={loading}
                 className="input flex-1"
               />
