@@ -9,11 +9,9 @@ interface OnboardingWrapperProps {
 }
 
 export function OnboardingWrapper({ servicesCount, userId }: OnboardingWrapperProps) {
-  const [showOnboarding, setShowOnboarding] = useState(false)
-  const [mounted, setMounted] = useState(false)
+  const [showOnboarding, setShowOnboarding] = useState<boolean | null>(null)
 
   useEffect(() => {
-    setMounted(true)
     const dismissed = localStorage.getItem(`onboarding_dismissed_${userId}`)
 
     // If user already dismissed or has services, don't show onboarding
@@ -31,8 +29,8 @@ export function OnboardingWrapper({ servicesCount, userId }: OnboardingWrapperPr
     localStorage.setItem(`onboarding_dismissed_${userId}`, 'true')
   }
 
-  // Don't render until mounted (prevents hydration issues)
-  if (!mounted || !showOnboarding) return null
+  // Don't render until we've checked localStorage (null = not yet checked)
+  if (showOnboarding !== true) return null
 
   return <OnboardingWizard onClose={handleClose} userId={userId} />
 }
