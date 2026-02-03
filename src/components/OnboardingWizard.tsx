@@ -101,6 +101,10 @@ export function OnboardingWizard({ onClose, userId }: OnboardingWizardProps) {
         throw new Error(data.error || 'An error occurred')
       }
 
+      if (!data.services || data.services.length === 0) {
+        throw new Error('No services were generated. Please describe your work in more detail - mention specific tasks you do.')
+      }
+
       setServices(
         data.services.map((s: { name: string; unit: string; price: number }) => ({
           ...s,

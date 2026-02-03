@@ -103,19 +103,40 @@ export async function POST(request: NextRequest) {
       ],
       temperature: 0.5,
       max_tokens: 1500,
+      response_format: { type: 'json_object' },
     })
 
-    const content = response.choices[0]?.message?.content || '{}'
+    const content = response.choices[0]?.message?.content
 
-    // Parse JSON
+    if (!content) {
+      console.error('Empty AI response')
+      return NextResponse.json(
+        { error: 'AI returned empty response. Please try again.' },
+        { status: 500 }
+      )
+    }
+
+    // Parse JSON - try multiple formats
     let parsed
     try {
-      const cleanJson = content.replace(/```json\n?|\n?```/g, '').trim()
+      // Remove markdown code blocks if present
+      let cleanJson = content
+        .replace(/```json\s*/gi, '')
+        .replace(/```\s*/g, '')
+        .trim()
+
+      // Try to extract JSON object if there's extra text
+      const jsonMatch = cleanJson.match(/\{[\s\S]*\}/)
+      if (jsonMatch) {
+        cleanJson = jsonMatch[0]
+      }
+
       parsed = JSON.parse(cleanJson)
-    } catch {
+    } catch (parseError) {
       console.error('Failed to parse AI response:', content)
+      console.error('Parse error:', parseError)
       return NextResponse.json(
-        { error: 'Failed to process AI response' },
+        { error: 'Failed to process AI response. Please try again.' },
         { status: 500 }
       )
     }
@@ -131,6 +152,14 @@ export async function POST(request: NextRequest) {
         s.price >= 0
       )
       .slice(0, 20) // Max 20 services
+
+    if (services.length === 0) {
+      console.error('No valid services extracted. Raw parsed:', JSON.stringify(parsed))
+      return NextResponse.json(
+        { error: 'Could not generate services. Please describe your work in more detail.' },
+        { status: 400 }
+      )
+    }
 
     return NextResponse.json({ services })
   } catch (error) {
