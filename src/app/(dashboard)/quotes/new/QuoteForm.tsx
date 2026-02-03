@@ -62,11 +62,11 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
 
   // Auto-load AI suggestions when page loads with request
   useEffect(() => {
-    if (request?.description && services.length > 0 && !aiLoaded) {
+    if (request?.description && !aiLoaded) {
       loadAiSuggestions()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [request, services])
+  }, [request])
 
   // Load AI suggestions
   const loadAiSuggestions = async () => {
@@ -405,10 +405,9 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
               </div>
             ) : aiSuggestions.length === 0 ? (
               <div className="text-center py-8 text-slate-400">
-                {services.length === 0 ? (
-                  <p>First add services to your price list</p>
-                ) : (
-                  <p>No AI suggestions - add services manually below</p>
+                <p>No AI suggestions - add services manually below</p>
+                {services.length === 0 && (
+                  <p className="text-sm mt-2">Tip: Add services to your price list for faster quoting</p>
                 )}
               </div>
             ) : (

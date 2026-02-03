@@ -167,17 +167,20 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (!description || !services || services.length === 0) {
+    if (!description) {
       return NextResponse.json(
-        { error: 'Missing description or services' },
+        { error: 'Missing description' },
         { status: 400 }
       )
     }
 
+    // Allow empty services - will only return custom_suggestions
+    const servicesList = services || []
+
     // Prepare price list as numbered list
-    const priceList = services
-      .map((s: Service, index: number) => `${index + 1}. ${s.name} - ${s.price} / ${s.unit}`)
-      .join('\n')
+    const priceList = servicesList.length > 0
+      ? servicesList.map((s: Service, index: number) => `${index + 1}. ${s.name} - ${s.price} / ${s.unit}`).join('\n')
+      : 'No services in price list - suggest ALL items as custom_suggestions'
 
     const userMessage = `WORK DESCRIPTION:
 ${description}
@@ -193,20 +196,40 @@ ${priceList}`
       ],
       temperature: 0.4,
       max_tokens: 2000,
+      response_format: { type: 'json_object' },
     })
 
-    const content = response.choices[0]?.message?.content || '{}'
+    const content = response.choices[0]?.message?.content
+
+    if (!content) {
+      console.error('Empty AI response')
+      return NextResponse.json(
+        { error: 'AI returned empty response. Please try again.' },
+        { status: 500 }
+      )
+    }
 
     // Parse JSON from response
     let parsed
     try {
       // Remove any markdown markers
-      const cleanJson = content.replace(/```json\n?|\n?```/g, '').trim()
+      let cleanJson = content
+        .replace(/```json\s*/gi, '')
+        .replace(/```\s*/g, '')
+        .trim()
+
+      // Try to extract JSON object if there's extra text
+      const jsonMatch = cleanJson.match(/\{[\s\S]*\}/)
+      if (jsonMatch) {
+        cleanJson = jsonMatch[0]
+      }
+
       parsed = JSON.parse(cleanJson)
-    } catch {
+    } catch (parseError) {
       console.error('Failed to parse AI response:', content)
+      console.error('Parse error:', parseError)
       return NextResponse.json(
-        { error: 'Failed to parse AI suggestions' },
+        { error: 'Failed to parse AI suggestions. Please try again.' },
         { status: 500 }
       )
     }
@@ -214,7 +237,7 @@ ${priceList}`
     // Map suggestions to QuoteItem format using service_id (1-indexed)
     const items = parsed.suggestions?.map((suggestion: { service_id: number; quantity: number; reason: string }) => {
       const serviceIndex = suggestion.service_id - 1 // AI uses 1-indexed
-      const service = services[serviceIndex]
+      const service = servicesList[serviceIndex]
 
       if (!service) {
         console.log(`Service not found for id ${suggestion.service_id}`)
