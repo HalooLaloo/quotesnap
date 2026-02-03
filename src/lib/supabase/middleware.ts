@@ -46,33 +46,12 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // Check subscription status for logged-in users
+  // Redirect logged-in users away from login/register
   if (user) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('subscription_status')
-      .eq('id', user.id)
-      .single()
-
-    const hasActiveSubscription =
-      profile?.subscription_status === 'active' ||
-      profile?.subscription_status === 'trialing'
-
-    // Logged-in users on login/register page
     if (request.nextUrl.pathname === '/login' || request.nextUrl.pathname === '/register') {
       const url = request.nextUrl.clone()
-      // Redirect to subscribe if no subscription, otherwise to requests
-      url.pathname = hasActiveSubscription ? '/requests' : '/subscribe'
+      url.pathname = '/requests'
       return NextResponse.redirect(url)
-    }
-
-    // Protected routes - require subscription
-    if (!isPublicPath && request.nextUrl.pathname !== '/') {
-      if (!hasActiveSubscription) {
-        const url = request.nextUrl.clone()
-        url.pathname = '/subscribe'
-        return NextResponse.redirect(url)
-      }
     }
   }
 
