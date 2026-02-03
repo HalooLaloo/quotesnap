@@ -250,10 +250,11 @@ export default function ClientRequestPage() {
           content: data.message,
         }])
 
-        // Sprawdź czy jest podsumowanie
+        // Check for summary
         if (data.hasSummary) {
-          // Wyciągnij podsumowanie
-          const summaryMatch = data.message.match(/---PODSUMOWANIE---([\s\S]*?)---KONIEC---/)
+          // Extract summary - support both English and Polish markers
+          const summaryMatch = data.message.match(/---SUMMARY---([\s\S]*?)---END---/) ||
+                               data.message.match(/---PODSUMOWANIE---([\s\S]*?)---KONIEC---/)
           if (summaryMatch) {
             setSummary(summaryMatch[1].trim())
             setShowContactForm(true)
@@ -296,7 +297,7 @@ export default function ClientRequestPage() {
       ? `\n\nQUESTION FOR CONTRACTOR: ${contactData.client_question.trim()}`
       : ''
 
-    const fullDescription = `${summary}${clientQuestion}\n\n---ROZMOWA---\n${conversationLog}`
+    const fullDescription = `${summary}${clientQuestion}\n\n---CONVERSATION---\n${conversationLog}`
 
     // Połącz zdjęcia z chatu i formularza kontaktowego
     const allPhotos = [...uploadedPhotos, ...contactPhotos]
@@ -459,7 +460,7 @@ export default function ClientRequestPage() {
                   />
                 </div>
                 <div>
-                  <label className="label">Telefon</label>
+                  <label className="label">Phone</label>
                   <input
                     type="tel"
                     value={contactData.client_phone}

@@ -579,9 +579,9 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
                     >
                       <option value="m²">m²</option>
                       <option value="mb">mb</option>
-                      <option value="szt.">szt.</option>
-                      <option value="godz.">godz.</option>
-                      <option value="ryczałt">ryczałt</option>
+                      <option value="pcs">pcs</option>
+                      <option value="hr">hr</option>
+                      <option value="flat">flat</option>
                     </select>
                     <span className="text-slate-500 text-sm">×</span>
                     <input
@@ -686,9 +686,9 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
                 >
                   <option value="m²">m²</option>
                   <option value="mb">mb</option>
-                  <option value="szt.">szt.</option>
-                  <option value="godz.">godz.</option>
-                  <option value="ryczałt">ryczałt</option>
+                  <option value="pcs">pcs</option>
+                  <option value="hr">hr</option>
+                  <option value="flat">flat</option>
                 </select>
               </div>
               <div>
