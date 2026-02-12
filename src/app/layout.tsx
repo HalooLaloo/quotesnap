@@ -8,10 +8,10 @@ const inter = Inter({ subsets: ['latin', 'latin-ext'] })
 
 export const metadata: Metadata = {
   title: {
-    default: 'BrickQuote - AI-Powered Quotes for Contractors',
+    default: 'BrickQuote - AI Quotes & Invoices for Contractors',
     template: '%s | BrickQuote',
   },
-  description: 'Create professional quotes in minutes, not hours. AI analyzes client photos, suggests line items, and generates quotes automatically. Start your free trial.',
+  description: 'AI runs your quoting. Chatbot collects project details from clients, generates ready-made quotes, and converts them to invoices. Start your free trial.',
   keywords: ['quote software', 'contractor quotes', 'AI quotes', 'construction quotes', 'invoice generator', 'trade business software'],
   metadataBase: new URL('https://brickquote.app'),
   openGraph: {
@@ -19,22 +19,13 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: 'https://brickquote.app',
     siteName: 'BrickQuote',
-    title: 'BrickQuote - AI-Powered Quotes for Contractors',
-    description: 'Create professional quotes in minutes, not hours. AI analyzes client photos, suggests line items, and generates quotes automatically.',
-    images: [
-      {
-        url: '/og-image.png',
-        width: 1200,
-        height: 630,
-        alt: 'BrickQuote - AI-Powered Quotes for Contractors',
-      },
-    ],
+    title: 'BrickQuote - AI Quotes & Invoices for Contractors',
+    description: 'AI chatbot collects project details from your clients. You get ready-made quotes, professional PDFs, and invoicing — all from one dashboard.',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'BrickQuote - AI-Powered Quotes for Contractors',
-    description: 'Create professional quotes in minutes, not hours. AI analyzes client photos and generates quotes automatically.',
-    images: ['/og-image.png'],
+    title: 'BrickQuote - AI Quotes & Invoices for Contractors',
+    description: 'AI chatbot collects project details from your clients. You get ready-made quotes, professional PDFs, and invoicing — all from one dashboard.',
   },
   robots: {
     index: true,

@@ -61,9 +61,9 @@ export default async function Image() {
             margin: '0 0 20px 0',
           }}
         >
-          AI-Powered Quotes
+          AI runs your quoting.
           <br />
-          <span style={{ color: '#60a5fa' }}>for Contractors</span>
+          <span style={{ color: '#60a5fa' }}>You run the business.</span>
         </h1>
         <p
           style={{
@@ -73,8 +73,8 @@ export default async function Image() {
             maxWidth: '800px',
           }}
         >
-          Create professional quotes in minutes, not hours.
-          AI analyzes photos and generates quotes automatically.
+          AI chatbot collects project details from your clients.
+          You get ready-made quotes, invoices, and professional PDFs.
         </p>
         <div
           style={{
@@ -84,13 +84,13 @@ export default async function Image() {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#60a5fa', fontSize: '20px' }}>
-            ✓ AI Photo Analysis
+            ✓ AI Client Chat
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#60a5fa', fontSize: '20px' }}>
             ✓ One-Click Quotes
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#60a5fa', fontSize: '20px' }}>
-            ✓ Online Acceptance
+            ✓ Invoicing Built In
           </div>
         </div>
       </div>
