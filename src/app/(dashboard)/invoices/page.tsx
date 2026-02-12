@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { AcceptedQuotes } from './AcceptedQuotes'
 import { SentQuotes } from './SentQuotes'
 import { InvoicesList } from './InvoicesList'
+import { PageGuideCard } from '@/components/onboarding/PageGuideCard'
 
 export default async function InvoicesPage() {
   const supabase = await createClient()
@@ -65,6 +66,14 @@ export default async function InvoicesPage() {
           + New Invoice
         </Link>
       </div>
+
+      <PageGuideCard
+        pageKey="invoices"
+        userId={user!.id}
+        icon={<svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>}
+        title="Your Invoices"
+        description="After a client accepts your quote, create an invoice here to get paid. You can also create standalone invoices. Send them by email to your clients."
+      />
 
       {/* Accepted Quotes Section */}
       <AcceptedQuotes quotes={acceptedQuotes || []} />

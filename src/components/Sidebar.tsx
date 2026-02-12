@@ -4,9 +4,11 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { LogoutButton } from './LogoutButton'
+import { GettingStartedChecklist, ChecklistData } from './onboarding/GettingStartedChecklist'
 
 interface SidebarProps {
   userEmail: string
+  checklistData?: ChecklistData
 }
 
 const navItems = [
@@ -58,7 +60,7 @@ const navItems = [
   },
 ]
 
-export function Sidebar({ userEmail }: SidebarProps) {
+export function Sidebar({ userEmail, checklistData }: SidebarProps) {
   const pathname = usePathname()
   const [isMobileOpen, setIsMobileOpen] = useState(false)
 
@@ -142,6 +144,13 @@ export function Sidebar({ userEmail }: SidebarProps) {
             ))}
           </ul>
         </nav>
+
+        {/* Getting Started checklist */}
+        {checklistData && (
+          <div className="px-4 pb-2 border-t border-[#1e3a5f] pt-3">
+            <GettingStartedChecklist {...checklistData} />
+          </div>
+        )}
 
         {/* User section */}
         <div className="p-4 border-t border-[#1e3a5f]">

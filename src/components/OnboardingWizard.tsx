@@ -195,6 +195,8 @@ export function OnboardingWizard({ onClose, userId }: OnboardingWizardProps) {
   }
 
   const handleFinish = () => {
+    // Set flag for WhatsNextCard to show on requests page
+    localStorage.setItem(`bq_show_whats_next_${userId}`, 'true')
     // First close (which also sets localStorage), then refresh
     onClose()
     router.refresh()
