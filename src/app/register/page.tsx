@@ -11,6 +11,7 @@ export default function RegisterPage() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [agreedToTerms, setAgreedToTerms] = useState(false)
   const supabase = createClient()
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -146,9 +147,28 @@ export default function RegisterPage() {
               />
             </div>
 
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={agreedToTerms}
+                onChange={(e) => setAgreedToTerms(e.target.checked)}
+                className="mt-1 w-4 h-4 rounded border-slate-600 bg-slate-700 text-blue-600 focus:ring-blue-500"
+              />
+              <span className="text-slate-400 text-sm">
+                I agree to the{' '}
+                <Link href="/terms" target="_blank" className="text-blue-400 hover:text-blue-300">
+                  Terms of Service
+                </Link>{' '}
+                and{' '}
+                <Link href="/privacy" target="_blank" className="text-blue-400 hover:text-blue-300">
+                  Privacy Policy
+                </Link>
+              </span>
+            </label>
+
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || !agreedToTerms}
               className="btn-primary w-full"
             >
               {loading ? 'Creating account...' : 'Create account'}

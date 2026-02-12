@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { createClient } from '@supabase/supabase-js'
 import { COUNTRIES } from '@/lib/countries'
+import { escapeHtml } from '@/lib/escapeHtml'
 
 function getCurrencySymbol(currencyCode: string): string {
   const country = Object.values(COUNTRIES).find(c => c.currency === currencyCode)
@@ -17,8 +18,8 @@ export async function POST(request: NextRequest) {
 
     const { token } = await request.json()
 
-    if (!token) {
-      return NextResponse.json({ error: 'Token is required' }, { status: 400 })
+    if (!token || !/^[a-f0-9]{32}$/.test(token)) {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 400 })
     }
 
     // Find invoice by token
@@ -68,7 +69,7 @@ export async function POST(request: NextRequest) {
 
       if (contractorEmail) {
         const currencySymbol = getCurrencySymbol(invoice.currency || 'USD')
-        const clientName = invoice.client_name || 'Client'
+        const clientName = escapeHtml(invoice.client_name || 'Client')
 
         await resend.emails.send({
           from: 'BrickQuote <contact@brickquote.app>',

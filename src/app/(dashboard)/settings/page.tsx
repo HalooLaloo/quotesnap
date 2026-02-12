@@ -27,6 +27,14 @@ export default function SettingsPage() {
   const [userId, setUserId] = useState('')
   const [copied, setCopied] = useState(false)
 
+  // Delete account
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [deleteConfirmText, setDeleteConfirmText] = useState('')
+  const [deleting, setDeleting] = useState(false)
+
+  // Export data
+  const [exporting, setExporting] = useState(false)
+
   // Subscription
   const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null)
   const [stripePriceId, setStripePriceId] = useState<string | null>(null)
@@ -91,6 +99,44 @@ export default function SettingsPage() {
 
     loadProfile()
   }, [supabase, router])
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmText !== 'DELETE') return
+    setDeleting(true)
+    try {
+      const res = await fetch('/api/delete-account', { method: 'POST' })
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.error || 'Failed to delete account')
+      }
+      await supabase.auth.signOut()
+      window.location.href = '/login'
+    } catch (err) {
+      console.error('Error deleting account:', err)
+      setError(err instanceof Error ? err.message : 'Failed to delete account')
+      setDeleting(false)
+    }
+  }
+
+  const handleExportData = async () => {
+    setExporting(true)
+    try {
+      const res = await fetch('/api/export-data')
+      if (!res.ok) throw new Error('Failed to export data')
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `brickquote-data-${new Date().toISOString().split('T')[0]}.json`
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch (err) {
+      console.error('Error exporting data:', err)
+      setError('Failed to export data')
+    } finally {
+      setExporting(false)
+    }
+  }
 
   const handleSave = async () => {
     setSaving(true)
@@ -412,35 +458,113 @@ export default function SettingsPage() {
       {/* Account Section */}
       <div className="card mt-8">
         <h2 className="text-lg font-semibold text-white mb-4">Account</h2>
-        <div>
-          <label className="label">Your Account ID</label>
-          <p className="text-slate-400 text-sm mb-2">
-            Use this ID to connect with other Brick apps like BrickProfile
-          </p>
-          <div className="flex items-center gap-2">
-            <code className="flex-1 bg-[#1e3a5f]/50 border border-[#1e3a5f] rounded-lg px-4 py-3 text-slate-300 font-mono text-sm">
-              {userId}
-            </code>
+        <div className="space-y-6">
+          <div>
+            <label className="label">Your Account ID</label>
+            <p className="text-slate-400 text-sm mb-2">
+              Use this ID to connect with other Brick apps like BrickProfile
+            </p>
+            <div className="flex items-center gap-2">
+              <code className="flex-1 bg-[#1e3a5f]/50 border border-[#1e3a5f] rounded-lg px-4 py-3 text-slate-300 font-mono text-sm">
+                {userId}
+              </code>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(userId)
+                  setCopied(true)
+                  setTimeout(() => setCopied(false), 2000)
+                }}
+                className="btn-secondary px-4 py-3"
+              >
+                {copied ? (
+                  <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                ) : (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Export Data */}
+          <div className="border-t border-slate-700 pt-4">
+            <label className="label">Export Your Data</label>
+            <p className="text-slate-400 text-sm mb-3">
+              Download all your data (profile, quotes, invoices, requests) as a JSON file.
+            </p>
             <button
-              onClick={() => {
-                navigator.clipboard.writeText(userId)
-                setCopied(true)
-                setTimeout(() => setCopied(false), 2000)
-              }}
-              className="btn-secondary px-4 py-3"
+              onClick={handleExportData}
+              disabled={exporting}
+              className="btn-secondary flex items-center gap-2"
             >
-              {copied ? (
-                <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
+              {exporting ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Exporting...
+                </>
               ) : (
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                </svg>
+                <>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  Export My Data
+                </>
               )}
             </button>
           </div>
         </div>
+      </div>
+
+      {/* Danger Zone */}
+      <div className="mt-8 border border-red-500/30 rounded-xl p-6 bg-red-500/5">
+        <h2 className="text-lg font-semibold text-red-400 mb-2">Danger Zone</h2>
+        <p className="text-slate-400 text-sm mb-4">
+          Permanently delete your account, all quotes, invoices, and client data. This action cannot be undone.
+        </p>
+
+        {!showDeleteConfirm ? (
+          <button
+            onClick={() => setShowDeleteConfirm(true)}
+            className="px-4 py-2 bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-500/30 rounded-lg text-sm font-medium transition-colors"
+          >
+            Delete Account
+          </button>
+        ) : (
+          <div className="space-y-3">
+            <p className="text-red-400 text-sm font-medium">
+              Type <code className="bg-red-500/20 px-1.5 py-0.5 rounded">DELETE</code> to confirm:
+            </p>
+            <input
+              type="text"
+              value={deleteConfirmText}
+              onChange={(e) => setDeleteConfirmText(e.target.value)}
+              className="input border-red-500/30 w-48"
+              placeholder="Type DELETE"
+              autoFocus
+            />
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowDeleteConfirm(false)
+                  setDeleteConfirmText('')
+                }}
+                className="btn-secondary text-sm"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteAccount}
+                disabled={deleteConfirmText !== 'DELETE' || deleting}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {deleting ? 'Deleting...' : 'Permanently Delete Account'}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

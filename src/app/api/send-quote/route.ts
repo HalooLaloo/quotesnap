@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { headers } from 'next/headers'
 import { QuoteItem } from '@/lib/types'
 import { COUNTRIES } from '@/lib/countries'
+import { escapeHtml } from '@/lib/escapeHtml'
 
 function getCurrencySymbol(currencyCode: string): string {
   const country = Object.values(COUNTRIES).find(c => c.currency === currencyCode)
@@ -89,7 +90,7 @@ export async function POST(request: NextRequest) {
     const clientQuestion = questionMatch?.[1]?.trim()
 
     const emailHtml = generateQuoteEmailHtml({
-      clientName: quote.qs_quote_requests?.client_name || 'Client',
+      clientName: escapeHtml(quote.qs_quote_requests?.client_name || 'Client'),
       contractorName,
       contractorPhone: profile?.phone,
       items,

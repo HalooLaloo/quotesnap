@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { createClient } from '@supabase/supabase-js'
 import { COUNTRIES, formatDate } from '@/lib/countries'
+import { escapeHtml } from '@/lib/escapeHtml'
 
 function getCurrencySymbol(currencyCode: string): string {
   const country = Object.values(COUNTRIES).find(c => c.currency === currencyCode)
@@ -113,7 +114,7 @@ export async function GET(request: NextRequest) {
                         const ageText = age >= 48 ? `${Math.floor(age / 24)}d ago` : `${age}h ago`
                         return `
                           <p style="color: #1e40af; font-size: 14px; margin: 8px 0;">
-                            <strong>${req.client_name}</strong> - ${ageText}
+                            <strong>${escapeHtml(req.client_name)}</strong> - ${ageText}
                           </p>
                         `
                       }).join('')}
@@ -174,7 +175,7 @@ export async function GET(request: NextRequest) {
                     <div style="background: #fef2f2; border-radius: 8px; padding: 16px; margin-bottom: 24px;">
                       ${overdueInvoices.slice(0, 5).map(inv => `
                         <p style="color: #991b1b; font-size: 14px; margin: 8px 0;">
-                          <strong>${inv.invoice_number}</strong> - ${inv.client_name}: ${inv.total_gross?.toFixed(2)}
+                          <strong>${inv.invoice_number}</strong> - ${escapeHtml(inv.client_name)}: ${inv.total_gross?.toFixed(2)}
                         </p>
                       `).join('')}
                       ${overdueInvoices.length > 5 ? `<p style="color: #6b7280; font-size: 12px; margin: 8px 0;">...and ${overdueInvoices.length - 5} more</p>` : ''}
@@ -286,7 +287,7 @@ export async function GET(request: NextRequest) {
             .eq('id', inv.user_id)
             .single()
 
-          const contractorName = contractorProfile?.company_name || contractorProfile?.full_name || 'Contractor'
+          const contractorName = escapeHtml(contractorProfile?.company_name || contractorProfile?.full_name || 'Contractor')
           const countryCode = contractorProfile?.country || 'US'
           const countryConfig = COUNTRIES[countryCode] || COUNTRIES.US
           const currencySymbol = getCurrencySymbol(inv.currency || 'USD')
@@ -321,7 +322,7 @@ export async function GET(request: NextRequest) {
                   </div>
                   <div style="padding: 32px;">
                     <p style="color: #374151; font-size: 16px; margin: 0 0 16px 0;">
-                      Hi <strong>${inv.client_name || 'there'}</strong>,
+                      Hi <strong>${escapeHtml(inv.client_name || 'there')}</strong>,
                     </p>
                     <p style="color: #6b7280; font-size: 15px; margin: 0 0 20px 0;">
                       This is a friendly reminder that invoice <strong>${inv.invoice_number}</strong> from <strong>${contractorName}</strong> was due on <strong>${formatDate(inv.due_date, countryCode)}</strong> — <strong>${diffDays} day${diffDays > 1 ? 's' : ''} ago</strong>.

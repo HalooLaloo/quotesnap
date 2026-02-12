@@ -5,9 +5,9 @@ export async function POST(request: NextRequest) {
   try {
     const { token } = await request.json()
 
-    if (!token) {
+    if (!token || !/^[a-f0-9]{32}$/.test(token)) {
       return NextResponse.json(
-        { error: 'Token is required' },
+        { error: 'Invalid token' },
         { status: 400 }
       )
     }

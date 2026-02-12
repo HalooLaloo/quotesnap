@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { createClient } from '@supabase/supabase-js'
 import { COUNTRIES } from '@/lib/countries'
+import { escapeHtml } from '@/lib/escapeHtml'
 
 function getCurrencySymbol(currencyCode: string): string {
   const country = Object.values(COUNTRIES).find(c => c.currency === currencyCode)
@@ -38,9 +39,9 @@ export async function POST(request: NextRequest) {
     const { token, action } = body
     console.log('Token:', token ? 'exists' : 'missing', 'Action:', action)
 
-    if (!token || !action) {
+    if (!token || !action || !/^[a-f0-9]{32}$/.test(token)) {
       return NextResponse.json(
-        { error: 'Token and action are required' },
+        { error: 'Invalid request' },
         { status: 400 }
       )
     }
@@ -127,7 +128,7 @@ export async function POST(request: NextRequest) {
 
     // Send notification email to contractor
     if (process.env.RESEND_API_KEY && contractorEmail) {
-      const clientName = quote.qs_quote_requests?.client_name || 'Client'
+      const clientName = escapeHtml(quote.qs_quote_requests?.client_name || 'Client')
       const statusText = action === 'accept' ? 'accepted' : 'rejected'
       const statusColor = action === 'accept' ? '#22c55e' : '#ef4444'
       const currencySymbol = getCurrencySymbol(quote.currency || 'USD')

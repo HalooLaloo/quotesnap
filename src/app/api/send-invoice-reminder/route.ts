@@ -3,6 +3,7 @@ import { Resend } from 'resend'
 import { createClient } from '@/lib/supabase/server'
 import { headers } from 'next/headers'
 import { COUNTRIES, formatDate } from '@/lib/countries'
+import { escapeHtml } from '@/lib/escapeHtml'
 
 function getCurrencySymbol(currencyCode: string): string {
   const country = Object.values(COUNTRIES).find(c => c.currency === currencyCode)
@@ -63,7 +64,7 @@ export async function POST(request: NextRequest) {
       .eq('id', user.id)
       .single()
 
-    const contractorName = profile?.company_name || profile?.full_name || 'Contractor'
+    const contractorName = escapeHtml(profile?.company_name || profile?.full_name || 'Contractor')
     const countryCode = profile?.country || 'US'
     const countryConfig = COUNTRIES[countryCode] || COUNTRIES.US
     const currencySymbol = getCurrencySymbol(invoice.currency || 'USD')
@@ -116,7 +117,7 @@ export async function POST(request: NextRequest) {
           </div>
           <div style="padding: 32px;">
             <p style="color: #374151; font-size: 16px; margin: 0 0 16px 0;">
-              Hi <strong>${invoice.client_name || 'there'}</strong>,
+              Hi <strong>${escapeHtml(invoice.client_name || 'there')}</strong>,
             </p>
             <p style="color: #6b7280; font-size: 15px; margin: 0 0 24px 0;">
               This is a friendly reminder that invoice <strong>${invoice.invoice_number}</strong> from <strong>${contractorName}</strong> is awaiting payment.

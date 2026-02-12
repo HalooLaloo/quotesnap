@@ -144,6 +144,12 @@ export default function LoginPage() {
         <Suspense fallback={<div className="card"><div className="text-center text-slate-400">Loading...</div></div>}>
           <LoginForm />
         </Suspense>
+
+        <p className="text-center text-slate-500 text-xs mt-6">
+          <Link href="/privacy" className="hover:text-slate-400">Privacy Policy</Link>
+          {' · '}
+          <Link href="/terms" className="hover:text-slate-400">Terms of Service</Link>
+        </p>
       </div>
     </div>
   )

@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { headers } from 'next/headers'
 import { InvoiceItem } from '@/lib/types'
 import { COUNTRIES, formatDate } from '@/lib/countries'
+import { escapeHtml } from '@/lib/escapeHtml'
 
 function getCurrencySymbol(currencyCode: string): string {
   const country = Object.values(COUNTRIES).find(c => c.currency === currencyCode)
@@ -70,8 +71,8 @@ export async function POST(request: NextRequest) {
     const countryCode = profile?.country || 'US'
     const countryConfig = COUNTRIES[countryCode] || COUNTRIES.US
     const emailHtml = generateInvoiceEmailHtml({
-      clientName: invoice.client_name || 'Client',
-      contractorName,
+      clientName: escapeHtml(invoice.client_name || 'Client'),
+      contractorName: escapeHtml(contractorName),
       contractorPhone: profile?.phone,
       invoiceNumber: invoice.invoice_number,
       items,
