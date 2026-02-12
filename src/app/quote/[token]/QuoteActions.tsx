@@ -17,15 +17,11 @@ export function QuoteActions({ token }: QuoteActionsProps) {
     setSuccess(false)
 
     try {
-      console.log('Sending action:', action, 'for token:', token)
-
       const response = await fetch('/api/accept-quote', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token, action }),
       })
-
-      console.log('Response status:', response.status)
 
       // Check if response is JSON
       const contentType = response.headers.get('content-type')
@@ -36,7 +32,6 @@ export function QuoteActions({ token }: QuoteActionsProps) {
       }
 
       const data = await response.json()
-      console.log('Response data:', data)
 
       if (!response.ok) {
         throw new Error(data.error || 'Failed to process')

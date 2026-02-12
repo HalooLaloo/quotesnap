@@ -17,7 +17,6 @@ export async function POST(request: NextRequest) {
     }
 
     if (!process.env.RESEND_API_KEY) {
-      console.log('Resend not configured, skipping notification')
       return NextResponse.json({ success: true, skipped: true })
     }
 
@@ -75,7 +74,6 @@ export async function POST(request: NextRequest) {
     }
 
     if (!contractorEmail) {
-      console.log('Contractor email not found, skipping notification')
       return NextResponse.json({ success: true, skipped: true })
     }
 

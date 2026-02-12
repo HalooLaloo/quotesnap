@@ -34,7 +34,6 @@ export async function GET(request: NextRequest) {
     }
 
     if (!process.env.RESEND_API_KEY || !process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      console.log('Missing env vars, skipping reminders')
       return NextResponse.json({ success: true, skipped: true })
     }
 

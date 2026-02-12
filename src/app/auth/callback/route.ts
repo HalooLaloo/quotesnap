@@ -9,12 +9,8 @@ export async function GET(request: Request) {
   const errorDescription = searchParams.get('error_description')
   const next = searchParams.get('next') ?? '/requests'
 
-  // Log what we received for debugging
-  console.log('Auth callback params:', { code: !!code, error, errorDescription })
-
   // If Supabase sent an error, redirect to login
   if (error) {
-    console.log('Supabase error:', error, errorDescription)
     // Email might still be verified, suggest manual login
     return NextResponse.redirect(`${origin}/login?verified=true`)
   }

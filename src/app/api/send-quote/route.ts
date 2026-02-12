@@ -68,10 +68,7 @@ export async function POST(request: NextRequest) {
       .eq('id', user?.id)
       .single()
 
-    console.log('Profile query result:', { profile, profileError, userId: user?.id })
-
     const contractorName = profile?.company_name || profile?.full_name || 'Contractor'
-    console.log('Contractor name:', contractorName)
     const items = (quote.items || []) as QuoteItem[]
 
     // Generate quote view URL

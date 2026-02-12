@@ -260,7 +260,6 @@ ${priceList}`
       const service = servicesList[serviceIndex]
 
       if (!service) {
-        console.log(`Service not found for id ${suggestion.service_id}`)
         return null
       }
 
@@ -284,8 +283,6 @@ ${priceList}`
       reason: suggestion.reason,
       isCustom: true,
     })) || []
-
-    console.log('AI suggestions mapped:', items.length, 'from pricelist,', customItems.length, 'custom')
 
     return NextResponse.json({
       items,

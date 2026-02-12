@@ -241,8 +241,8 @@ function ContractorView() {
                   <div>
                     <p className="text-white font-medium">Bathroom Remodel — John Smith</p>
                     <div className="flex items-center gap-2 mt-1">
-                      <img src="/demo-bathroom-1.webp" alt="" className="w-8 h-8 rounded object-cover" />
-                      <img src="/demo-bathroom-2.webp" alt="" className="w-8 h-8 rounded object-cover" />
+                      <img src="/demo-bathroom-1.webp" alt="Client photo" className="w-8 h-8 rounded object-cover" />
+                      <img src="/demo-bathroom-2.webp" alt="Client photo" className="w-8 h-8 rounded object-cover" />
                       <span className="text-slate-500 text-xs">2 photos • AI summary ready</span>
                     </div>
                   </div>
