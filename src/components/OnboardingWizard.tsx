@@ -328,9 +328,14 @@ export function OnboardingWizard({ onClose, userId }: OnboardingWizardProps) {
               <h2 className="text-xl font-bold text-white mb-2">
                 Your Price List
               </h2>
-              <p className="text-slate-400 text-sm mb-6">
+              <p className="text-slate-400 text-sm mb-4">
                 AI suggested these services. Adjust prices to your rates.
               </p>
+              <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg px-3 py-2 mb-6">
+                <p className="text-blue-300 text-xs">
+                  These services are saved to your account. You can edit, add or remove them anytime from the &quot;My Services&quot; page.
+                </p>
+              </div>
 
               <div className="space-y-2 mb-6 max-h-[300px] overflow-y-auto">
                 {services.map((service, index) => (
@@ -441,7 +446,7 @@ export function OnboardingWizard({ onClose, userId }: OnboardingWizardProps) {
                 <div className="space-y-2 text-sm">
                   <div className="flex items-start gap-3">
                     <span className="w-5 h-5 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center text-xs shrink-0">1</span>
-                    <p className="text-slate-400">Send this link to your client</p>
+                    <p className="text-slate-400">Send this link to your client — no app needed, it works in any browser</p>
                   </div>
                   <div className="flex items-start gap-3">
                     <span className="w-5 h-5 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center text-xs shrink-0">2</span>

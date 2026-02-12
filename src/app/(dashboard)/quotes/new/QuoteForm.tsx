@@ -51,6 +51,7 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
   const [availableFrom, setAvailableFrom] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [requestExpanded, setRequestExpanded] = useState(false)
 
   // Custom service form state
   const [customService, setCustomService] = useState<CustomServiceForm>({
@@ -756,7 +757,20 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
           <div className="card">
             <h2 className="text-lg font-semibold text-white mb-4">Client Request</h2>
             <p className="text-white font-medium">{request.client_name}</p>
-            <p className="text-slate-400 text-sm mt-2 whitespace-pre-wrap line-clamp-6">{request.description}</p>
+            <button
+              onClick={() => setRequestExpanded(!requestExpanded)}
+              className="w-full text-left mt-2 group"
+            >
+              <p className={`text-slate-400 text-sm whitespace-pre-wrap ${requestExpanded ? '' : 'line-clamp-6'}`}>
+                {request.description}
+              </p>
+              <span className="text-blue-400 text-xs mt-1 inline-flex items-center gap-1 group-hover:text-blue-300 transition-colors">
+                {requestExpanded ? 'Show less' : 'Show full scope of work'}
+                <svg className={`w-3 h-3 transition-transform ${requestExpanded ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </span>
+            </button>
           </div>
         )}
 
@@ -838,7 +852,15 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
                 <span>Estimate</span>
                 <span>{currencySymbol}{total.toFixed(2)}</span>
               </div>
-              <p className="text-slate-500 text-xs mt-1">Price may vary slightly after on-site inspection</p>
+            </div>
+
+            <div className="mt-3 bg-amber-500/10 border border-amber-500/30 rounded-lg px-3 py-2">
+              <p className="text-amber-300 text-xs flex items-start gap-1.5">
+                <svg className="w-3.5 h-3.5 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                This is an estimated price. The final invoice amount may differ after an on-site inspection.
+              </p>
             </div>
           </div>
 
