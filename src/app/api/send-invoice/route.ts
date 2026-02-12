@@ -184,10 +184,13 @@ function generateInvoiceEmailHtml(data: InvoiceEmailData): string {
   ` : ''
 
   const bankInfoHtml = (data.bankName || data.bankAccount) ? `
-    <div style="background: #f3f4f6; border-radius: 8px; padding: 16px; margin-bottom: 24px;">
-      <h3 style="margin: 0 0 12px 0; color: #374151; font-size: 14px; font-weight: 600;">Bank transfer details:</h3>
-      ${data.bankName ? `<p style="margin: 0 0 4px 0; color: #6b7280; font-size: 14px;">Bank: <strong style="color: #374151;">${data.bankName}</strong></p>` : ''}
-      ${data.bankAccount ? `<p style="margin: 0; color: #6b7280; font-size: 14px;">Account: <strong style="color: #374151; font-family: monospace;">${data.bankAccount}</strong></p>` : ''}
+    <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 20px; margin-bottom: 24px;">
+      <h3 style="margin: 0 0 14px 0; color: #166534; font-size: 15px; font-weight: 700;">Payment Details</h3>
+      <table style="width: 100%; border-collapse: collapse;">
+        ${data.bankName ? `<tr><td style="padding: 4px 0; color: #6b7280; font-size: 13px; width: 80px;">Bank</td><td style="padding: 4px 0; color: #374151; font-size: 14px; font-weight: 600;">${data.bankName}</td></tr>` : ''}
+        ${data.bankAccount ? `<tr><td style="padding: 4px 0; color: #6b7280; font-size: 13px;">Account</td><td style="padding: 4px 0; color: #374151; font-size: 14px; font-weight: 600; font-family: 'Courier New', monospace; letter-spacing: 0.5px;">${data.bankAccount}</td></tr>` : ''}
+        ${data.paymentTerms ? `<tr><td style="padding: 4px 0; color: #6b7280; font-size: 13px;">Terms</td><td style="padding: 4px 0; color: #374151; font-size: 14px;">${data.paymentTerms}</td></tr>` : ''}
+      </table>
     </div>
   ` : ''
 

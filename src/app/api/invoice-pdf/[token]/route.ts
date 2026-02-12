@@ -213,34 +213,66 @@ export async function GET(
     doc.text(`${currencySymbol}${invoice.total_gross?.toFixed(2)}`, 190, y + 2, { align: 'right' })
     doc.setTextColor(0, 0, 0)
 
-    // Payment details
+    // Payment Details — styled box
     if (profile?.bank_name || profile?.bank_account || invoice.payment_terms) {
-      // Check if we need a new page
-      if (y > 230) {
+      if (y > 220) {
         doc.addPage()
         y = 20
       } else {
-        y += 25
+        y += 20
       }
 
-      doc.setFontSize(11)
-      doc.setFont('helvetica', 'bold')
-      doc.setTextColor(0, 0, 0)
-      doc.text('Payment Details:', 20, y)
-      doc.setFont('helvetica', 'normal')
+      // Light gray background box
+      const boxStartY = y - 4
+      let boxContentHeight = 12 // header + padding
+      if (profile?.bank_name) boxContentHeight += 7
+      if (profile?.bank_account) boxContentHeight += 7
+      if (invoice.payment_terms) boxContentHeight += 7
+      if (invoice.due_date) boxContentHeight += 7
+
+      doc.setFillColor(245, 247, 250) // light gray
+      doc.setDrawColor(200, 210, 220)
+      doc.roundedRect(20, boxStartY, 170, boxContentHeight, 2, 2, 'FD')
+
       doc.setFontSize(10)
+      doc.setFont('helvetica', 'bold')
+      doc.setTextColor(30, 58, 95)
+      doc.text('Payment Details', 28, y + 2)
+
+      doc.setFont('helvetica', 'normal')
+      doc.setFontSize(9)
+      doc.setTextColor(60, 60, 60)
 
       if (profile?.bank_name) {
-        y += 7
-        doc.text(`Bank: ${toAscii(profile.bank_name)}`, 20, y)
+        y += 8
+        doc.setFont('helvetica', 'bold')
+        doc.text('Bank:', 28, y)
+        doc.setFont('helvetica', 'normal')
+        doc.text(toAscii(profile.bank_name), 55, y)
       }
       if (profile?.bank_account) {
         y += 7
-        doc.text(`Account: ${profile.bank_account}`, 20, y)
+        doc.setFont('helvetica', 'bold')
+        doc.text('Account:', 28, y)
+        doc.setFont('helvetica', 'normal')
+        doc.setFont('courier', 'normal')
+        doc.text(profile.bank_account, 55, y)
+        doc.setFont('helvetica', 'normal')
       }
       if (invoice.payment_terms) {
         y += 7
-        doc.text(`Terms: ${toAscii(invoice.payment_terms)}`, 20, y)
+        doc.setFont('helvetica', 'bold')
+        doc.text('Terms:', 28, y)
+        doc.setFont('helvetica', 'normal')
+        doc.text(toAscii(invoice.payment_terms), 55, y)
+      }
+      if (invoice.due_date) {
+        y += 7
+        doc.setFont('helvetica', 'bold')
+        doc.text('Due Date:', 28, y)
+        doc.setFont('helvetica', 'normal')
+        const dueStr = new Date(invoice.due_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+        doc.text(dueStr, 55, y)
       }
     }
 
@@ -270,7 +302,7 @@ export async function GET(
     doc.setFontSize(10)
     doc.setTextColor(30, 58, 95)
     doc.setFont('helvetica', 'bold')
-    doc.text('Dziekujemy za wspolprace!', 105, 270, { align: 'center' })
+    doc.text('Thank you for your business!', 105, 270, { align: 'center' })
 
     // Footer
     doc.setFontSize(8)
