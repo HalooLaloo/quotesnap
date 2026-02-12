@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 import { notFound } from 'next/navigation'
 import { InvoiceItem } from '@/lib/types'
 import { COUNTRIES, formatDate } from '@/lib/countries'
+import { MarkAsPaidButton } from './MarkAsPaidButton'
 
 // Helper to get currency symbol from currency code
 function getCurrencySymbol(currencyCode: string): string {
@@ -187,6 +188,13 @@ export default async function PublicInvoicePage({
                 </div>
               )}
             </div>
+          </div>
+        )}
+
+        {/* Mark as Paid */}
+        {invoice.status === 'sent' && (
+          <div className="mb-6">
+            <MarkAsPaidButton token={token} />
           </div>
         )}
 
