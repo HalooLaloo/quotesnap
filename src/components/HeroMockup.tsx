@@ -150,113 +150,183 @@ export function HeroMockup() {
 
 function ContractorView() {
   return (
-    <div className="p-6 bg-[#0a1628]">
-      {/* Dashboard header */}
-      <div className="flex items-center justify-between mb-5">
-        <div>
-          <h3 className="text-white font-semibold">Incoming Requests</h3>
-          <p className="text-slate-500 text-sm">AI collects project details from your clients</p>
-        </div>
-        <div className="flex gap-2">
-          <div className="px-3 py-1.5 bg-[#1e3a5f] text-slate-300 text-xs font-medium rounded-lg">Quotes</div>
-          <div className="px-3 py-1.5 bg-[#1e3a5f] text-slate-300 text-xs font-medium rounded-lg">Invoices</div>
-        </div>
-      </div>
-
-      {/* Request with AI suggestion */}
-      <div className="p-4 bg-[#132039] rounded-lg border border-blue-500/50 mb-3 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-transparent" />
-        <div className="relative">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
-                <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                </svg>
-              </div>
-              <div>
-                <p className="text-white font-medium">Bathroom Remodel — John Smith</p>
-                <p className="text-slate-500 text-xs">2 photos attached • AI summary ready</p>
-              </div>
-            </div>
-            <span className="px-2 py-1 bg-blue-500 text-white text-xs rounded-full font-medium">New</span>
+    <div className="bg-[#0a1628]">
+      {/* Top bar */}
+      <div className="flex items-center justify-between px-5 py-3 border-b border-[#1e3a5f]">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg bg-[#132039] flex items-center justify-center">
+            <svg className="w-4 h-4 text-orange-500" viewBox="0 0 24 24" fill="currentColor">
+              <rect x="2" y="6" width="9" height="5" rx="0.5" />
+              <rect x="13" y="6" width="9" height="5" rx="0.5" />
+              <rect x="6" y="13" width="9" height="5" rx="0.5" />
+            </svg>
           </div>
-
-          {/* AI-generated quote preview */}
-          <div className="bg-[#0a1628] rounded-lg p-3 border border-[#1e3a5f]">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="px-2 py-0.5 bg-blue-500/20 text-blue-400 text-xs rounded font-medium">AI Suggested Quote</div>
-            </div>
-            <div className="space-y-1.5 text-xs">
-              <div className="flex justify-between text-slate-300">
-                <span>Old tile removal</span>
-                <span>65 sqft &times; $8 = <span className="text-white font-medium">$520</span></span>
-              </div>
-              <div className="flex justify-between text-slate-300">
-                <span>Waterproofing</span>
-                <span>65 sqft &times; $10 = <span className="text-white font-medium">$650</span></span>
-              </div>
-              <div className="flex justify-between text-slate-300">
-                <span>Floor tile installation</span>
-                <span>65 sqft &times; $22 = <span className="text-white font-medium">$1,430</span></span>
-              </div>
-              <div className="flex justify-between text-slate-300">
-                <span>Wall tile installation</span>
-                <span>180 sqft &times; $25 = <span className="text-white font-medium">$4,500</span></span>
-              </div>
-              <div className="flex justify-between text-slate-400">
-                <span>+ 4 more items...</span>
-                <span></span>
-              </div>
-              <div className="flex justify-between pt-2 border-t border-[#1e3a5f]">
-                <span className="text-white font-semibold">Total estimate</span>
-                <span className="text-green-400 font-bold text-sm">$8,740</span>
-              </div>
+          <span className="text-sm font-bold text-white">BrickQuote</span>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
+            <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 rounded-full flex items-center justify-center">
+              <span className="text-[8px] text-white font-bold">2</span>
             </div>
           </div>
-
-          <div className="flex gap-2 mt-3">
-            <div className="px-4 py-2 bg-blue-600 text-white text-xs font-medium rounded-lg">Review & Send Quote</div>
-            <div className="px-4 py-2 bg-[#1e3a5f] text-slate-300 text-xs font-medium rounded-lg">Edit Items</div>
+          <div className="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center">
+            <span className="text-xs text-white font-bold">JD</span>
           </div>
         </div>
       </div>
 
-      {/* Completed quotes */}
-      <div className="space-y-2">
-        <div className="p-3 bg-[#132039] rounded-lg border border-[#1e3a5f] flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-green-500/20 rounded-lg flex items-center justify-center">
-              <svg className="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+      <div className="flex">
+        {/* Sidebar */}
+        <div className="w-40 border-r border-[#1e3a5f] py-3 px-2 hidden sm:block">
+          <nav className="space-y-0.5">
+            <div className="flex items-center gap-2.5 px-3 py-2 bg-blue-600/20 text-blue-400 rounded-lg text-xs font-medium">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
               </svg>
+              Requests
+              <span className="ml-auto bg-blue-500 text-white text-[9px] rounded-full w-4 h-4 flex items-center justify-center">3</span>
             </div>
-            <div>
-              <p className="text-white text-sm font-medium">Interior Painting — Sarah J.</p>
-              <p className="text-slate-500 text-xs">Accepted • Invoice sent</p>
+            <div className="flex items-center gap-2.5 px-3 py-2 text-slate-400 hover:text-white rounded-lg text-xs font-medium">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              </svg>
+              Quotes
             </div>
-          </div>
-          <div className="text-right">
-            <p className="text-white text-sm font-semibold">$4,200</p>
-            <p className="text-green-400 text-xs">Paid</p>
-          </div>
+            <div className="flex items-center gap-2.5 px-3 py-2 text-slate-400 hover:text-white rounded-lg text-xs font-medium">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+              Invoices
+            </div>
+            <div className="flex items-center gap-2.5 px-3 py-2 text-slate-400 hover:text-white rounded-lg text-xs font-medium">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+              </svg>
+              Services
+            </div>
+            <div className="flex items-center gap-2.5 px-3 py-2 text-slate-400 hover:text-white rounded-lg text-xs font-medium">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              Settings
+            </div>
+          </nav>
         </div>
 
-        <div className="p-3 bg-[#132039] rounded-lg border border-[#1e3a5f] flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-amber-500/20 rounded-lg flex items-center justify-center">
-              <svg className="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
+        {/* Main content */}
+        <div className="flex-1 p-5">
+          {/* Page header */}
+          <div className="flex items-center justify-between mb-4">
             <div>
-              <p className="text-white text-sm font-medium">Kitchen Tiles — Mike D.</p>
-              <p className="text-slate-500 text-xs">Quote sent • Waiting for response</p>
+              <h3 className="text-white font-semibold">Incoming Requests</h3>
+              <p className="text-slate-500 text-xs">AI collects project details from your clients</p>
             </div>
           </div>
-          <div className="text-right">
-            <p className="text-white text-sm font-semibold">$3,850</p>
-            <p className="text-amber-400 text-xs">Pending</p>
+
+          {/* Request with AI suggestion */}
+          <div className="p-4 bg-[#132039] rounded-lg border border-blue-500/50 mb-3 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-transparent" />
+            <div className="relative">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
+                    <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-white font-medium">Bathroom Remodel — John Smith</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <img src="/demo-bathroom-1.jpg" alt="" className="w-8 h-8 rounded object-cover" />
+                      <img src="/demo-bathroom-2.webp" alt="" className="w-8 h-8 rounded object-cover" />
+                      <span className="text-slate-500 text-xs">2 photos • AI summary ready</span>
+                    </div>
+                  </div>
+                </div>
+                <span className="px-2 py-1 bg-blue-500 text-white text-xs rounded-full font-medium">New</span>
+              </div>
+
+              {/* AI-generated quote preview */}
+              <div className="bg-[#0a1628] rounded-lg p-3 border border-[#1e3a5f]">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="px-2 py-0.5 bg-blue-500/20 text-blue-400 text-xs rounded font-medium">AI Suggested Quote</div>
+                </div>
+                <div className="space-y-1.5 text-xs">
+                  <div className="flex justify-between text-slate-300">
+                    <span>Old tile removal</span>
+                    <span>65 sqft &times; $8 = <span className="text-white font-medium">$520</span></span>
+                  </div>
+                  <div className="flex justify-between text-slate-300">
+                    <span>Waterproofing</span>
+                    <span>65 sqft &times; $10 = <span className="text-white font-medium">$650</span></span>
+                  </div>
+                  <div className="flex justify-between text-slate-300">
+                    <span>Floor tile installation</span>
+                    <span>65 sqft &times; $22 = <span className="text-white font-medium">$1,430</span></span>
+                  </div>
+                  <div className="flex justify-between text-slate-300">
+                    <span>Wall tile installation</span>
+                    <span>180 sqft &times; $25 = <span className="text-white font-medium">$4,500</span></span>
+                  </div>
+                  <div className="flex justify-between text-slate-400">
+                    <span>+ 4 more items...</span>
+                    <span></span>
+                  </div>
+                  <div className="flex justify-between pt-2 border-t border-[#1e3a5f]">
+                    <span className="text-white font-semibold">Total estimate</span>
+                    <span className="text-green-400 font-bold text-sm">$8,740</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-2 mt-3">
+                <div className="px-4 py-2 bg-blue-600 text-white text-xs font-medium rounded-lg">Review & Send Quote</div>
+                <div className="px-4 py-2 bg-[#1e3a5f] text-slate-300 text-xs font-medium rounded-lg">Edit Items</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Pipeline cards */}
+          <div className="space-y-2">
+            <div className="p-3 bg-[#132039] rounded-lg border border-[#1e3a5f] flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-green-500/20 rounded-lg flex items-center justify-center">
+                  <svg className="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-white text-sm font-medium">Interior Painting — Sarah J.</p>
+                  <p className="text-slate-500 text-xs">Quote accepted</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-white text-sm font-semibold">$4,200</span>
+                <div className="px-3 py-1.5 bg-cyan-600 text-white text-[10px] font-medium rounded-lg">Convert to Invoice</div>
+              </div>
+            </div>
+
+            <div className="p-3 bg-[#132039] rounded-lg border border-[#1e3a5f] flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-amber-500/20 rounded-lg flex items-center justify-center">
+                  <svg className="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-white text-sm font-medium">Kitchen Tiles — Mike D.</p>
+                  <p className="text-slate-500 text-xs">Invoice sent • Awaiting payment</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-white text-sm font-semibold">$3,850</span>
+                <span className="text-amber-400 text-xs font-medium">Unpaid</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
