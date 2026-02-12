@@ -210,8 +210,9 @@ export async function GET(
     doc.text(`${(quote.total_gross || quote.total)?.toFixed(2)}`, 190, y + 2, { align: 'right' })
     doc.setTextColor(0, 0, 0)
 
-    // Notes
-    if (quote.notes) {
+    // Notes (exclude client answer - only show general notes on PDF)
+    const pdfNotes = quote.notes?.split('---CLIENT_ANSWER---')[0]?.trim()
+    if (pdfNotes) {
       // Check if we need a new page
       if (y > 240) {
         doc.addPage()
@@ -226,7 +227,7 @@ export async function GET(
       doc.text('Notes:', 20, y)
       doc.setFont('helvetica', 'normal')
 
-      const splitNotes = doc.splitTextToSize(toAscii(quote.notes), 170)
+      const splitNotes = doc.splitTextToSize(toAscii(pdfNotes), 170)
       doc.text(splitNotes, 20, y + 6)
     }
 

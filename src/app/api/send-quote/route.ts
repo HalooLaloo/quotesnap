@@ -78,6 +78,14 @@ export async function POST(request: NextRequest) {
 
     // Generate email HTML
     const currencySymbol = getCurrencySymbol(quote.currency || 'USD')
+    // Parse notes: separate general notes from client answer
+    const rawNotes = quote.notes || ''
+    const [generalNotes, clientAnswer] = rawNotes.split('---CLIENT_ANSWER---').map((s: string) => s.trim())
+
+    // Extract client question from request description
+    const questionMatch = quote.qs_quote_requests?.description?.match(/QUESTION FOR CONTRACTOR:\s*([\s\S]+?)(?=\n\n|---CONVERSATION---|$)/)
+    const clientQuestion = questionMatch?.[1]?.trim()
+
     const emailHtml = generateQuoteEmailHtml({
       clientName: quote.qs_quote_requests?.client_name || 'Client',
       contractorName,
@@ -91,7 +99,9 @@ export async function POST(request: NextRequest) {
       total: quote.total,
       validUntil: quote.valid_until,
       availableFrom: quote.available_from,
-      notes: quote.notes,
+      notes: generalNotes || null,
+      clientQuestion: clientQuestion || null,
+      clientAnswer: clientAnswer || null,
       quoteUrl,
       currencySymbol,
     })
@@ -135,7 +145,9 @@ interface QuoteEmailData {
   total: number
   validUntil?: string
   availableFrom?: string
-  notes?: string
+  notes?: string | null
+  clientQuestion?: string | null
+  clientAnswer?: string | null
   quoteUrl?: string
   currencySymbol: string
 }
@@ -239,6 +251,15 @@ function generateQuoteEmailHtml(data: QuoteEmailData): string {
         </div>
       ` : ''}
 
+      ${data.clientQuestion && data.clientAnswer ? `
+        <div style="background: #ede9fe; border-left: 4px solid #8b5cf6; padding: 16px; margin-bottom: 24px; border-radius: 0 8px 8px 0;">
+          <p style="margin: 0 0 8px 0; color: #6d28d9; font-size: 13px; font-weight: 600;">Your question:</p>
+          <p style="margin: 0 0 12px 0; color: #4c1d95; font-size: 14px;">${data.clientQuestion}</p>
+          <p style="margin: 0 0 8px 0; color: #6d28d9; font-size: 13px; font-weight: 600;">Answer from ${data.contractorName}:</p>
+          <p style="margin: 0; color: #4c1d95; font-size: 14px;">${data.clientAnswer}</p>
+        </div>
+      ` : ''}
+
       ${data.availableFrom ? `
         <p style="color: #6b7280; font-size: 14px; margin: 0 0 12px 0;">
           Available start date: <strong>${new Date(data.availableFrom).toLocaleDateString('en-US')}</strong>
@@ -262,13 +283,21 @@ function generateQuoteEmailHtml(data: QuoteEmailData): string {
       <!-- CTA -->
       <div style="text-align: center; margin: 32px 0;">
         ${data.quoteUrl ? `
-          <a href="${data.quoteUrl}" style="display: inline-block; background: #22c55e; color: white; padding: 16px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px; margin-bottom: 16px;">
-            View &amp; Accept Quote
-          </a>
-          <p style="color: #6b7280; font-size: 13px; margin: 16px 0;">Or copy this link: ${data.quoteUrl}</p>
+          <div style="background: #f0fdf4; border: 2px solid #22c55e; border-radius: 12px; padding: 24px; margin-bottom: 24px;">
+            <p style="color: #166534; font-size: 15px; margin: 0 0 16px 0; font-weight: 500;">
+              Happy with the quote? Accept it with one click:
+            </p>
+            <a href="${data.quoteUrl}" style="display: inline-block; background: #22c55e; color: white; padding: 16px 40px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 17px;">
+              View &amp; Accept Quote
+            </a>
+            <p style="color: #6b7280; font-size: 12px; margin: 16px 0 0 0;">
+              Click the button to review the full quote, download a PDF, and confirm your acceptance.
+            </p>
+          </div>
+          <p style="color: #9ca3af; font-size: 12px; margin: 0 0 16px 0;">Or open this link in your browser: ${data.quoteUrl}</p>
         ` : ''}
-        <p style="color: #374151; margin: 16px 0 16px 0;">Questions? Contact us:</p>
         ${data.contractorPhone ? `
+          <p style="color: #374151; margin: 16px 0 8px 0;">Have questions? Reach out directly:</p>
           <a href="tel:${data.contractorPhone}" style="display: inline-block; background: #3b82f6; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600;">
             Call: ${data.contractorPhone}
           </a>

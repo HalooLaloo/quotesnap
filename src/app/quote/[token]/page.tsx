@@ -182,13 +182,37 @@ export default async function PublicQuotePage({
           </div>
         </div>
 
-        {/* Notes */}
-        {quote.notes && (
-          <div className="card mb-6 bg-amber-600/10 border-amber-500/30">
-            <h3 className="font-medium text-amber-400 mb-2">Notes</h3>
-            <p className="text-slate-300 whitespace-pre-wrap">{quote.notes}</p>
-          </div>
-        )}
+        {/* Notes (general only, excluding client answer) */}
+        {(() => {
+          const rawNotes = quote.notes || ''
+          const [generalNotes, clientAnswer] = rawNotes.split('---CLIENT_ANSWER---').map((s: string) => s.trim())
+          const questionMatch = quote.qs_quote_requests?.description?.match(/QUESTION FOR CONTRACTOR:\s*([\s\S]+?)(?=\n\n|---CONVERSATION---|$)/)
+          const clientQuestion = questionMatch?.[1]?.trim()
+
+          return (
+            <>
+              {generalNotes && (
+                <div className="card mb-6 bg-amber-600/10 border-amber-500/30">
+                  <h3 className="font-medium text-amber-400 mb-2">Notes</h3>
+                  <p className="text-slate-300 whitespace-pre-wrap">{generalNotes}</p>
+                </div>
+              )}
+              {clientQuestion && clientAnswer && (
+                <div className="card mb-6 bg-purple-600/10 border-purple-500/30">
+                  <h3 className="font-medium text-purple-400 mb-3">Q&A</h3>
+                  <div className="mb-3">
+                    <p className="text-xs text-purple-400 uppercase tracking-wide mb-1">Your question</p>
+                    <p className="text-slate-300 text-sm whitespace-pre-wrap">{clientQuestion}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-purple-400 uppercase tracking-wide mb-1">Answer from {contractorName}</p>
+                    <p className="text-slate-300 text-sm whitespace-pre-wrap">{clientAnswer}</p>
+                  </div>
+                </div>
+              )}
+            </>
+          )
+        })()}
 
         {/* Dates */}
         <div className="card mb-6">

@@ -44,6 +44,7 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
   const [manualItems, setManualItems] = useState<QuoteItem[]>([])
 
   const [notes, setNotes] = useState('')
+  const [clientAnswer, setClientAnswer] = useState('')
   const [discountPercent, setDiscountPercent] = useState(0)
   const [vatPercent, setVatPercent] = useState(defaultTaxPercent)
   const [showVat, setShowVat] = useState(defaultTaxPercent > 0)
@@ -324,7 +325,9 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
         total_net: totalNet,
         total_gross: totalGross,
         total: total,
-        notes: notes || null,
+        notes: clientAnswer
+          ? `${notes || ''}\n---CLIENT_ANSWER---\n${clientAnswer}`.trim()
+          : (notes || null),
         valid_until: validUntil.toISOString().split('T')[0],
         available_from: availableFrom || null,
         status: status,
@@ -721,31 +724,39 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
           </div>
         </div>
 
-        {/* Notes */}
-        <div className="card">
-          <h2 className="text-lg font-semibold text-white mb-4">Notes for Client</h2>
+        {/* Client question & answer */}
+        {request && (() => {
+          const questionMatch = request.description.match(/QUESTION FOR CONTRACTOR:\s*([\s\S]+?)(?=\n\n|---CONVERSATION---|$)/)
+          const clientQuestion = questionMatch?.[1]?.trim()
 
-          {/* Show client's additional question if exists */}
-          {request && (() => {
-            const questionMatch = request.description.match(/QUESTION FOR CONTRACTOR:\s*([\s\S]+?)(?=\n\n|---CONVERSATION---|$)/)
-            const clientQuestion = questionMatch?.[1]?.trim()
-
-            if (clientQuestion) {
-              return (
+          if (clientQuestion) {
+            return (
+              <div className="card">
+                <h2 className="text-lg font-semibold text-white mb-4">Client&apos;s Question</h2>
                 <div className="mb-4 p-3 bg-blue-600/10 rounded-lg border border-blue-500/30">
-                  <p className="text-xs text-blue-400 mb-1">Client&apos;s question:</p>
                   <p className="text-slate-300 text-sm whitespace-pre-wrap">{clientQuestion}</p>
                 </div>
-              )
-            }
-            return null
-          })()}
+                <label className="label">Your answer (included in email only, not on PDF)</label>
+                <textarea
+                  value={clientAnswer}
+                  onChange={(e) => setClientAnswer(e.target.value)}
+                  className="input min-h-[80px] resize-y"
+                  placeholder="Your answer to the client's question..."
+                />
+              </div>
+            )
+          }
+          return null
+        })()}
 
+        {/* General notes */}
+        <div className="card">
+          <h2 className="text-lg font-semibold text-white mb-4">Notes for Client</h2>
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             className="input min-h-[100px] resize-y"
-            placeholder="Your response to the client..."
+            placeholder="Additional notes, terms, or comments for the quote..."
           />
         </div>
       </div>
