@@ -148,6 +148,23 @@ export async function POST(request: NextRequest) {
       messages: ChatMessage[]
     }
 
+    // Limit conversation size to prevent abuse
+    if (!messages || messages.length > 40) {
+      return NextResponse.json(
+        { error: 'Conversation too long. Please start a new request.' },
+        { status: 400 }
+      )
+    }
+
+    // Limit total images per conversation (GPT-4o vision is expensive)
+    const totalImages = messages.reduce((sum, m) => sum + (m.images?.length || 0), 0)
+    if (totalImages > 5) {
+      return NextResponse.json(
+        { error: 'Too many images. Maximum 5 photos per conversation.' },
+        { status: 400 }
+      )
+    }
+
     if (!process.env.OPENAI_API_KEY) {
       return NextResponse.json(
         { error: 'OpenAI API key not configured' },

@@ -42,6 +42,27 @@ function createChatRateLimiter() {
 
 export const chatRateLimiter = createChatRateLimiter()
 
+// Rate limiter dla AI endpoints (zalogowani użytkownicy - per user ID)
+function createAiRateLimiter() {
+  if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
+    return null
+  }
+
+  const redis = new Redis({
+    url: process.env.UPSTASH_REDIS_REST_URL,
+    token: process.env.UPSTASH_REDIS_REST_TOKEN,
+  })
+
+  return new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(30, '1 h'), // 30 AI requestów na godzinę per user
+    analytics: true,
+    prefix: 'ai',
+  })
+}
+
+export const aiRateLimiter = createAiRateLimiter()
+
 // Helper do pobierania IP
 export function getClientIP(request: Request): string {
   const forwarded = request.headers.get('x-forwarded-for')

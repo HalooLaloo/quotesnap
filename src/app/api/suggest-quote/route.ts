@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import OpenAI from 'openai'
+import { createClient } from '@/lib/supabase/server'
+import { aiRateLimiter } from '@/lib/ratelimit'
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -158,6 +160,24 @@ REMEMBER:
 
 export async function POST(request: NextRequest) {
   try {
+    // Auth check - only logged-in users
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // AI rate limiting per user
+    if (aiRateLimiter) {
+      const { success } = await aiRateLimiter.limit(user.id)
+      if (!success) {
+        return NextResponse.json(
+          { error: 'AI usage limit reached. Please try again later.' },
+          { status: 429 }
+        )
+      }
+    }
+
     const { description, services } = await request.json()
 
     if (!process.env.OPENAI_API_KEY) {
