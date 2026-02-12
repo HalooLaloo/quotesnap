@@ -1,4 +1,10 @@
 import Link from 'next/link'
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Privacy Policy',
+  description: 'BrickQuote privacy policy. Learn how we handle your data and protect your privacy.',
+}
 
 export default function PrivacyPolicy() {
   return (

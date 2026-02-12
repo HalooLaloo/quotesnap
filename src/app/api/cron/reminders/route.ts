@@ -37,6 +37,7 @@ export async function GET(request: NextRequest) {
     const resend = new Resend(process.env.RESEND_API_KEY)
 
     const results = {
+      newRequests: 0,
       overdueInvoices: 0,
       expiringQuotes: 0,
       errors: [] as string[],
@@ -52,11 +53,76 @@ export async function GET(request: NextRequest) {
     }
 
     const now = new Date()
+    const oneDayAgo = new Date()
+    oneDayAgo.setDate(oneDayAgo.getDate() - 1)
     const twoDaysFromNow = new Date()
     twoDaysFromNow.setDate(twoDaysFromNow.getDate() + 2)
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://brickquote.app'
 
     for (const profile of profiles) {
       if (!profile.email) continue
+
+      // Check for unanswered new requests (older than 24h)
+      const { data: newRequests } = await supabase
+        .from('qs_quote_requests')
+        .select('id, client_name, description, created_at')
+        .eq('contractor_id', profile.id)
+        .eq('status', 'new')
+        .lt('created_at', oneDayAgo.toISOString())
+
+      if (newRequests && newRequests.length > 0) {
+        try {
+          await resend.emails.send({
+            from: 'BrickQuote <contact@brickquote.app>',
+            to: profile.email,
+            subject: `You have ${newRequests.length} unanswered request${newRequests.length > 1 ? 's' : ''}`,
+            html: `
+              <!DOCTYPE html>
+              <html>
+              <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f3f4f6; margin: 0; padding: 20px;">
+                <div style="max-width: 500px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                  <div style="background: #3b82f6; padding: 24px; text-align: center;">
+                    <h1 style="color: white; margin: 0; font-size: 24px;">New Requests Waiting</h1>
+                  </div>
+                  <div style="padding: 32px;">
+                    <p style="color: #374151; font-size: 16px; margin: 0 0 16px 0;">
+                      You have <strong>${newRequests.length}</strong> client request${newRequests.length > 1 ? 's' : ''} waiting for a quote.
+                    </p>
+
+                    <div style="background: #eff6ff; border-radius: 8px; padding: 16px; margin-bottom: 24px;">
+                      ${newRequests.slice(0, 5).map(req => {
+                        const age = Math.floor((now.getTime() - new Date(req.created_at).getTime()) / (1000 * 60 * 60))
+                        const ageText = age >= 48 ? `${Math.floor(age / 24)}d ago` : `${age}h ago`
+                        return `
+                          <p style="color: #1e40af; font-size: 14px; margin: 8px 0;">
+                            <strong>${req.client_name}</strong> - ${ageText}
+                          </p>
+                        `
+                      }).join('')}
+                      ${newRequests.length > 5 ? `<p style="color: #6b7280; font-size: 12px; margin: 8px 0;">...and ${newRequests.length - 5} more</p>` : ''}
+                    </div>
+
+                    <p style="color: #6b7280; font-size: 14px; margin: 0 0 24px 0;">
+                      Quick responses lead to more accepted quotes. Don't keep your clients waiting!
+                    </p>
+
+                    <a href="${appUrl}/requests" style="display: block; background: #3b82f6; color: white; padding: 14px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; text-align: center;">
+                      View Requests
+                    </a>
+                  </div>
+                  <div style="background: #f9fafb; padding: 16px; text-align: center; border-top: 1px solid #e5e7eb;">
+                    <p style="color: #9ca3af; font-size: 12px; margin: 0;">BrickQuote - Reminder</p>
+                  </div>
+                </div>
+              </body>
+              </html>
+            `,
+          })
+          results.newRequests += newRequests.length
+        } catch {
+          results.errors.push(`Failed to send new requests email to ${profile.email}`)
+        }
+      }
 
       // Check for overdue invoices
       const { data: overdueInvoices } = await supabase
@@ -96,7 +162,7 @@ export async function GET(request: NextRequest) {
                       ${overdueInvoices.length > 5 ? `<p style="color: #6b7280; font-size: 12px; margin: 8px 0;">...and ${overdueInvoices.length - 5} more</p>` : ''}
                     </div>
 
-                    <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://brickquote.app'}/invoices" style="display: block; background: #ef4444; color: white; padding: 14px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; text-align: center;">
+                    <a href="${appUrl}/invoices" style="display: block; background: #ef4444; color: white; padding: 14px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; text-align: center;">
                       View Invoices
                     </a>
                   </div>
@@ -159,7 +225,7 @@ export async function GET(request: NextRequest) {
                       Contact your clients to remind them about the quote before it expires.
                     </p>
 
-                    <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://brickquote.app'}/quotes" style="display: block; background: #f97316; color: white; padding: 14px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; text-align: center;">
+                    <a href="${appUrl}/quotes" style="display: block; background: #f97316; color: white; padding: 14px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; text-align: center;">
                       View Quotes
                     </a>
                   </div>
