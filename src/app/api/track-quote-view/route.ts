@@ -1,8 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { rateLimiter, getClientIP } from '@/lib/ratelimit'
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting
+    if (rateLimiter) {
+      const ip = getClientIP(request)
+      const { success } = await rateLimiter.limit(ip)
+      if (!success) {
+        return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+      }
+    }
+
     const { token } = await request.json()
 
     if (!token || !/^[a-f0-9]{32}$/.test(token)) {

@@ -3,6 +3,7 @@ import { Resend } from 'resend'
 import { createClient } from '@supabase/supabase-js'
 import { COUNTRIES, formatDate } from '@/lib/countries'
 import { escapeHtml } from '@/lib/escapeHtml'
+import { emailUnsubscribeFooter } from '@/lib/emailFooter'
 
 function getCurrencySymbol(currencyCode: string): string {
   const country = Object.values(COUNTRIES).find(c => c.currency === currencyCode)
@@ -62,10 +63,11 @@ export async function GET(request: NextRequest) {
 
     results.expiredQuotes = expiredQuotes?.length || 0
 
-    // Get all users
+    // Get all users (only those with email notifications enabled)
     const { data: profiles } = await supabase
       .from('profiles')
-      .select('id, email')
+      .select('id, email, email_notifications')
+      .neq('email_notifications', false)
 
     if (!profiles || profiles.length === 0) {
       return NextResponse.json({ success: true, message: 'No users found' })
@@ -131,6 +133,7 @@ export async function GET(request: NextRequest) {
                   </div>
                   <div style="background: #f9fafb; padding: 16px; text-align: center; border-top: 1px solid #e5e7eb;">
                     <p style="color: #9ca3af; font-size: 12px; margin: 0;">BrickQuote - Reminder</p>
+                    ${emailUnsubscribeFooter(profile.id, appUrl)}
                   </div>
                 </div>
               </body>
@@ -187,6 +190,7 @@ export async function GET(request: NextRequest) {
                   </div>
                   <div style="background: #f9fafb; padding: 16px; text-align: center; border-top: 1px solid #e5e7eb;">
                     <p style="color: #9ca3af; font-size: 12px; margin: 0;">BrickQuote - Reminder</p>
+                    ${emailUnsubscribeFooter(profile.id, appUrl)}
                   </div>
                 </div>
               </body>
@@ -250,6 +254,7 @@ export async function GET(request: NextRequest) {
                   </div>
                   <div style="background: #f9fafb; padding: 16px; text-align: center; border-top: 1px solid #e5e7eb;">
                     <p style="color: #9ca3af; font-size: 12px; margin: 0;">BrickQuote - Reminder</p>
+                    ${emailUnsubscribeFooter(profile.id, appUrl)}
                   </div>
                 </div>
               </body>

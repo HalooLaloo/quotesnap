@@ -3,6 +3,8 @@ import { Resend } from 'resend'
 import { createClient } from '@supabase/supabase-js'
 import { COUNTRIES } from '@/lib/countries'
 import { escapeHtml } from '@/lib/escapeHtml'
+import { emailUnsubscribeFooter } from '@/lib/emailFooter'
+import { rateLimiter, getClientIP } from '@/lib/ratelimit'
 
 function getCurrencySymbol(currencyCode: string): string {
   const country = Object.values(COUNTRIES).find(c => c.currency === currencyCode)
@@ -13,6 +15,15 @@ export async function POST(request: NextRequest) {
   console.log('=== ACCEPT-QUOTE API CALLED ===')
 
   try {
+    // Rate limiting
+    if (rateLimiter) {
+      const ip = getClientIP(request)
+      const { success } = await rateLimiter.limit(ip)
+      if (!success) {
+        return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+      }
+    }
+
     // Check if required env vars are configured
     console.log('Checking env vars...')
     console.log('SUPABASE_URL exists:', !!process.env.NEXT_PUBLIC_SUPABASE_URL)
@@ -111,23 +122,28 @@ export async function POST(request: NextRequest) {
       .update({ status: newStatus })
       .eq('id', quote.request_id)
 
-    // Get contractor email using admin API
-    let contractorEmail: string | undefined
-    try {
-      const { data: userData } = await supabase.auth.admin.getUserById(quote.user_id)
-      contractorEmail = userData?.user?.email
-    } catch {
-      // If admin API fails, try profiles table
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('email')
-        .eq('id', quote.user_id)
-        .single()
-      contractorEmail = profile?.email
+    // Check if contractor has email notifications enabled
+    const { data: contractorProfile } = await supabase
+      .from('profiles')
+      .select('email, email_notifications')
+      .eq('id', quote.user_id)
+      .single()
+
+    let contractorEmail: string | undefined = contractorProfile?.email
+
+    if (!contractorEmail) {
+      try {
+        const { data: userData } = await supabase.auth.admin.getUserById(quote.user_id)
+        contractorEmail = userData?.user?.email
+      } catch {
+        // no email found
+      }
     }
 
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://brickquote.app'
+
     // Send notification email to contractor
-    if (process.env.RESEND_API_KEY && contractorEmail) {
+    if (process.env.RESEND_API_KEY && contractorEmail && contractorProfile?.email_notifications !== false) {
       const clientName = escapeHtml(quote.qs_quote_requests?.client_name || 'Client')
       const statusText = action === 'accept' ? 'accepted' : 'rejected'
       const statusColor = action === 'accept' ? '#22c55e' : '#ef4444'
@@ -164,6 +180,7 @@ export async function POST(request: NextRequest) {
               </div>
               <div style="background: #f9fafb; padding: 16px; text-align: center; border-top: 1px solid #e5e7eb;">
                 <p style="color: #9ca3af; font-size: 12px; margin: 0;">BrickQuote Notification</p>
+                ${emailUnsubscribeFooter(quote.user_id, appUrl)}
               </div>
             </div>
           </body>

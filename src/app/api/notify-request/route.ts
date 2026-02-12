@@ -1,9 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { createClient } from '@supabase/supabase-js'
+import { escapeHtml } from '@/lib/escapeHtml'
+import { emailUnsubscribeFooter } from '@/lib/emailFooter'
+import { rateLimiter, getClientIP } from '@/lib/ratelimit'
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting
+    if (rateLimiter) {
+      const ip = getClientIP(request)
+      const { success } = await rateLimiter.limit(ip)
+      if (!success) {
+        return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+      }
+    }
+
     if (!process.env.RESEND_API_KEY) {
       console.log('Resend not configured, skipping notification')
       return NextResponse.json({ success: true, skipped: true })
@@ -32,37 +44,42 @@ export async function POST(request: NextRequest) {
 
     const resend = new Resend(process.env.RESEND_API_KEY)
 
-    // Get contractor email
-    let contractorEmail: string | undefined
+    // Check if contractor has email notifications enabled
+    const { data: contractorProfile } = await supabase
+      .from('profiles')
+      .select('id, email, email_notifications')
+      .eq('id', contractorId)
+      .single()
 
-    // First try with auth.admin
-    try {
-      const { data: userData } = await supabase.auth.admin.getUserById(contractorId)
-      contractorEmail = userData?.user?.email
-    } catch {
-      // Fallback to profiles table
-      const { data: profile } = await supabase
-        .from('qs_profiles')
-        .select('email')
-        .eq('id', contractorId)
-        .single()
-      contractorEmail = profile?.email
+    if (contractorProfile?.email_notifications === false) {
+      return NextResponse.json({ success: true, skipped: true, reason: 'unsubscribed' })
     }
 
-    // If not found in qs_profiles, try profiles
+    // Get contractor email
+    let contractorEmail: string | undefined = contractorProfile?.email
+
+    // If not in profiles, try auth.admin
     if (!contractorEmail) {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('email')
-        .eq('id', contractorId)
-        .single()
-      contractorEmail = profile?.email
+      try {
+        const { data: userData } = await supabase.auth.admin.getUserById(contractorId)
+        contractorEmail = userData?.user?.email
+      } catch {
+        // Fallback to qs_profiles table
+        const { data: profile } = await supabase
+          .from('qs_profiles')
+          .select('email')
+          .eq('id', contractorId)
+          .single()
+        contractorEmail = profile?.email
+      }
     }
 
     if (!contractorEmail) {
       console.log('Contractor email not found, skipping notification')
       return NextResponse.json({ success: true, skipped: true })
     }
+
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://brickquote.app'
 
     // Shorten description to first 200 characters
     const shortDescription = description
@@ -84,12 +101,12 @@ export async function POST(request: NextRequest) {
             </div>
             <div style="padding: 32px;">
               <p style="color: #374151; font-size: 16px; margin: 0 0 16px 0;">
-                You have received a new quote request from <strong>${clientName}</strong>.
+                You have received a new quote request from <strong>${escapeHtml(clientName)}</strong>.
               </p>
 
               <div style="background: #f9fafb; border-radius: 8px; padding: 16px; margin-bottom: 24px;">
                 <p style="color: #6b7280; font-size: 14px; margin: 0 0 8px 0; font-weight: 600;">Preview:</p>
-                <p style="color: #374151; font-size: 14px; margin: 0; white-space: pre-wrap;">${shortDescription}</p>
+                <p style="color: #374151; font-size: 14px; margin: 0; white-space: pre-wrap;">${escapeHtml(shortDescription)}</p>
               </div>
 
               <a href="https://brickquote.app/requests" style="display: block; background: #ea580c; color: white; padding: 14px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; text-align: center;">
@@ -98,6 +115,7 @@ export async function POST(request: NextRequest) {
             </div>
             <div style="background: #f9fafb; padding: 16px; text-align: center; border-top: 1px solid #e5e7eb;">
               <p style="color: #9ca3af; font-size: 12px; margin: 0;">BrickQuote</p>
+              ${emailUnsubscribeFooter(contractorId, appUrl)}
             </div>
           </div>
         </body>

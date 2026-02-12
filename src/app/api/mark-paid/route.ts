@@ -3,6 +3,8 @@ import { Resend } from 'resend'
 import { createClient } from '@supabase/supabase-js'
 import { COUNTRIES } from '@/lib/countries'
 import { escapeHtml } from '@/lib/escapeHtml'
+import { emailUnsubscribeFooter } from '@/lib/emailFooter'
+import { rateLimiter, getClientIP } from '@/lib/ratelimit'
 
 function getCurrencySymbol(currencyCode: string): string {
   const country = Object.values(COUNTRIES).find(c => c.currency === currencyCode)
@@ -11,6 +13,15 @@ function getCurrencySymbol(currencyCode: string): string {
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting
+    if (rateLimiter) {
+      const ip = getClientIP(request)
+      const { success } = await rateLimiter.limit(ip)
+      if (!success) {
+        return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+      }
+    }
+
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -54,20 +65,26 @@ export async function POST(request: NextRequest) {
     if (process.env.RESEND_API_KEY) {
       const resend = new Resend(process.env.RESEND_API_KEY)
 
-      let contractorEmail: string | undefined
-      try {
-        const { data: userData } = await supabase.auth.admin.getUserById(invoice.user_id)
-        contractorEmail = userData?.user?.email
-      } catch {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('email')
-          .eq('id', invoice.user_id)
-          .single()
-        contractorEmail = profile?.email
+      const { data: contractorProfile } = await supabase
+        .from('profiles')
+        .select('email, email_notifications')
+        .eq('id', invoice.user_id)
+        .single()
+
+      let contractorEmail: string | undefined = contractorProfile?.email
+
+      if (!contractorEmail) {
+        try {
+          const { data: userData } = await supabase.auth.admin.getUserById(invoice.user_id)
+          contractorEmail = userData?.user?.email
+        } catch {
+          // no email found
+        }
       }
 
-      if (contractorEmail) {
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://brickquote.app'
+
+      if (contractorEmail && contractorProfile?.email_notifications !== false) {
         const currencySymbol = getCurrencySymbol(invoice.currency || 'USD')
         const clientName = escapeHtml(invoice.client_name || 'Client')
 
@@ -98,6 +115,7 @@ export async function POST(request: NextRequest) {
                 </div>
                 <div style="background: #f9fafb; padding: 16px; text-align: center; border-top: 1px solid #e5e7eb;">
                   <p style="color: #9ca3af; font-size: 12px; margin: 0;">BrickQuote Notification</p>
+                  ${emailUnsubscribeFooter(invoice.user_id, appUrl)}
                 </div>
               </div>
             </body>

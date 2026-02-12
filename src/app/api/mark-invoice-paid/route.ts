@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
+import { escapeHtml } from '@/lib/escapeHtml'
+import { emailUnsubscribeFooter } from '@/lib/emailFooter'
 
 export async function POST(request: NextRequest) {
   try {
@@ -52,26 +54,32 @@ export async function POST(request: NextRequest) {
     if (process.env.RESEND_API_KEY && process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
       const resend = new Resend(process.env.RESEND_API_KEY)
 
-      // Get worker email using service client
+      // Get worker email and notification preferences
       const serviceClient = createServiceClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL,
         process.env.SUPABASE_SERVICE_ROLE_KEY
       )
 
-      let workerEmail: string | undefined
-      try {
-        const { data: userData } = await serviceClient.auth.admin.getUserById(user.id)
-        workerEmail = userData?.user?.email
-      } catch {
-        const { data: profile } = await serviceClient
-          .from('profiles')
-          .select('email')
-          .eq('id', user.id)
-          .single()
-        workerEmail = profile?.email
+      const { data: workerProfile } = await serviceClient
+        .from('profiles')
+        .select('email, email_notifications')
+        .eq('id', user.id)
+        .single()
+
+      let workerEmail: string | undefined = workerProfile?.email
+
+      if (!workerEmail) {
+        try {
+          const { data: userData } = await serviceClient.auth.admin.getUserById(user.id)
+          workerEmail = userData?.user?.email
+        } catch {
+          // no email found
+        }
       }
 
-      if (workerEmail) {
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://brickquote.app'
+
+      if (workerEmail && workerProfile?.email_notifications !== false) {
         await resend.emails.send({
           from: 'BrickQuote <contact@brickquote.app>',
           to: workerEmail,
@@ -86,7 +94,7 @@ export async function POST(request: NextRequest) {
                 </div>
                 <div style="padding: 32px;">
                   <p style="color: #374151; font-size: 16px; margin: 0 0 16px 0;">
-                    Invoice <strong>${invoice.invoice_number}</strong> for client <strong>${invoice.client_name}</strong> has been marked as paid.
+                    Invoice <strong>${invoice.invoice_number}</strong> for client <strong>${escapeHtml(invoice.client_name || 'Client')}</strong> has been marked as paid.
                   </p>
 
                   <div style="background: #f0fdf4; border-radius: 8px; padding: 16px; margin-bottom: 24px; border: 1px solid #bbf7d0;">
@@ -101,6 +109,7 @@ export async function POST(request: NextRequest) {
                 </div>
                 <div style="background: #f9fafb; padding: 16px; text-align: center; border-top: 1px solid #e5e7eb;">
                   <p style="color: #9ca3af; font-size: 12px; margin: 0;">BrickQuote</p>
+                  ${emailUnsubscribeFooter(user.id, appUrl)}
                 </div>
               </div>
             </body>
