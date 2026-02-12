@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { createClient } from '@supabase/supabase-js'
+import { COUNTRIES, formatDate } from '@/lib/countries'
+
+function getCurrencySymbol(currencyCode: string): string {
+  const country = Object.values(COUNTRIES).find(c => c.currency === currencyCode)
+  return country?.currencySymbol || currencyCode
+}
 
 // Force dynamic rendering for this route
 export const dynamic = 'force-dynamic'
@@ -41,6 +47,7 @@ export async function GET(request: NextRequest) {
       newRequests: 0,
       overdueInvoices: 0,
       expiringQuotes: 0,
+      clientReminders: 0,
       errors: [] as string[],
     }
 
@@ -251,6 +258,105 @@ export async function GET(request: NextRequest) {
           results.expiringQuotes += expiringQuotes.length
         } catch {
           results.errors.push(`Failed to send expiring quotes email to ${profile.email}`)
+        }
+      }
+    }
+
+    // Auto-send payment reminders to clients for overdue invoices
+    // Only if no reminder sent in the last 7 days
+    const sevenDaysAgo = new Date()
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+
+    const { data: overdueForClients } = await supabase
+      .from('qs_invoices')
+      .select('id, invoice_number, client_name, client_email, total_gross, due_date, token, currency, user_id, bank_name, bank_account, bank_routing, reminder_count')
+      .eq('status', 'sent')
+      .not('client_email', 'is', null)
+      .not('due_date', 'is', null)
+      .lt('due_date', now.toISOString())
+      .or(`reminder_sent_at.is.null,reminder_sent_at.lt.${sevenDaysAgo.toISOString()}`)
+
+    if (overdueForClients && overdueForClients.length > 0) {
+      for (const inv of overdueForClients) {
+        try {
+          // Get contractor profile for this invoice
+          const { data: contractorProfile } = await supabase
+            .from('profiles')
+            .select('full_name, company_name, phone, bank_name, bank_account, bank_routing, country')
+            .eq('id', inv.user_id)
+            .single()
+
+          const contractorName = contractorProfile?.company_name || contractorProfile?.full_name || 'Contractor'
+          const countryCode = contractorProfile?.country || 'US'
+          const countryConfig = COUNTRIES[countryCode] || COUNTRIES.US
+          const currencySymbol = getCurrencySymbol(inv.currency || 'USD')
+
+          const dueDate = new Date(inv.due_date)
+          const diffDays = Math.floor((now.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24))
+
+          const bankName = inv.bank_name || contractorProfile?.bank_name
+          const bankAccount = inv.bank_account || contractorProfile?.bank_account
+          const bankRouting = inv.bank_routing || contractorProfile?.bank_routing
+
+          const bankHtml = (bankName || bankAccount || bankRouting) ? `
+            <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+              <p style="margin: 0 0 8px 0; color: #166534; font-size: 13px; font-weight: 700;">Payment Details</p>
+              ${bankName ? `<p style="margin: 2px 0; color: #374151; font-size: 13px;">Bank: <strong>${bankName}</strong></p>` : ''}
+              ${bankRouting ? `<p style="margin: 2px 0; color: #374151; font-size: 13px;">${countryConfig.bankRoutingLabel}: <strong style="font-family: monospace;">${bankRouting}</strong></p>` : ''}
+              ${bankAccount ? `<p style="margin: 2px 0; color: #374151; font-size: 13px;">Account: <strong style="font-family: monospace;">${bankAccount}</strong></p>` : ''}
+            </div>
+          ` : ''
+
+          await resend.emails.send({
+            from: 'BrickQuote <contact@brickquote.app>',
+            to: inv.client_email,
+            subject: `Payment reminder — ${inv.invoice_number} from ${contractorName}`,
+            html: `
+              <!DOCTYPE html>
+              <html>
+              <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f3f4f6; margin: 0; padding: 20px;">
+                <div style="max-width: 500px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                  <div style="background: linear-gradient(135deg, #f97316, #ea580c); padding: 24px; text-align: center;">
+                    <h1 style="color: white; margin: 0; font-size: 24px;">Payment Reminder</h1>
+                  </div>
+                  <div style="padding: 32px;">
+                    <p style="color: #374151; font-size: 16px; margin: 0 0 16px 0;">
+                      Hi <strong>${inv.client_name || 'there'}</strong>,
+                    </p>
+                    <p style="color: #6b7280; font-size: 15px; margin: 0 0 20px 0;">
+                      This is a friendly reminder that invoice <strong>${inv.invoice_number}</strong> from <strong>${contractorName}</strong> was due on <strong>${formatDate(inv.due_date, countryCode)}</strong> — <strong>${diffDays} day${diffDays > 1 ? 's' : ''} ago</strong>.
+                    </p>
+                    <div style="background: #fef3c7; border-radius: 8px; padding: 16px; margin-bottom: 20px; text-align: center;">
+                      <p style="color: #92400e; font-size: 12px; margin: 0 0 4px 0;">Amount Due</p>
+                      <p style="color: #78350f; font-size: 24px; font-weight: 700; margin: 0;">${currencySymbol}${inv.total_gross?.toFixed(2)}</p>
+                    </div>
+                    ${bankHtml}
+                    <div style="text-align: center; margin: 24px 0;">
+                      <a href="${appUrl}/invoice/${inv.token}" style="display: inline-block; background: #f97316; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px;">View Invoice &amp; Pay</a>
+                    </div>
+                    ${contractorProfile?.phone ? `<p style="color: #6b7280; font-size: 13px; text-align: center;">Questions? Contact ${contractorName}: <a href="tel:${contractorProfile.phone}" style="color: #3b82f6;">${contractorProfile.phone}</a></p>` : ''}
+                  </div>
+                  <div style="background: #f9fafb; padding: 16px; text-align: center; border-top: 1px solid #e5e7eb;">
+                    <p style="color: #9ca3af; font-size: 12px; margin: 0;">BrickQuote - Payment Reminder</p>
+                  </div>
+                </div>
+              </body>
+              </html>
+            `,
+          })
+
+          // Update reminder tracking
+          await supabase
+            .from('qs_invoices')
+            .update({
+              reminder_sent_at: now.toISOString(),
+              reminder_count: (inv.reminder_count || 0) + 1,
+            })
+            .eq('id', inv.id)
+
+          results.clientReminders++
+        } catch {
+          results.errors.push(`Failed to send client reminder for ${inv.invoice_number}`)
         }
       }
     }
