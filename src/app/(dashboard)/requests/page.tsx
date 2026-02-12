@@ -20,11 +20,6 @@ export default async function RequestsPage({
   const protocol = host.includes('localhost') ? 'http' : 'https'
 
   // Stats
-  const { count: servicesCount } = await supabase
-    .from('qs_services')
-    .select('*', { count: 'exact', head: true })
-    .eq('user_id', user?.id)
-
   const { count: newRequestsCount } = await supabase
     .from('qs_quote_requests')
     .select('*', { count: 'exact', head: true })
@@ -189,24 +184,7 @@ export default async function RequestsPage({
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 mb-6">
-        <div className="card">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-slate-400 text-sm">My Services</p>
-              <p className="text-3xl font-bold text-white mt-1">{servicesCount || 0}</p>
-            </div>
-            <div className="w-12 h-12 bg-blue-600/20 rounded-lg flex items-center justify-center">
-              <svg className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-              </svg>
-            </div>
-          </div>
-          <Link href="/services" className="text-blue-500 text-sm mt-4 inline-block hover:text-blue-400">
-            Manage →
-          </Link>
-        </div>
-
+      <div className="grid grid-cols-3 gap-3 md:gap-6 mb-6">
         <div className="card">
           <div className="flex items-center justify-between">
             <div>
