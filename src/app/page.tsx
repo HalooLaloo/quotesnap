@@ -20,7 +20,7 @@ export default async function Home() {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0a1628]/90 backdrop-blur-md border-b border-[#1e3a5f]">
         <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <a href="#" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }) }} className="flex items-center gap-2 cursor-pointer">
+            <Link href="/" className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg bg-[#132039] flex items-center justify-center">
                 <svg className="w-5 h-5 text-orange-500" viewBox="0 0 24 24" fill="currentColor">
                   <rect x="2" y="6" width="9" height="5" rx="0.5" />
@@ -31,7 +31,7 @@ export default async function Home() {
                 </svg>
               </div>
               <span className="text-xl font-bold text-white">BrickQuote</span>
-            </a>
+            </Link>
 
             <div className="hidden md:flex items-center gap-8">
               <a href="#how-it-works" className="text-slate-400 hover:text-white text-sm font-medium transition">How it works</a>
