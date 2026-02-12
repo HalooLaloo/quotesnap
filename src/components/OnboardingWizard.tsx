@@ -97,6 +97,10 @@ export function OnboardingWizard({ onClose, userId }: OnboardingWizardProps) {
 
       const data = await response.json()
 
+      if (response.status === 429) {
+        throw new Error('AI usage limit reached. Please try again in an hour.')
+      }
+
       if (!response.ok) {
         throw new Error(data.error || 'An error occurred')
       }

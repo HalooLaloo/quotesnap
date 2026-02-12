@@ -124,15 +124,29 @@ export default function ClientRequestPage() {
     }
   }
 
+  // Max limits
+  const MAX_IMAGES = 5
+  const MAX_MESSAGES = 40
+
+  const totalImagesSent = messages.reduce((sum, m) => sum + (m.images?.length || 0), 0)
+  const canSendImages = totalImagesSent + pendingImages.length < MAX_IMAGES
+  const canSendMessages = messages.length < MAX_MESSAGES
+
   // Obsługa wyboru zdjęć w chacie (multiple)
   const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
     if (!files || files.length === 0) return
 
+    const remaining = MAX_IMAGES - totalImagesSent - pendingImages.length
+    if (remaining <= 0) {
+      if (fileInputRef.current) fileInputRef.current.value = ''
+      return
+    }
+
     setUploadingImage(true)
 
     const newImages: string[] = []
-    for (const file of Array.from(files)) {
+    for (const file of Array.from(files).slice(0, remaining)) {
       if (!file.type.startsWith('image/')) continue
 
       try {
@@ -188,7 +202,7 @@ export default function ClientRequestPage() {
   }
 
   const sendMessage = async () => {
-    if ((!input.trim() && pendingImages.length === 0) || loading) return
+    if ((!input.trim() && pendingImages.length === 0) || loading || !canSendMessages) return
 
     const userMessage = input.trim()
     const imagesToSend = [...pendingImages]
@@ -640,9 +654,9 @@ export default function ClientRequestPage() {
               {/* Przycisk dodawania zdjęcia */}
               <button
                 onClick={() => fileInputRef.current?.click()}
-                disabled={loading || uploadingImage}
+                disabled={loading || uploadingImage || !canSendImages}
                 className="p-3 rounded-xl bg-slate-700 text-slate-300 hover:bg-slate-600 hover:text-white transition-colors disabled:opacity-50"
-                title="Add photos - AI will analyze and help with the quote"
+                title={canSendImages ? 'Add photos - AI will analyze and help with the quote' : `Maximum ${MAX_IMAGES} photos per conversation`}
               >
                 {uploadingImage ? (
                   <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -662,13 +676,13 @@ export default function ClientRequestPage() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Type a message or add a photo..."
-                disabled={loading}
+                placeholder={canSendMessages ? 'Type a message or add a photo...' : 'Message limit reached'}
+                disabled={loading || !canSendMessages}
                 className="input flex-1"
               />
               <button
                 onClick={sendMessage}
-                disabled={loading || (!input.trim() && pendingImages.length === 0)}
+                disabled={loading || !canSendMessages || (!input.trim() && pendingImages.length === 0)}
                 className="btn-primary px-6"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

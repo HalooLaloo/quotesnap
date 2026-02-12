@@ -94,7 +94,9 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
 
       const data = await response.json()
 
-      if (data.error) {
+      if (response.status === 429) {
+        setError('AI usage limit reached. Please try again later.')
+      } else if (data.error) {
         setError(data.error)
       } else {
         // Mapuj sugestie z cennika
