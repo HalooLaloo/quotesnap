@@ -159,37 +159,42 @@ export default async function PublicInvoicePage({
         </div>
 
         {/* Payment Details */}
-        {(profile?.bank_name || profile?.bank_account || profile?.bank_routing || invoice.payment_terms) && (
-          <div className="card mb-6 bg-green-600/10 border-green-500/30">
-            <h3 className="font-medium text-green-400 mb-4">Payment Details</h3>
-            <div className="space-y-3">
-              {profile?.bank_name && (
-                <div>
-                  <p className="text-slate-400 text-sm">Bank</p>
-                  <p className="text-white">{profile.bank_name}</p>
-                </div>
-              )}
-              {profile?.bank_routing && (
-                <div>
-                  <p className="text-slate-400 text-sm">{countryConfig.bankRoutingLabel}</p>
-                  <p className="text-white font-mono">{profile.bank_routing}</p>
-                </div>
-              )}
-              {profile?.bank_account && (
-                <div>
-                  <p className="text-slate-400 text-sm">Account Number</p>
-                  <p className="text-white font-mono text-lg">{profile.bank_account}</p>
-                </div>
-              )}
-              {invoice.payment_terms && (
-                <div>
-                  <p className="text-slate-400 text-sm">Payment Terms</p>
-                  <p className="text-white">{invoice.payment_terms}</p>
-                </div>
-              )}
+        {(() => {
+          const bankName = invoice.bank_name || profile?.bank_name
+          const bankAccount = invoice.bank_account || profile?.bank_account
+          const bankRouting = invoice.bank_routing || profile?.bank_routing
+          return (bankName || bankAccount || bankRouting || invoice.payment_terms) ? (
+            <div className="card mb-6 bg-green-600/10 border-green-500/30">
+              <h3 className="font-medium text-green-400 mb-4">Payment Details</h3>
+              <div className="space-y-3">
+                {bankName && (
+                  <div>
+                    <p className="text-slate-400 text-sm">Bank</p>
+                    <p className="text-white">{bankName}</p>
+                  </div>
+                )}
+                {bankRouting && (
+                  <div>
+                    <p className="text-slate-400 text-sm">{countryConfig.bankRoutingLabel}</p>
+                    <p className="text-white font-mono">{bankRouting}</p>
+                  </div>
+                )}
+                {bankAccount && (
+                  <div>
+                    <p className="text-slate-400 text-sm">Account Number</p>
+                    <p className="text-white font-mono text-lg">{bankAccount}</p>
+                  </div>
+                )}
+                {invoice.payment_terms && (
+                  <div>
+                    <p className="text-slate-400 text-sm">Payment Terms</p>
+                    <p className="text-white">{invoice.payment_terms}</p>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          ) : null
+        })()}
 
         {/* Mark as Paid */}
         {invoice.status === 'sent' && (

@@ -37,6 +37,14 @@ function InvoiceForm() {
   const [dueDate, setDueDate] = useState('')
   const [paymentTerms, setPaymentTerms] = useState('Bank transfer within 7 days')
 
+  // Bank details (pre-filled from profile, editable per invoice)
+  const [bankName, setBankName] = useState('')
+  const [bankRouting, setBankRouting] = useState('')
+  const [bankAccount, setBankAccount] = useState('')
+  const [bankRoutingLabel, setBankRoutingLabel] = useState('Routing Number')
+  const [bankRoutingPlaceholder, setBankRoutingPlaceholder] = useState('e.g. 021000021')
+  const [editingBank, setEditingBank] = useState(false)
+
   // Load user profile for currency settings
   useEffect(() => {
     const loadProfile = async () => {
@@ -44,7 +52,7 @@ function InvoiceForm() {
       if (user) {
         const { data: profile } = await supabase
           .from('profiles')
-          .select('country, currency')
+          .select('country, currency, bank_name, bank_account, bank_routing')
           .eq('id', user.id)
           .single()
 
@@ -55,6 +63,12 @@ function InvoiceForm() {
           setCurrencySymbol(country.currencySymbol)
           setTaxLabel(country.taxLabel)
           setVatPercent(country.defaultTaxPercent)
+          setBankRoutingLabel(country.bankRoutingLabel)
+          setBankRoutingPlaceholder(country.bankRoutingPlaceholder)
+          // Pre-fill bank details from profile
+          if (profile.bank_name) setBankName(profile.bank_name)
+          if (profile.bank_account) setBankAccount(profile.bank_account)
+          if (profile.bank_routing) setBankRouting(profile.bank_routing)
         }
       }
     }
@@ -220,6 +234,9 @@ function InvoiceForm() {
           client_phone: clientPhone || null,
           client_address: clientAddress || null,
           currency: currency,
+          bank_name: bankName || null,
+          bank_account: bankAccount || null,
+          bank_routing: bankRouting || null,
         })
         .select()
         .single()
@@ -460,7 +477,7 @@ function InvoiceForm() {
       {/* Payment Info */}
       <div className="card mb-6">
         <h2 className="text-lg font-semibold text-white mb-4">Payment Details</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <div>
             <label className="label">Due Date</label>
             <input
@@ -480,6 +497,98 @@ function InvoiceForm() {
               placeholder="e.g. Bank transfer within 7 days"
             />
           </div>
+        </div>
+
+        {/* Bank Details */}
+        <div className="border-t border-slate-700 pt-4">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-medium text-slate-300">Bank Details</h3>
+            {!editingBank && (bankName || bankAccount || bankRouting) && (
+              <button
+                type="button"
+                onClick={() => setEditingBank(true)}
+                className="text-blue-400 hover:text-blue-300 text-sm flex items-center gap-1"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                </svg>
+                Edit
+              </button>
+            )}
+          </div>
+
+          {!editingBank && (bankName || bankAccount || bankRouting) ? (
+            <div className="bg-slate-700/50 rounded-lg p-4 space-y-2">
+              {bankName && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-400">Bank</span>
+                  <span className="text-white">{bankName}</span>
+                </div>
+              )}
+              {bankRouting && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-400">{bankRoutingLabel}</span>
+                  <span className="text-white font-mono">{bankRouting}</span>
+                </div>
+              )}
+              {bankAccount && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-400">Account Number</span>
+                  <span className="text-white font-mono">{bankAccount}</span>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <div>
+                <label className="label text-xs">Bank Name</label>
+                <input
+                  type="text"
+                  value={bankName}
+                  onChange={(e) => setBankName(e.target.value)}
+                  className="input"
+                  placeholder="e.g. Bank of America"
+                />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <label className="label text-xs">{bankRoutingLabel}</label>
+                  <input
+                    type="text"
+                    value={bankRouting}
+                    onChange={(e) => setBankRouting(e.target.value)}
+                    className="input font-mono"
+                    placeholder={bankRoutingPlaceholder}
+                  />
+                </div>
+                <div>
+                  <label className="label text-xs">Account Number</label>
+                  <input
+                    type="text"
+                    value={bankAccount}
+                    onChange={(e) => setBankAccount(e.target.value)}
+                    className="input font-mono"
+                    placeholder="e.g. 12345678"
+                  />
+                </div>
+              </div>
+              {editingBank && (
+                <button
+                  type="button"
+                  onClick={() => setEditingBank(false)}
+                  className="text-slate-400 hover:text-white text-sm"
+                >
+                  Done
+                </button>
+              )}
+            </div>
+          )}
+
+          {!bankName && !bankAccount && !bankRouting && !editingBank && (
+            <p className="text-slate-500 text-sm">
+              No bank details set. <a href="/settings" className="text-blue-400 hover:text-blue-300">Add in Settings</a> or fill in above.
+            </p>
+          )}
         </div>
       </div>
 

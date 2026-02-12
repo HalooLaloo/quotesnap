@@ -224,8 +224,13 @@ export async function GET(
     doc.text(`${currencySymbol}${invoice.total_gross?.toFixed(2)}`, 190, y + 2, { align: 'right' })
     doc.setTextColor(0, 0, 0)
 
+    // Use invoice-level bank details, fall back to profile for older invoices
+    const bankName = invoice.bank_name || profile?.bank_name
+    const bankAccount = invoice.bank_account || profile?.bank_account
+    const bankRouting = invoice.bank_routing || profile?.bank_routing
+
     // Payment Details — styled box
-    if (profile?.bank_name || profile?.bank_account || profile?.bank_routing || invoice.payment_terms) {
+    if (bankName || bankAccount || bankRouting || invoice.payment_terms) {
       if (y > 220) {
         doc.addPage()
         y = 20
@@ -236,9 +241,9 @@ export async function GET(
       // Light gray background box
       const boxStartY = y - 4
       let boxContentHeight = 12 // header + padding
-      if (profile?.bank_name) boxContentHeight += 7
-      if (profile?.bank_routing) boxContentHeight += 7
-      if (profile?.bank_account) boxContentHeight += 7
+      if (bankName) boxContentHeight += 7
+      if (bankRouting) boxContentHeight += 7
+      if (bankAccount) boxContentHeight += 7
       if (invoice.payment_terms) boxContentHeight += 7
       if (invoice.due_date) boxContentHeight += 7
 
@@ -255,29 +260,29 @@ export async function GET(
       doc.setFontSize(9)
       doc.setTextColor(60, 60, 60)
 
-      if (profile?.bank_name) {
+      if (bankName) {
         y += 8
         doc.setFont('helvetica', 'bold')
         doc.text('Bank:', 28, y)
         doc.setFont('helvetica', 'normal')
-        doc.text(toAscii(profile.bank_name), 55, y)
+        doc.text(toAscii(bankName), 55, y)
       }
-      if (profile?.bank_routing) {
+      if (bankRouting) {
         y += 7
         doc.setFont('helvetica', 'bold')
         doc.text(`${countryConfig.bankRoutingLabel}:`, 28, y)
         doc.setFont('helvetica', 'normal')
         doc.setFont('courier', 'normal')
-        doc.text(profile.bank_routing, 75, y)
+        doc.text(bankRouting, 75, y)
         doc.setFont('helvetica', 'normal')
       }
-      if (profile?.bank_account) {
+      if (bankAccount) {
         y += 7
         doc.setFont('helvetica', 'bold')
         doc.text('Account:', 28, y)
         doc.setFont('helvetica', 'normal')
         doc.setFont('courier', 'normal')
-        doc.text(profile.bank_account, 55, y)
+        doc.text(bankAccount, 55, y)
         doc.setFont('helvetica', 'normal')
       }
       if (invoice.payment_terms) {
