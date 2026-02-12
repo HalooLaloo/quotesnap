@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import { PostHogProvider } from '@/components/PostHogProvider'
 import { CookieConsent } from '@/components/CookieConsent'
+import { CapacitorInit } from '@/components/CapacitorInit'
 import './globals.css'
 
 const inter = Inter({ subsets: ['latin', 'latin-ext'] })
@@ -42,6 +43,7 @@ export default function RootLayout({
     <html lang="en" className="dark">
       <body className={`${inter.className} antialiased`}>
         <PostHogProvider>
+          <CapacitorInit />
           {children}
           <CookieConsent />
         </PostHogProvider>

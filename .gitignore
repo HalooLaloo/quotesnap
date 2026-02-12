@@ -37,3 +37,8 @@ next-env.d.ts
 
 .vercel
 .env*.local
+
+# Android signing
+android/release.keystore
+android/app/release.keystore
+*.jks

@@ -13,7 +13,11 @@ const config: CapacitorConfig = {
   android: {
     allowMixedContent: false,
     captureInput: false,
-    webContentsDebuggingEnabled: true,
+    webContentsDebuggingEnabled: false,
+    appendUserAgent: 'BrickQuoteApp',
+  },
+  ios: {
+    allowsLinkPreview: false,
     appendUserAgent: 'BrickQuoteApp',
   },
   plugins: {
