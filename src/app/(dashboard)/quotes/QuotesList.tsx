@@ -230,9 +230,6 @@ export function QuotesList({ quotes }: QuotesListProps) {
                     </div>
                     <p className="text-slate-400 text-sm">
                       {quote.qs_quote_requests?.client_email || 'No email'}
-                      {quote.qs_quote_requests?.description && (
-                        <span className="text-slate-500"> • {quote.qs_quote_requests.description.slice(0, 50)}...</span>
-                      )}
                     </p>
                   </Link>
                   <div className="flex items-center gap-4 ml-4">
