@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { FAQSection } from '@/components/FAQSection'
 
 export default async function Home() {
   const supabase = await createClient()
@@ -9,6 +10,8 @@ export default async function Home() {
   if (user) {
     redirect('/requests')
   }
+
+  const demoUserId = process.env.NEXT_PUBLIC_DEMO_USER_ID
 
   return (
     <div className="min-h-screen bg-[#0a1628]">
@@ -61,31 +64,36 @@ export default async function Home() {
             </div>
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
-              Create professional quotes
-              <span className="text-blue-400"> in minutes, not hours</span>
+              Your clients send photos.
+              <span className="text-blue-400"> AI writes the quote.</span>
             </h1>
 
             <p className="text-xl text-slate-400 max-w-2xl mx-auto mb-8">
-              AI analyzes client photos, suggests line items, and generates quotes automatically.
-              You just approve. Stop wasting time on spreadsheets and back-and-forth emails.
+              Clients describe the job through an AI chatbot. You get a detailed quote ready to send —
+              complete with line items, pricing, and a professional PDF. No spreadsheets, no back-and-forth.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
+              {demoUserId ? (
+                <Link
+                  href={`/request/${demoUserId}`}
+                  className="w-full sm:w-auto bg-orange-600 hover:bg-orange-700 text-white px-8 py-4 rounded-xl text-lg font-semibold transition flex items-center justify-center gap-2"
+                >
+                  Try Live Demo
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                  </svg>
+                </Link>
+              ) : null}
               <Link
                 href="/register"
-                className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-xl text-lg font-semibold transition flex items-center justify-center gap-2"
+                className={`w-full sm:w-auto ${demoUserId ? 'border border-slate-600 hover:border-slate-500 text-white' : 'bg-blue-600 hover:bg-blue-700 text-white'} px-8 py-4 rounded-xl text-lg font-semibold transition flex items-center justify-center gap-2`}
               >
                 Start 3-day free trial
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                 </svg>
               </Link>
-              <a
-                href="#how-it-works"
-                className="w-full sm:w-auto border border-slate-600 hover:border-slate-500 text-white px-8 py-4 rounded-xl text-lg font-medium transition flex items-center justify-center gap-2"
-              >
-                See how it works
-              </a>
             </div>
 
             {/* Trust badges */}
@@ -464,16 +472,16 @@ export default async function Home() {
               </p>
             </div>
 
-            {/* Feature 6 */}
+            {/* Feature 6 - Invoicing */}
             <div className="bg-[#132039] border border-[#1e3a5f] rounded-xl p-6 hover:border-cyan-500/50 transition">
               <div className="w-12 h-12 rounded-lg bg-cyan-500/20 flex items-center justify-center mb-4">
                 <svg className="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-white mb-2">Email Notifications</h3>
+              <h3 className="text-lg font-semibold text-white mb-2">Invoicing Built In</h3>
               <p className="text-slate-400 text-sm">
-                Send quotes via email and get notified when clients open them or accept.
+                Convert accepted quotes to invoices in one click. Track payments, send reminders, and mark as paid.
               </p>
             </div>
           </div>
@@ -622,83 +630,45 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Testimonials */}
+      {/* Built for every trade */}
       <section className="py-24 px-4 bg-[#0d1f35]/50">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
-              Loved by contractors
+              Built for every trade
             </h2>
             <p className="text-slate-400 max-w-2xl mx-auto text-lg">
-              Join hundreds of contractors who save hours every week
+              Whether you paint walls or rewire houses — BrickQuote handles your quotes and invoices
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6">
-            <div className="bg-[#132039] border border-[#1e3a5f] rounded-xl p-6">
-              <div className="flex gap-1 mb-4">
-                {[...Array(5)].map((_, i) => (
-                  <svg key={i} className="w-5 h-5 text-yellow-400 fill-yellow-400" viewBox="0 0 24 24">
-                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                  </svg>
-                ))}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            {[
+              { icon: '🎨', name: 'Painters', desc: 'Walls, ceilings, trim' },
+              { icon: '🔲', name: 'Tilers', desc: 'Floors, bathrooms, kitchens' },
+              { icon: '🔧', name: 'Plumbers', desc: 'Pipes, fixtures, drains' },
+              { icon: '⚡', name: 'Electricians', desc: 'Wiring, outlets, panels' },
+              { icon: '🪚', name: 'Carpenters', desc: 'Cabinets, doors, decks' },
+              { icon: '🏗️', name: 'General', desc: 'Full renovations' },
+            ].map((trade) => (
+              <div key={trade.name} className="bg-[#132039] border border-[#1e3a5f] rounded-xl p-5 text-center hover:border-blue-500/50 transition">
+                <div className="text-3xl mb-3">{trade.icon}</div>
+                <h3 className="text-white font-semibold text-sm mb-1">{trade.name}</h3>
+                <p className="text-slate-500 text-xs">{trade.desc}</p>
               </div>
-              <p className="text-slate-300 mb-6">
-                &quot;Quotes used to take me 2 hours. Now I&apos;m done in 10 minutes. The AI actually understands what&apos;s in the photos and suggests all the right items.&quot;
-              </p>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
-                  <span className="text-blue-400 font-medium">MJ</span>
-                </div>
-                <div>
-                  <p className="text-white font-medium">Mike Johnson</p>
-                  <p className="text-slate-500 text-sm">Johnson Renovations, Sydney</p>
-                </div>
-              </div>
-            </div>
+            ))}
+          </div>
 
-            <div className="bg-[#132039] border border-[#1e3a5f] rounded-xl p-6">
-              <div className="flex gap-1 mb-4">
-                {[...Array(5)].map((_, i) => (
-                  <svg key={i} className="w-5 h-5 text-yellow-400 fill-yellow-400" viewBox="0 0 24 24">
-                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                  </svg>
-                ))}
+          <div className="mt-12 text-center">
+            <div className="inline-flex items-center gap-3 bg-[#132039] border border-[#1e3a5f] rounded-xl px-6 py-4">
+              <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+                <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
               </div>
-              <p className="text-slate-300 mb-6">
-                &quot;Best part is clients accept quotes online. No more &apos;I&apos;ll call you back&apos; - they just click accept and it&apos;s done. Game changer.&quot;
+              <p className="text-slate-300 text-sm text-left">
+                <span className="text-white font-medium">Set up your price list once</span> — AI uses it to generate accurate quotes for every new client request.
               </p>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
-                  <span className="text-green-400 font-medium">SW</span>
-                </div>
-                <div>
-                  <p className="text-white font-medium">Sarah Williams</p>
-                  <p className="text-slate-500 text-sm">Premier Painting Co, Melbourne</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-[#132039] border border-[#1e3a5f] rounded-xl p-6">
-              <div className="flex gap-1 mb-4">
-                {[...Array(5)].map((_, i) => (
-                  <svg key={i} className="w-5 h-5 text-yellow-400 fill-yellow-400" viewBox="0 0 24 24">
-                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                  </svg>
-                ))}
-              </div>
-              <p className="text-slate-300 mb-6">
-                &quot;The request link is brilliant. I put it on my website and clients fill in everything with photos. I just get a ready-to-quote notification.&quot;
-              </p>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center">
-                  <span className="text-purple-400 font-medium">DT</span>
-                </div>
-                <div>
-                  <p className="text-white font-medium">David Thompson</p>
-                  <p className="text-slate-500 text-sm">Thompson Plumbing, Brisbane</p>
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -821,12 +791,15 @@ export default async function Home() {
                 'Unlimited quotes',
                 'Unlimited invoices',
                 'AI photo analysis',
-                'AI suggestions',
-                'Client portal',
+                'AI quote suggestions',
+                'Client request portal',
                 'Online acceptance',
                 'PDF generation',
                 'Email notifications',
                 'Service catalog',
+                'Payment tracking',
+                'Payment reminders',
+                'Multi-currency support',
               ].map((feature) => (
                 <div key={feature} className="flex items-center gap-2 text-sm">
                   <svg className="w-4 h-4 text-blue-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -855,49 +828,7 @@ export default async function Home() {
       </section>
 
       {/* FAQ */}
-      <section id="faq" className="py-24 px-4 bg-[#0d1f35]/50">
-        <div className="max-w-3xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
-              Frequently asked questions
-            </h2>
-          </div>
-
-          <div className="space-y-4">
-            {[
-              {
-                q: 'How does the free trial work?',
-                a: 'You get 3 days of full access to test everything. A credit card is required to start, but you won\'t be charged during the trial. Cancel anytime before it ends - no questions asked.',
-              },
-              {
-                q: 'How does the AI quote generation work?',
-                a: 'When a client submits a request with photos and description, our AI analyzes the content and suggests line items from your price list that match the project scope. You review and approve the suggestions, then send the quote.',
-              },
-              {
-                q: 'Can I use BrickQuote on my phone?',
-                a: 'Absolutely! BrickQuote is fully responsive and works great on phones and tablets. Your clients can also submit requests from their mobile devices.',
-              },
-              {
-                q: 'Do my clients need an account?',
-                a: 'No, clients don\'t need to create an account. They use your unique link to submit requests, view quotes, and accept them - all without signing up.',
-              },
-              {
-                q: 'Can I cancel anytime?',
-                a: 'Yes, you can cancel your subscription at any time with no penalties. Your data stays safe, and you can reactivate anytime.',
-              },
-              {
-                q: 'What currencies and countries do you support?',
-                a: 'We support USD, GBP, AUD, CAD, EUR, NZD and more. Tax settings (VAT, GST) are automatically configured based on your country.',
-              },
-            ].map((faq, index) => (
-              <div key={index} className="bg-[#132039] border border-[#1e3a5f] rounded-xl p-6">
-                <h3 className="text-white font-medium mb-2">{faq.q}</h3>
-                <p className="text-slate-400 text-sm">{faq.a}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <FAQSection />
 
       {/* Final CTA */}
       <section className="py-24 px-4">
@@ -906,8 +837,8 @@ export default async function Home() {
             Ready to save hours on every quote?
           </h2>
           <p className="text-slate-400 text-lg mb-8">
-            Join hundreds of contractors who already use BrickQuote.
-            Start your free trial and send your first AI-powered quote today.
+            Stop writing quotes by hand. Let AI handle the details
+            while you focus on the work that pays.
           </p>
           <Link
             href="/register"
