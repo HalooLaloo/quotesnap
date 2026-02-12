@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
     // Fetch contractor data
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('full_name, company_name, phone')
+      .select('full_name, company_name, phone, country')
       .eq('id', user?.id)
       .single()
 
@@ -78,6 +78,8 @@ export async function POST(request: NextRequest) {
 
     // Generate email HTML
     const currencySymbol = getCurrencySymbol(quote.currency || 'USD')
+    const countryCode = profile?.country || 'US'
+    const countryConfig = COUNTRIES[countryCode] || COUNTRIES.US
     // Parse notes: separate general notes from client answer
     const rawNotes = quote.notes || ''
     const [generalNotes, clientAnswer] = rawNotes.split('---CLIENT_ANSWER---').map((s: string) => s.trim())
@@ -104,6 +106,7 @@ export async function POST(request: NextRequest) {
       clientAnswer: clientAnswer || null,
       quoteUrl,
       currencySymbol,
+      taxLabel: countryConfig.taxLabel,
     })
 
     // Send email
@@ -150,6 +153,7 @@ interface QuoteEmailData {
   clientAnswer?: string | null
   quoteUrl?: string
   currencySymbol: string
+  taxLabel: string
 }
 
 function generateQuoteEmailHtml(data: QuoteEmailData): string {
@@ -185,7 +189,7 @@ function generateQuoteEmailHtml(data: QuoteEmailData): string {
       <td style="padding: 8px 12px; text-align: right;">${cs}${data.totalNet.toFixed(2)}</td>
     </tr>
     <tr>
-      <td colspan="3" style="padding: 8px 12px; text-align: right;">VAT (${data.vatPercent}%):</td>
+      <td colspan="3" style="padding: 8px 12px; text-align: right;">${data.taxLabel} (${data.vatPercent}%):</td>
       <td style="padding: 8px 12px; text-align: right;">+${cs}${(data.totalNet * data.vatPercent / 100).toFixed(2)}</td>
     </tr>
   ` : ''

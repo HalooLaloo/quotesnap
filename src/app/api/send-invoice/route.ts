@@ -3,7 +3,7 @@ import { Resend } from 'resend'
 import { createClient } from '@/lib/supabase/server'
 import { headers } from 'next/headers'
 import { InvoiceItem } from '@/lib/types'
-import { COUNTRIES } from '@/lib/countries'
+import { COUNTRIES, formatDate } from '@/lib/countries'
 
 function getCurrencySymbol(currencyCode: string): string {
   const country = Object.values(COUNTRIES).find(c => c.currency === currencyCode)
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
     // Get contractor profile
     const { data: profile } = await supabase
       .from('profiles')
-      .select('full_name, company_name, phone, bank_name, bank_account, tax_id, business_address')
+      .select('full_name, company_name, phone, bank_name, bank_account, tax_id, business_address, country')
       .eq('id', user?.id)
       .single()
 
@@ -67,6 +67,8 @@ export async function POST(request: NextRequest) {
 
     // Generate email HTML
     const currencySymbol = getCurrencySymbol(invoice.currency || 'USD')
+    const countryCode = profile?.country || 'US'
+    const countryConfig = COUNTRIES[countryCode] || COUNTRIES.US
     const emailHtml = generateInvoiceEmailHtml({
       clientName: invoice.client_name || 'Client',
       contractorName,
@@ -85,6 +87,9 @@ export async function POST(request: NextRequest) {
       bankAccount: profile?.bank_account,
       paymentTerms: invoice.payment_terms,
       currencySymbol,
+      countryCode,
+      taxLabel: countryConfig.taxLabel,
+      taxInvoiceTitle: countryConfig.taxInvoiceTitle,
     })
 
     // Send email
@@ -144,10 +149,14 @@ interface InvoiceEmailData {
   bankAccount?: string
   paymentTerms?: string
   currencySymbol: string
+  countryCode: string
+  taxLabel: string
+  taxInvoiceTitle: boolean
 }
 
 function generateInvoiceEmailHtml(data: InvoiceEmailData): string {
   const cs = data.currencySymbol
+  const invoiceTitle = data.taxInvoiceTitle && data.vatPercent > 0 ? 'Tax Invoice' : 'Invoice'
   const itemsHtml = data.items.map(item => `
     <tr>
       <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">
@@ -178,7 +187,7 @@ function generateInvoiceEmailHtml(data: InvoiceEmailData): string {
       <td style="padding: 8px 12px; text-align: right;">${cs}${data.totalNet.toFixed(2)}</td>
     </tr>
     <tr>
-      <td colspan="3" style="padding: 8px 12px; text-align: right;">VAT (${data.vatPercent}%):</td>
+      <td colspan="3" style="padding: 8px 12px; text-align: right;">${data.taxLabel} (${data.vatPercent}%):</td>
       <td style="padding: 8px 12px; text-align: right;">+${cs}${(data.totalNet * data.vatPercent / 100).toFixed(2)}</td>
     </tr>
   ` : ''
@@ -206,7 +215,7 @@ function generateInvoiceEmailHtml(data: InvoiceEmailData): string {
 
     <!-- Header -->
     <div style="background: linear-gradient(135deg, #22c55e, #16a34a); padding: 32px; text-align: center;">
-      <h1 style="color: white; margin: 0; font-size: 28px;">Invoice</h1>
+      <h1 style="color: white; margin: 0; font-size: 28px;">${invoiceTitle}</h1>
       <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0 0;">${data.invoiceNumber}</p>
     </div>
 
@@ -251,7 +260,7 @@ function generateInvoiceEmailHtml(data: InvoiceEmailData): string {
       ${data.dueDate ? `
         <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 16px; margin-bottom: 24px; border-radius: 0 8px 8px 0;">
           <p style="margin: 0; color: #92400e; font-size: 14px;">
-            <strong>Due date:</strong> ${new Date(data.dueDate).toLocaleDateString('en-US')}
+            <strong>Due date:</strong> ${formatDate(data.dueDate, data.countryCode)}
           </p>
         </div>
       ` : ''}

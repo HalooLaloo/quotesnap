@@ -2,6 +2,7 @@
 
 import { jsPDF } from 'jspdf'
 import autoTable from 'jspdf-autotable'
+import { COUNTRIES } from '@/lib/countries'
 
 // Transliterate Polish and other special characters to ASCII
 function toAscii(text: string | null | undefined): string {
@@ -51,9 +52,11 @@ interface ExportPDFButtonProps {
     }
   }
   contractorName?: string
+  countryCode?: string
 }
 
-export function ExportPDFButton({ quote, contractorName }: ExportPDFButtonProps) {
+export function ExportPDFButton({ quote, contractorName, countryCode = 'US' }: ExportPDFButtonProps) {
+  const countryConfig = COUNTRIES[countryCode] || COUNTRIES.US
   const handleExport = () => {
     const doc = new jsPDF()
     const clientName = toAscii(quote.qs_quote_requests?.client_name || 'Client')
@@ -166,14 +169,14 @@ export function ExportPDFButton({ quote, contractorName }: ExportPDFButtonProps)
       doc.setTextColor(0, 0, 0)
     }
 
-    // VAT
+    // Tax (VAT/GST/Sales Tax per country)
     if (quote.vat_percent && quote.vat_percent > 0) {
       y += 7
       doc.text('Net:', summaryX, y)
       doc.text(`${quote.total_net?.toFixed(2)}`, 190, y, { align: 'right' })
 
       y += 7
-      doc.text(`VAT (${quote.vat_percent}%):`, summaryX, y)
+      doc.text(`${countryConfig.taxLabel} (${quote.vat_percent}%):`, summaryX, y)
       doc.text(`${((quote.total_net || 0) * quote.vat_percent / 100).toFixed(2)}`, 190, y, { align: 'right' })
     }
 

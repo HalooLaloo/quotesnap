@@ -49,13 +49,15 @@ export default async function PublicQuotePage({
   // Get contractor info
   const { data: profile } = await supabase
     .from('profiles')
-    .select('full_name, company_name, phone')
+    .select('full_name, company_name, phone, country')
     .eq('id', quote.user_id)
     .single()
 
   const contractorName = profile?.company_name || profile?.full_name || 'Contractor'
   const items = (quote.items || []) as QuoteItem[]
   const currencySymbol = getCurrencySymbol(quote.currency || 'USD')
+  const countryCode = profile?.country || 'US'
+  const countryConfig = COUNTRIES[countryCode] || COUNTRIES.US
 
   const statusInfo = {
     draft: { label: 'Draft', color: 'bg-slate-500/20 text-slate-400' },
@@ -183,7 +185,7 @@ export default async function PublicQuotePage({
                   <span>{currencySymbol}{quote.total_net?.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-slate-300">
-                  <span>VAT ({quote.vat_percent}%)</span>
+                  <span>{countryConfig.taxLabel} ({quote.vat_percent}%)</span>
                   <span>{currencySymbol}{(quote.total_net * quote.vat_percent / 100).toFixed(2)}</span>
                 </div>
               </>

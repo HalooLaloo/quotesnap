@@ -12,6 +12,12 @@ export interface CountryConfig {
   taxIdRequired: boolean
   taxIdPlaceholder: string
   dateFormat: 'MM/DD/YYYY' | 'DD/MM/YYYY'
+  /** Whether invoices must say "Tax Invoice" when tax is charged (AU, NZ) */
+  taxInvoiceTitle: boolean
+  /** Whether Company Registration Number field should be shown (GB) */
+  showCompanyRegNumber: boolean
+  companyRegLabel?: string
+  companyRegPlaceholder?: string
 }
 
 export const COUNTRIES: Record<string, CountryConfig> = {
@@ -26,6 +32,8 @@ export const COUNTRIES: Record<string, CountryConfig> = {
     taxIdRequired: false,
     taxIdPlaceholder: 'XX-XXXXXXX',
     dateFormat: 'MM/DD/YYYY',
+    taxInvoiceTitle: false,
+    showCompanyRegNumber: false,
   },
   GB: {
     code: 'GB',
@@ -38,6 +46,10 @@ export const COUNTRIES: Record<string, CountryConfig> = {
     taxIdRequired: true,
     taxIdPlaceholder: 'GB123456789',
     dateFormat: 'DD/MM/YYYY',
+    taxInvoiceTitle: false,
+    showCompanyRegNumber: true,
+    companyRegLabel: 'Company Reg. Number',
+    companyRegPlaceholder: '12345678',
   },
   AU: {
     code: 'AU',
@@ -50,6 +62,8 @@ export const COUNTRIES: Record<string, CountryConfig> = {
     taxIdRequired: true,
     taxIdPlaceholder: 'XX XXX XXX XXX',
     dateFormat: 'DD/MM/YYYY',
+    taxInvoiceTitle: true,
+    showCompanyRegNumber: false,
   },
   CA: {
     code: 'CA',
@@ -62,6 +76,8 @@ export const COUNTRIES: Record<string, CountryConfig> = {
     taxIdRequired: false,
     taxIdPlaceholder: '123456789RT0001',
     dateFormat: 'DD/MM/YYYY',
+    taxInvoiceTitle: false,
+    showCompanyRegNumber: false,
   },
   IE: {
     code: 'IE',
@@ -74,6 +90,8 @@ export const COUNTRIES: Record<string, CountryConfig> = {
     taxIdRequired: true,
     taxIdPlaceholder: 'IE1234567X',
     dateFormat: 'DD/MM/YYYY',
+    taxInvoiceTitle: false,
+    showCompanyRegNumber: false,
   },
   NZ: {
     code: 'NZ',
@@ -86,6 +104,8 @@ export const COUNTRIES: Record<string, CountryConfig> = {
     taxIdRequired: false,
     taxIdPlaceholder: 'XXX-XXX-XXX',
     dateFormat: 'DD/MM/YYYY',
+    taxInvoiceTitle: true,
+    showCompanyRegNumber: false,
   },
 }
 

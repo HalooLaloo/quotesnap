@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 import { jsPDF } from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import { QuoteItem } from '@/lib/types'
+import { COUNTRIES } from '@/lib/countries'
 
 // Force Node.js runtime for PDF generation
 export const runtime = 'nodejs'
@@ -62,11 +63,13 @@ export async function GET(
     // Get contractor info
     const { data: profile } = await supabase
       .from('profiles')
-      .select('full_name, company_name, phone, email')
+      .select('full_name, company_name, phone, email, country')
       .eq('id', quote.user_id)
       .single()
 
     const contractorName = toAscii(profile?.company_name || profile?.full_name || 'Contractor')
+    const countryCode = profile?.country || 'US'
+    const countryConfig = COUNTRIES[countryCode] || COUNTRIES.US
     const clientName = toAscii(quote.qs_quote_requests?.client_name || 'Client')
     const items = (quote.items || []) as QuoteItem[]
 
@@ -186,14 +189,14 @@ export async function GET(
       doc.setTextColor(0, 0, 0)
     }
 
-    // VAT
+    // Tax (VAT/GST/Sales Tax per country)
     if (quote.vat_percent > 0) {
       y += 7
       doc.text('Net:', summaryX, y)
       doc.text(`${quote.total_net?.toFixed(2)}`, 190, y, { align: 'right' })
 
       y += 7
-      doc.text(`VAT (${quote.vat_percent}%):`, summaryX, y)
+      doc.text(`${countryConfig.taxLabel} (${quote.vat_percent}%):`, summaryX, y)
       doc.text(`${(quote.total_net * quote.vat_percent / 100).toFixed(2)}`, 190, y, { align: 'right' })
     }
 

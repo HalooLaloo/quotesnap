@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 import { jsPDF } from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import { InvoiceItem } from '@/lib/types'
-import { COUNTRIES } from '@/lib/countries'
+import { COUNTRIES, formatDate } from '@/lib/countries'
 
 function getCurrencySymbol(currencyCode: string): string {
   const country = Object.values(COUNTRIES).find(c => c.currency === currencyCode)
@@ -60,7 +60,7 @@ export async function GET(
     // Get contractor info
     const { data: profile } = await supabase
       .from('profiles')
-      .select('full_name, company_name, phone, email, bank_name, bank_account, tax_id, business_address')
+      .select('full_name, company_name, phone, email, bank_name, bank_account, tax_id, business_address, country, company_reg_number')
       .eq('id', invoice.user_id)
       .single()
 
@@ -68,6 +68,13 @@ export async function GET(
     const clientName = toAscii(invoice.client_name || 'Client')
     const items = (invoice.items || []) as InvoiceItem[]
     const currencySymbol = getCurrencySymbol(invoice.currency || 'USD')
+    const countryCode = profile?.country || 'US'
+    const countryConfig = COUNTRIES[countryCode] || COUNTRIES.US
+
+    // Determine invoice title - AU/NZ require "Tax Invoice" when tax is charged
+    const invoiceTitle = countryConfig.taxInvoiceTitle && invoice.vat_percent > 0
+      ? 'TAX INVOICE'
+      : 'INVOICE'
 
     // Create PDF
     const doc = new jsPDF()
@@ -79,7 +86,7 @@ export async function GET(
     doc.setTextColor(255, 255, 255)
     doc.setFontSize(20)
     doc.setFont('helvetica', 'bold')
-    doc.text('INVOICE', 20, 20)
+    doc.text(invoiceTitle, 20, 20)
 
     doc.setFontSize(11)
     doc.setFont('helvetica', 'normal')
@@ -104,7 +111,11 @@ export async function GET(
       doc.text(`Email: ${profile.email}`, 20, y + 24)
     }
     if (profile?.tax_id) {
-      doc.text(`Tax ID: ${profile.tax_id}`, 20, y + 30)
+      doc.text(`${countryConfig.taxIdLabel}: ${profile.tax_id}`, 20, y + 30)
+    }
+    if (countryConfig.showCompanyRegNumber && profile?.company_reg_number) {
+      const regY = profile?.tax_id ? y + 36 : y + 30
+      doc.text(`${countryConfig.companyRegLabel}: ${profile.company_reg_number}`, 20, regY)
     }
 
     // Client info (right)
@@ -126,11 +137,11 @@ export async function GET(
     y = 100
     doc.setFontSize(10)
     doc.setTextColor(100, 100, 100)
-    const createdDate = new Date(invoice.created_at).toLocaleDateString('en-US')
+    const createdDate = formatDate(invoice.created_at, countryCode)
     doc.text(`Invoice Date: ${createdDate}`, 20, y)
 
     if (invoice.due_date) {
-      const dueDate = new Date(invoice.due_date).toLocaleDateString('en-US')
+      const dueDate = formatDate(invoice.due_date, countryCode)
       doc.text(`Due Date: ${dueDate}`, 100, y)
     }
 
@@ -193,10 +204,10 @@ export async function GET(
     doc.text('Net:', summaryX, y)
     doc.text(`${currencySymbol}${invoice.total_net?.toFixed(2)}`, 190, y, { align: 'right' })
 
-    // VAT
+    // Tax (VAT/GST/Sales Tax per country)
     if (invoice.vat_percent > 0) {
       y += 7
-      doc.text(`VAT (${invoice.vat_percent}%):`, summaryX, y)
+      doc.text(`${countryConfig.taxLabel} (${invoice.vat_percent}%):`, summaryX, y)
       doc.text(`${currencySymbol}${(invoice.total_net * invoice.vat_percent / 100).toFixed(2)}`, 190, y, { align: 'right' })
     }
 
@@ -271,7 +282,7 @@ export async function GET(
         doc.setFont('helvetica', 'bold')
         doc.text('Due Date:', 28, y)
         doc.setFont('helvetica', 'normal')
-        const dueStr = new Date(invoice.due_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+        const dueStr = formatDate(invoice.due_date, countryCode)
         doc.text(dueStr, 55, y)
       }
     }

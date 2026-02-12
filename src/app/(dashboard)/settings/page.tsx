@@ -43,6 +43,7 @@ export default function SettingsPage() {
   const [businessAddress, setBusinessAddress] = useState('')
   const [bankName, setBankName] = useState('')
   const [bankAccount, setBankAccount] = useState('')
+  const [companyRegNumber, setCompanyRegNumber] = useState('')
 
   // Load profile on mount
   useEffect(() => {
@@ -73,6 +74,7 @@ export default function SettingsPage() {
           setBusinessAddress(profile.business_address || '')
           setBankName(profile.bank_name || '')
           setBankAccount(profile.bank_account || '')
+          setCompanyRegNumber(profile.company_reg_number || '')
           setSubscriptionStatus(profile.subscription_status)
           setStripePriceId(profile.stripe_price_id)
           setPeriodEnd(profile.subscription_current_period_end)
@@ -111,6 +113,7 @@ export default function SettingsPage() {
           business_address: businessAddress,
           bank_name: bankName,
           bank_account: bankAccount,
+          company_reg_number: companyRegNumber || null,
         })
         .eq('id', user.id)
 
@@ -298,6 +301,18 @@ export default function SettingsPage() {
               <p className="text-amber-400 text-xs mt-1">Required for invoices in {selectedCountry.name}</p>
             )}
           </div>
+          {selectedCountry.showCompanyRegNumber && (
+            <div>
+              <label className="label">{selectedCountry.companyRegLabel}</label>
+              <input
+                type="text"
+                value={companyRegNumber}
+                onChange={(e) => setCompanyRegNumber(e.target.value)}
+                className="input"
+                placeholder={selectedCountry.companyRegPlaceholder}
+              />
+            </div>
+          )}
           <div className="md:col-span-2">
             <label className="label">Business Address</label>
             <textarea

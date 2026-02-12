@@ -34,11 +34,13 @@ export default async function InvoiceDetailPage({
   // Get contractor profile for business details
   const { data: profile } = await supabase
     .from('profiles')
-    .select('full_name, company_name, phone, bank_name, bank_account, tax_id, business_address')
+    .select('full_name, company_name, phone, bank_name, bank_account, tax_id, business_address, country')
     .eq('id', user?.id)
     .single()
 
   const currencySymbol = getCurrencySymbol(invoice.currency || 'USD')
+  const countryCode = profile?.country || 'US'
+  const countryConfig = COUNTRIES[countryCode] || COUNTRIES.US
 
   const statusColors: Record<string, string> = {
     draft: 'bg-slate-500/20 text-slate-400',
@@ -192,7 +194,7 @@ export default async function InvoiceDetailPage({
 
               {invoice.vat_percent > 0 && (
                 <div className="flex justify-between text-slate-300">
-                  <span>VAT ({invoice.vat_percent}%)</span>
+                  <span>{countryConfig.taxLabel} ({invoice.vat_percent}%)</span>
                   <span>{currencySymbol}{(invoice.total_net * invoice.vat_percent / 100).toFixed(2)}</span>
                 </div>
               )}

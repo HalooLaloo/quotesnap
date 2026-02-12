@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { notFound } from 'next/navigation'
 import { InvoiceItem } from '@/lib/types'
-import { COUNTRIES } from '@/lib/countries'
+import { COUNTRIES, formatDate } from '@/lib/countries'
 
 // Helper to get currency symbol from currency code
 function getCurrencySymbol(currencyCode: string): string {
@@ -39,13 +39,16 @@ export default async function PublicInvoicePage({
   // Get contractor info
   const { data: profile } = await supabase
     .from('profiles')
-    .select('full_name, company_name, phone, email, bank_name, bank_account, tax_id, business_address')
+    .select('full_name, company_name, phone, email, bank_name, bank_account, tax_id, business_address, country')
     .eq('id', invoice.user_id)
     .single()
 
   const contractorName = profile?.company_name || profile?.full_name || 'Contractor'
   const items = (invoice.items || []) as InvoiceItem[]
   const currencySymbol = getCurrencySymbol(invoice.currency || 'USD')
+  const countryCode = profile?.country || 'US'
+  const countryConfig = COUNTRIES[countryCode] || COUNTRIES.US
+  const invoiceTitle = countryConfig.taxInvoiceTitle && invoice.vat_percent > 0 ? 'Tax Invoice' : 'Invoice'
 
   const statusInfo = {
     draft: { label: 'Draft', color: 'bg-slate-500/20 text-slate-400' },
@@ -72,7 +75,7 @@ export default async function PublicInvoicePage({
             </div>
             <span className="text-2xl font-bold text-white">BrickQuote</span>
           </div>
-          <h1 className="text-3xl font-bold text-white">Invoice from {contractorName}</h1>
+          <h1 className="text-3xl font-bold text-white">{invoiceTitle} from {contractorName}</h1>
           <p className="text-slate-400 mt-2">{invoice.invoice_number}</p>
         </div>
 
@@ -142,7 +145,7 @@ export default async function PublicInvoicePage({
 
             {invoice.vat_percent > 0 && (
               <div className="flex justify-between text-slate-300">
-                <span>VAT ({invoice.vat_percent}%)</span>
+                <span>{countryConfig.taxLabel} ({invoice.vat_percent}%)</span>
                 <span>{currencySymbol}{(invoice.total_net * invoice.vat_percent / 100).toFixed(2)}</span>
               </div>
             )}
@@ -195,14 +198,14 @@ export default async function PublicInvoicePage({
             <div>
               <p className="text-slate-400">Invoice Date</p>
               <p className="text-white font-medium">
-                {new Date(invoice.created_at).toLocaleDateString()}
+                {formatDate(invoice.created_at, countryCode)}
               </p>
             </div>
             {invoice.due_date && (
               <div>
                 <p className="text-slate-400">Due Date</p>
                 <p className="text-white font-medium">
-                  {new Date(invoice.due_date).toLocaleDateString()}
+                  {formatDate(invoice.due_date, countryCode)}
                 </p>
               </div>
             )}

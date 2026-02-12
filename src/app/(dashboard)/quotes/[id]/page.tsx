@@ -43,12 +43,14 @@ export default async function QuoteDetailPage({
   // Get contractor profile
   const { data: profile } = await supabase
     .from('profiles')
-    .select('full_name, company_name')
+    .select('full_name, company_name, country')
     .eq('id', user?.id)
     .single()
 
   const contractorName = profile?.company_name || profile?.full_name || ''
   const currencySymbol = getCurrencySymbol(quote.currency || 'USD')
+  const countryCode = profile?.country || 'US'
+  const countryConfig = COUNTRIES[countryCode] || COUNTRIES.US
 
   const isExpired = quote.status !== 'accepted' && quote.status !== 'rejected' && quote.status !== 'expired' &&
     quote.valid_until && new Date(quote.valid_until) < new Date()
@@ -92,7 +94,7 @@ export default async function QuoteDetailPage({
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <ExportPDFButton quote={quote} contractorName={contractorName} />
+            <ExportPDFButton quote={quote} contractorName={contractorName} countryCode={countryCode} />
             <span className={`px-3 py-1 rounded-full text-sm font-medium ${
               isExpired ? statusColors.expired : (statusColors[quote.status] || 'bg-slate-500/20 text-slate-400')
             }`}>
