@@ -323,22 +323,8 @@ function ClientView() {
         <div className="flex justify-end">
           <div className="bg-blue-600 rounded-2xl rounded-tr-md p-3 max-w-[80%]">
             <div className="flex gap-2 mb-2">
-              <div className="w-16 h-16 rounded-lg overflow-hidden relative bg-gradient-to-br from-amber-700 to-amber-900">
-                <div className="absolute inset-0 opacity-60">
-                  <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-amber-950/80 to-transparent" />
-                  <div className="absolute top-2 left-2 w-3 h-3 rounded-full bg-yellow-400/40" />
-                  <div className="absolute bottom-1 left-1 right-1 h-4 bg-stone-400/30 rounded-sm" />
-                </div>
-                <span className="absolute bottom-0.5 right-1 text-[8px] text-white/60">IMG_01</span>
-              </div>
-              <div className="w-16 h-16 rounded-lg overflow-hidden relative bg-gradient-to-br from-stone-600 to-stone-800">
-                <div className="absolute inset-0 opacity-60">
-                  <div className="absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-stone-900/80 to-transparent" />
-                  <div className="absolute top-3 left-2 w-8 h-5 bg-sky-300/20 rounded-sm" />
-                  <div className="absolute bottom-2 left-1 right-1 h-3 bg-stone-500/30 rounded-sm" />
-                </div>
-                <span className="absolute bottom-0.5 right-1 text-[8px] text-white/60">IMG_02</span>
-              </div>
+              <img src="/demo-bathroom-1.jpg" alt="Bathroom renovation" className="w-16 h-16 rounded-lg object-cover" />
+              <img src="/demo-bathroom-2.webp" alt="Bathroom renovation" className="w-16 h-16 rounded-lg object-cover" />
             </div>
             <p className="text-white text-sm">About 65 sqft. Here are some photos</p>
           </div>
