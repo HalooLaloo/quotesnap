@@ -65,13 +65,13 @@ export default async function Home() {
             </div>
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
-              Your clients send photos.
-              <span className="text-blue-400"> AI writes the quote.</span>
+              AI runs your quoting.
+              <span className="text-blue-400"> You run the business.</span>
             </h1>
 
             <p className="text-xl text-slate-400 max-w-2xl mx-auto mb-8">
-              Clients describe the job through an AI chatbot. You get a detailed quote ready to send —
-              complete with line items, pricing, and a professional PDF. No spreadsheets, no back-and-forth.
+              AI chatbot collects project details and photos from your clients. You get ready-made quotes,
+              send professional PDFs, track payments, and convert to invoices — all from one dashboard.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
