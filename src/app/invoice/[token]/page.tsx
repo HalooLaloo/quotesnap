@@ -39,7 +39,7 @@ export default async function PublicInvoicePage({
   // Get contractor info
   const { data: profile } = await supabase
     .from('profiles')
-    .select('full_name, company_name, phone, email, bank_name, bank_account, tax_id, business_address, country')
+    .select('full_name, company_name, phone, email, bank_name, bank_account, bank_routing, tax_id, business_address, country')
     .eq('id', invoice.user_id)
     .single()
 
@@ -158,7 +158,7 @@ export default async function PublicInvoicePage({
         </div>
 
         {/* Payment Details */}
-        {(profile?.bank_name || profile?.bank_account || invoice.payment_terms) && (
+        {(profile?.bank_name || profile?.bank_account || profile?.bank_routing || invoice.payment_terms) && (
           <div className="card mb-6 bg-green-600/10 border-green-500/30">
             <h3 className="font-medium text-green-400 mb-4">Payment Details</h3>
             <div className="space-y-3">
@@ -166,6 +166,12 @@ export default async function PublicInvoicePage({
                 <div>
                   <p className="text-slate-400 text-sm">Bank</p>
                   <p className="text-white">{profile.bank_name}</p>
+                </div>
+              )}
+              {profile?.bank_routing && (
+                <div>
+                  <p className="text-slate-400 text-sm">{countryConfig.bankRoutingLabel}</p>
+                  <p className="text-white font-mono">{profile.bank_routing}</p>
                 </div>
               )}
               {profile?.bank_account && (

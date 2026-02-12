@@ -18,6 +18,9 @@ export interface CountryConfig {
   showCompanyRegNumber: boolean
   companyRegLabel?: string
   companyRegPlaceholder?: string
+  /** Label for sort code / routing number field */
+  bankRoutingLabel: string
+  bankRoutingPlaceholder: string
 }
 
 export const COUNTRIES: Record<string, CountryConfig> = {
@@ -34,6 +37,8 @@ export const COUNTRIES: Record<string, CountryConfig> = {
     dateFormat: 'MM/DD/YYYY',
     taxInvoiceTitle: false,
     showCompanyRegNumber: false,
+    bankRoutingLabel: 'Routing Number',
+    bankRoutingPlaceholder: '021000021',
   },
   GB: {
     code: 'GB',
@@ -50,6 +55,8 @@ export const COUNTRIES: Record<string, CountryConfig> = {
     showCompanyRegNumber: true,
     companyRegLabel: 'Company Reg. Number',
     companyRegPlaceholder: '12345678',
+    bankRoutingLabel: 'Sort Code',
+    bankRoutingPlaceholder: '12-34-56',
   },
   AU: {
     code: 'AU',
@@ -64,6 +71,8 @@ export const COUNTRIES: Record<string, CountryConfig> = {
     dateFormat: 'DD/MM/YYYY',
     taxInvoiceTitle: true,
     showCompanyRegNumber: false,
+    bankRoutingLabel: 'BSB Number',
+    bankRoutingPlaceholder: '062-000',
   },
   CA: {
     code: 'CA',
@@ -78,6 +87,8 @@ export const COUNTRIES: Record<string, CountryConfig> = {
     dateFormat: 'DD/MM/YYYY',
     taxInvoiceTitle: false,
     showCompanyRegNumber: false,
+    bankRoutingLabel: 'Transit Number',
+    bankRoutingPlaceholder: '12345-001',
   },
   IE: {
     code: 'IE',
@@ -92,6 +103,8 @@ export const COUNTRIES: Record<string, CountryConfig> = {
     dateFormat: 'DD/MM/YYYY',
     taxInvoiceTitle: false,
     showCompanyRegNumber: false,
+    bankRoutingLabel: 'BIC / SWIFT',
+    bankRoutingPlaceholder: 'AIBKIE2D',
   },
   NZ: {
     code: 'NZ',
@@ -106,6 +119,8 @@ export const COUNTRIES: Record<string, CountryConfig> = {
     dateFormat: 'DD/MM/YYYY',
     taxInvoiceTitle: true,
     showCompanyRegNumber: false,
+    bankRoutingLabel: 'BIC / SWIFT',
+    bankRoutingPlaceholder: 'ANZBNZ22',
   },
 }
 

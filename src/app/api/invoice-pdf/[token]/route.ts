@@ -60,7 +60,7 @@ export async function GET(
     // Get contractor info
     const { data: profile } = await supabase
       .from('profiles')
-      .select('full_name, company_name, phone, email, bank_name, bank_account, tax_id, business_address, country, company_reg_number')
+      .select('full_name, company_name, phone, email, bank_name, bank_account, bank_routing, tax_id, business_address, country, company_reg_number')
       .eq('id', invoice.user_id)
       .single()
 
@@ -225,7 +225,7 @@ export async function GET(
     doc.setTextColor(0, 0, 0)
 
     // Payment Details — styled box
-    if (profile?.bank_name || profile?.bank_account || invoice.payment_terms) {
+    if (profile?.bank_name || profile?.bank_account || profile?.bank_routing || invoice.payment_terms) {
       if (y > 220) {
         doc.addPage()
         y = 20
@@ -237,6 +237,7 @@ export async function GET(
       const boxStartY = y - 4
       let boxContentHeight = 12 // header + padding
       if (profile?.bank_name) boxContentHeight += 7
+      if (profile?.bank_routing) boxContentHeight += 7
       if (profile?.bank_account) boxContentHeight += 7
       if (invoice.payment_terms) boxContentHeight += 7
       if (invoice.due_date) boxContentHeight += 7
@@ -260,6 +261,15 @@ export async function GET(
         doc.text('Bank:', 28, y)
         doc.setFont('helvetica', 'normal')
         doc.text(toAscii(profile.bank_name), 55, y)
+      }
+      if (profile?.bank_routing) {
+        y += 7
+        doc.setFont('helvetica', 'bold')
+        doc.text(`${countryConfig.bankRoutingLabel}:`, 28, y)
+        doc.setFont('helvetica', 'normal')
+        doc.setFont('courier', 'normal')
+        doc.text(profile.bank_routing, 75, y)
+        doc.setFont('helvetica', 'normal')
       }
       if (profile?.bank_account) {
         y += 7

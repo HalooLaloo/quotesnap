@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
     // Get contractor profile
     const { data: profile } = await supabase
       .from('profiles')
-      .select('full_name, company_name, phone, bank_name, bank_account, tax_id, business_address, country')
+      .select('full_name, company_name, phone, bank_name, bank_account, bank_routing, tax_id, business_address, country')
       .eq('id', user?.id)
       .single()
 
@@ -84,6 +84,8 @@ export async function POST(request: NextRequest) {
       notes: invoice.notes,
       invoiceUrl,
       bankName: profile?.bank_name,
+      bankRouting: profile?.bank_routing,
+      bankRoutingLabel: countryConfig.bankRoutingLabel,
       bankAccount: profile?.bank_account,
       paymentTerms: invoice.payment_terms,
       currencySymbol,
@@ -146,6 +148,8 @@ interface InvoiceEmailData {
   notes?: string
   invoiceUrl?: string
   bankName?: string
+  bankRouting?: string
+  bankRoutingLabel?: string
   bankAccount?: string
   paymentTerms?: string
   currencySymbol: string
@@ -192,11 +196,12 @@ function generateInvoiceEmailHtml(data: InvoiceEmailData): string {
     </tr>
   ` : ''
 
-  const bankInfoHtml = (data.bankName || data.bankAccount) ? `
+  const bankInfoHtml = (data.bankName || data.bankAccount || data.bankRouting) ? `
     <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 20px; margin-bottom: 24px;">
       <h3 style="margin: 0 0 14px 0; color: #166534; font-size: 15px; font-weight: 700;">Payment Details</h3>
       <table style="width: 100%; border-collapse: collapse;">
-        ${data.bankName ? `<tr><td style="padding: 4px 0; color: #6b7280; font-size: 13px; width: 80px;">Bank</td><td style="padding: 4px 0; color: #374151; font-size: 14px; font-weight: 600;">${data.bankName}</td></tr>` : ''}
+        ${data.bankName ? `<tr><td style="padding: 4px 0; color: #6b7280; font-size: 13px; width: 100px;">Bank</td><td style="padding: 4px 0; color: #374151; font-size: 14px; font-weight: 600;">${data.bankName}</td></tr>` : ''}
+        ${data.bankRouting ? `<tr><td style="padding: 4px 0; color: #6b7280; font-size: 13px;">${data.bankRoutingLabel || 'Sort Code'}</td><td style="padding: 4px 0; color: #374151; font-size: 14px; font-weight: 600; font-family: 'Courier New', monospace; letter-spacing: 0.5px;">${data.bankRouting}</td></tr>` : ''}
         ${data.bankAccount ? `<tr><td style="padding: 4px 0; color: #6b7280; font-size: 13px;">Account</td><td style="padding: 4px 0; color: #374151; font-size: 14px; font-weight: 600; font-family: 'Courier New', monospace; letter-spacing: 0.5px;">${data.bankAccount}</td></tr>` : ''}
         ${data.paymentTerms ? `<tr><td style="padding: 4px 0; color: #6b7280; font-size: 13px;">Terms</td><td style="padding: 4px 0; color: #374151; font-size: 14px;">${data.paymentTerms}</td></tr>` : ''}
       </table>

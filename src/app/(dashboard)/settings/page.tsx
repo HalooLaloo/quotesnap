@@ -43,6 +43,7 @@ export default function SettingsPage() {
   const [businessAddress, setBusinessAddress] = useState('')
   const [bankName, setBankName] = useState('')
   const [bankAccount, setBankAccount] = useState('')
+  const [bankRouting, setBankRouting] = useState('')
   const [companyRegNumber, setCompanyRegNumber] = useState('')
 
   // Load profile on mount
@@ -74,6 +75,7 @@ export default function SettingsPage() {
           setBusinessAddress(profile.business_address || '')
           setBankName(profile.bank_name || '')
           setBankAccount(profile.bank_account || '')
+          setBankRouting(profile.bank_routing || '')
           setCompanyRegNumber(profile.company_reg_number || '')
           setSubscriptionStatus(profile.subscription_status)
           setStripePriceId(profile.stripe_price_id)
@@ -113,6 +115,7 @@ export default function SettingsPage() {
           business_address: businessAddress,
           bank_name: bankName,
           bank_account: bankAccount,
+          bank_routing: bankRouting || null,
           company_reg_number: companyRegNumber || null,
         })
         .eq('id', user.id)
@@ -340,6 +343,16 @@ export default function SettingsPage() {
               onChange={(e) => setBankName(e.target.value)}
               className="input"
               placeholder="Bank of America"
+            />
+          </div>
+          <div>
+            <label className="label">{selectedCountry.bankRoutingLabel}</label>
+            <input
+              type="text"
+              value={bankRouting}
+              onChange={(e) => setBankRouting(e.target.value)}
+              className="input"
+              placeholder={selectedCountry.bankRoutingPlaceholder}
             />
           </div>
           <div>
