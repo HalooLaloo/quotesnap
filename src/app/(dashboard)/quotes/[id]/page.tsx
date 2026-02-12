@@ -50,11 +50,15 @@ export default async function QuoteDetailPage({
   const contractorName = profile?.company_name || profile?.full_name || ''
   const currencySymbol = getCurrencySymbol(quote.currency || 'USD')
 
+  const isExpired = quote.status !== 'accepted' && quote.status !== 'rejected' && quote.status !== 'expired' &&
+    quote.valid_until && new Date(quote.valid_until) < new Date()
+
   const statusColors: Record<string, string> = {
     draft: 'bg-slate-500/20 text-slate-400',
     sent: 'bg-blue-500/20 text-blue-400',
     accepted: 'bg-green-500/20 text-green-400',
     rejected: 'bg-red-500/20 text-red-400',
+    expired: 'bg-orange-500/20 text-orange-400',
   }
 
   const items = (quote.items || []) as QuoteItem[]
@@ -89,11 +93,15 @@ export default async function QuoteDetailPage({
           </div>
           <div className="flex items-center gap-3">
             <ExportPDFButton quote={quote} contractorName={contractorName} />
-            <span className={`px-3 py-1 rounded-full text-sm font-medium ${statusColors[quote.status] || 'bg-slate-500/20 text-slate-400'}`}>
-              {quote.status === 'draft' ? 'Draft' :
+            <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+              isExpired ? statusColors.expired : (statusColors[quote.status] || 'bg-slate-500/20 text-slate-400')
+            }`}>
+              {isExpired ? 'Expired' :
+               quote.status === 'draft' ? 'Draft' :
                quote.status === 'sent' ? 'Sent' :
                quote.status === 'accepted' ? 'Accepted' :
-               quote.status === 'rejected' ? 'Rejected' : quote.status}
+               quote.status === 'rejected' ? 'Rejected' :
+               quote.status === 'expired' ? 'Expired' : quote.status}
             </span>
           </div>
         </div>

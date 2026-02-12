@@ -283,15 +283,21 @@ function generateQuoteEmailHtml(data: QuoteEmailData): string {
       <!-- CTA -->
       <div style="text-align: center; margin: 32px 0;">
         ${data.quoteUrl ? `
-          <div style="background: #f0fdf4; border: 2px solid #22c55e; border-radius: 12px; padding: 24px; margin-bottom: 24px;">
-            <p style="color: #166534; font-size: 15px; margin: 0 0 16px 0; font-weight: 500;">
-              Happy with the quote? Accept it with one click:
+          <div style="background: #eff6ff; border: 2px solid #3b82f6; border-radius: 12px; padding: 24px; margin-bottom: 24px;">
+            <p style="color: #1e40af; font-size: 15px; margin: 0 0 4px 0; font-weight: 600;">
+              Please review and respond
             </p>
-            <a href="${data.quoteUrl}" style="display: inline-block; background: #22c55e; color: white; padding: 16px 40px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 17px;">
-              View &amp; Accept Quote
+            <p style="color: #6b7280; font-size: 13px; margin: 0 0 16px 0;">
+              Click below to view the full quote, download a PDF, and let us know if you'd like to proceed.
+            </p>
+            <a href="${data.quoteUrl}" style="display: inline-block; background: #22c55e; color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 16px; margin-right: 8px;">
+              Accept Quote
             </a>
-            <p style="color: #6b7280; font-size: 12px; margin: 16px 0 0 0;">
-              Click the button to review the full quote, download a PDF, and confirm your acceptance.
+            <a href="${data.quoteUrl}" style="display: inline-block; background: #e5e7eb; color: #374151; padding: 14px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px;">
+              Decline
+            </a>
+            <p style="color: #9ca3af; font-size: 11px; margin: 16px 0 0 0;">
+              ${data.validUntil ? `This quote expires on ${new Date(data.validUntil).toLocaleDateString('en-US')}. Please respond before then.` : 'Please respond at your earliest convenience.'}
             </p>
           </div>
           <p style="color: #9ca3af; font-size: 12px; margin: 0 0 16px 0;">Or open this link in your browser: ${data.quoteUrl}</p>

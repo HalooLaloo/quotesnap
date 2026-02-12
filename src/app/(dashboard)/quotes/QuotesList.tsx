@@ -87,7 +87,7 @@ export function QuotesList({ quotes }: QuotesListProps) {
 
       // Status filter
       if (statusFilter === 'expired') {
-        return isExpired(quote)
+        return quote.status === 'expired' || isExpired(quote)
       }
       if (statusFilter === 'viewed') {
         return isViewed(quote)
@@ -109,7 +109,7 @@ export function QuotesList({ quotes }: QuotesListProps) {
       if (isViewed(q)) counts.viewed++
       if (q.status === 'accepted') counts.accepted++
       if (q.status === 'rejected') counts.rejected++
-      if (isExpired(q)) counts.expired++
+      if (q.status === 'expired' || isExpired(q)) counts.expired++
     })
     return counts
   }, [quotes])
@@ -120,6 +120,7 @@ export function QuotesList({ quotes }: QuotesListProps) {
     viewed: 'bg-purple-500/20 text-purple-400',
     accepted: 'bg-green-500/20 text-green-400',
     rejected: 'bg-red-500/20 text-red-400',
+    expired: 'bg-orange-500/20 text-orange-400',
   }
 
   const filterTabs: { key: StatusFilter; label: string; color?: string }[] = [
@@ -176,7 +177,7 @@ export function QuotesList({ quotes }: QuotesListProps) {
       {filteredQuotes.length > 0 ? (
         <div className="space-y-3">
           {filteredQuotes.map((quote) => {
-            const expired = isExpired(quote)
+            const expired = quote.status === 'expired' || isExpired(quote)
             const viewed = isViewed(quote)
             const currencySymbol = getCurrencySymbol(quote.currency || 'USD')
             const total = quote.total_gross || quote.total || 0

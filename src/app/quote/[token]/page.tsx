@@ -63,7 +63,13 @@ export default async function PublicQuotePage({
     viewed: { label: 'Viewed', color: 'bg-purple-500/20 text-purple-400' },
     accepted: { label: 'Accepted', color: 'bg-green-500/20 text-green-400' },
     rejected: { label: 'Rejected', color: 'bg-red-500/20 text-red-400' },
+    expired: { label: 'Expired', color: 'bg-orange-500/20 text-orange-400' },
   }
+
+  // Check if expired (DB status or date-based fallback)
+  const isExpired = quote.status === 'expired' || (
+    quote.status === 'sent' && quote.valid_until && new Date(quote.valid_until) < new Date()
+  )
 
   // If sent and viewed, show as viewed
   const displayStatus = quote.status === 'sent' && quote.viewed_at ? 'viewed' : quote.status
@@ -108,6 +114,15 @@ export default async function PublicQuotePage({
         {quote.status === 'rejected' && (
           <div className="bg-red-600/20 border border-red-500/30 rounded-lg p-4 mb-6 text-center">
             <p className="text-red-400 font-medium">You have declined this quote</p>
+          </div>
+        )}
+
+        {isExpired && (
+          <div className="bg-orange-600/20 border border-orange-500/30 rounded-lg p-4 mb-6 text-center">
+            <p className="text-orange-400 font-medium">This quote has expired</p>
+            <p className="text-orange-400/70 text-sm mt-1">
+              Please contact {contractorName} if you&apos;d still like to proceed.
+            </p>
           </div>
         )}
 
@@ -264,8 +279,8 @@ export default async function PublicQuotePage({
           </div>
         </div>
 
-        {/* Actions */}
-        {quote.status === 'sent' && (
+        {/* Actions - show only for active (non-expired) sent quotes */}
+        {quote.status === 'sent' && !isExpired && (
           <QuoteActions token={token} />
         )}
 

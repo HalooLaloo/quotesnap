@@ -37,11 +37,22 @@ export async function GET(request: NextRequest) {
     const resend = new Resend(process.env.RESEND_API_KEY)
 
     const results = {
+      expiredQuotes: 0,
       newRequests: 0,
       overdueInvoices: 0,
       expiringQuotes: 0,
       errors: [] as string[],
     }
+
+    // Auto-expire quotes past their valid_until date
+    const { data: expiredQuotes } = await supabase
+      .from('qs_quotes')
+      .update({ status: 'expired' })
+      .eq('status', 'sent')
+      .lt('valid_until', new Date().toISOString())
+      .select('id')
+
+    results.expiredQuotes = expiredQuotes?.length || 0
 
     // Get all users
     const { data: profiles } = await supabase
