@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { FAQSection } from '@/components/FAQSection'
+import { HeroMockup } from '@/components/HeroMockup'
 
 export default async function Home() {
   const supabase = await createClient()
@@ -79,9 +80,9 @@ export default async function Home() {
                   href={`/request/${demoUserId}`}
                   className="w-full sm:w-auto bg-orange-600 hover:bg-orange-700 text-white px-8 py-4 rounded-xl text-lg font-semibold transition flex items-center justify-center gap-2"
                 >
-                  Try Live Demo
+                  See how clients request quotes
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                   </svg>
                 </Link>
               ) : null}
@@ -119,139 +120,8 @@ export default async function Home() {
             </div>
           </div>
 
-          {/* App Screenshot Mockup */}
-          <div className="relative max-w-5xl mx-auto">
-            {/* Glow effects */}
-            <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl" />
-            <div className="absolute -bottom-20 right-1/4 w-72 h-72 bg-purple-500/10 rounded-full blur-3xl" />
-
-            {/* Browser mockup */}
-            <div className="relative rounded-xl overflow-hidden border border-[#1e3a5f] bg-[#0d1f35] shadow-2xl">
-              {/* Browser header */}
-              <div className="flex items-center gap-2 px-4 py-3 bg-[#132039] border-b border-[#1e3a5f]">
-                <div className="flex gap-1.5">
-                  <div className="w-3 h-3 rounded-full bg-red-500/80" />
-                  <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
-                  <div className="w-3 h-3 rounded-full bg-green-500/80" />
-                </div>
-                <div className="flex-1 flex justify-center">
-                  <div className="px-4 py-1.5 rounded-md bg-[#0d1f35] text-slate-400 text-xs flex items-center gap-2">
-                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4" />
-                    </svg>
-                    app.brickquote.app
-                  </div>
-                </div>
-              </div>
-
-              {/* App content preview */}
-              <div className="p-6 bg-[#0a1628]">
-                {/* Dashboard header */}
-                <div className="flex items-center justify-between mb-6">
-                  <div>
-                    <h3 className="text-white font-semibold">Your Quotes</h3>
-                    <p className="text-slate-500 text-sm">3 pending client approval</p>
-                  </div>
-                  <div className="flex gap-2">
-                    <div className="px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg">+ New Quote</div>
-                  </div>
-                </div>
-
-                {/* Quote cards */}
-                <div className="space-y-3">
-                  <div className="p-4 bg-[#132039] rounded-lg border border-[#1e3a5f] flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center">
-                        <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                      </div>
-                      <div>
-                        <p className="text-white font-medium">Bathroom Remodel - 123 Oak Street</p>
-                        <p className="text-slate-500 text-sm">John Smith • Accepted</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-white font-semibold">$8,500</p>
-                      <p className="text-green-400 text-xs">Accepted</p>
-                    </div>
-                  </div>
-
-                  <div className="p-4 bg-[#132039] rounded-lg border border-[#1e3a5f] flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 bg-amber-500/20 rounded-lg flex items-center justify-center">
-                        <svg className="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                      </div>
-                      <div>
-                        <p className="text-white font-medium">Interior Painting - 2,500 sqft</p>
-                        <p className="text-slate-500 text-sm">Sarah Johnson • Pending</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-white font-semibold">$4,200</p>
-                      <p className="text-amber-400 text-xs">Sent</p>
-                    </div>
-                  </div>
-
-                  <div className="p-4 bg-[#132039] rounded-lg border border-blue-500/50 flex items-center justify-between relative overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-transparent" />
-                    <div className="flex items-center gap-4 relative">
-                      <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
-                        <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                        </svg>
-                      </div>
-                      <div>
-                        <p className="text-white font-medium flex items-center gap-2">
-                          New Request
-                          <span className="px-2 py-0.5 bg-blue-500 text-white text-xs rounded-full">AI</span>
-                        </p>
-                        <p className="text-slate-500 text-sm">Click to generate quote with AI</p>
-                      </div>
-                    </div>
-                    <div className="relative">
-                      <div className="px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg">Generate Quote</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Floating badges */}
-            <div className="absolute -left-4 top-1/4 transform -translate-x-full hidden lg:block animate-pulse">
-              <div className="bg-[#132039] border border-[#1e3a5f] rounded-lg p-3 shadow-xl">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center">
-                    <svg className="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-400">Quote accepted!</p>
-                    <p className="text-sm font-medium text-white">+$8,500</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="absolute -right-4 top-1/3 transform translate-x-full hidden lg:block animate-pulse" style={{ animationDelay: '1s' }}>
-              <div className="bg-[#132039] border border-[#1e3a5f] rounded-lg p-3 shadow-xl">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center">
-                    <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-400">AI suggestion</p>
-                    <p className="text-sm font-medium text-white">+3 items added</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          {/* App Screenshot Mockup with tabs */}
+          <HeroMockup />
         </div>
       </section>
 
@@ -483,148 +353,6 @@ export default async function Home() {
               <p className="text-slate-400 text-sm">
                 Convert accepted quotes to invoices in one click. Track payments, send reminders, and mark as paid.
               </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Client Flow Preview */}
-      <section className="py-24 px-4">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/10 border border-green-500/20 mb-6">
-                <svg className="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
-                </svg>
-                <span className="text-sm text-green-400 font-medium">Client Experience</span>
-              </div>
-              <h2 className="text-3xl sm:text-4xl font-bold text-white mb-6">
-                Clients will love the simplicity
-              </h2>
-              <p className="text-slate-400 text-lg mb-8">
-                No more endless email chains. Clients submit requests through your link,
-                review quotes online, and accept with one click. Professional and hassle-free.
-              </p>
-
-              <div className="space-y-4">
-                <div className="flex items-start gap-4">
-                  <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0 mt-1">
-                    <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h4 className="text-white font-medium mb-1">Photo upload form</h4>
-                    <p className="text-slate-400 text-sm">Clients can attach photos and detailed project descriptions</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-4">
-                  <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center flex-shrink-0 mt-1">
-                    <svg className="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h4 className="text-white font-medium mb-1">AI conversation</h4>
-                    <p className="text-slate-400 text-sm">Chatbot asks follow-up questions so you don&apos;t have to</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-4">
-                  <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0 mt-1">
-                    <svg className="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h4 className="text-white font-medium mb-1">Online acceptance</h4>
-                    <p className="text-slate-400 text-sm">Clients review and accept quotes without printing or scanning</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Phone mockup */}
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 blur-3xl" />
-              <div className="relative bg-[#132039] border border-[#1e3a5f] rounded-[2.5rem] p-3 max-w-sm mx-auto">
-                <div className="bg-[#0a1628] rounded-[2rem] overflow-hidden">
-                  {/* Phone notch */}
-                  <div className="h-6 bg-[#0a1628] flex items-center justify-center">
-                    <div className="w-20 h-4 bg-black rounded-full" />
-                  </div>
-
-                  {/* Chat content */}
-                  <div className="p-4 space-y-3">
-                    <div className="flex justify-center mb-4">
-                      <div className="px-3 py-1 bg-[#1e3a5f] rounded-full text-xs text-slate-400">
-                        Today, 2:32 PM
-                      </div>
-                    </div>
-
-                    {/* AI message */}
-                    <div className="flex gap-2">
-                      <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0">
-                        <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                        </svg>
-                      </div>
-                      <div className="bg-[#1e3a5f] rounded-2xl rounded-tl-md p-3 max-w-[80%]">
-                        <p className="text-white text-sm">Hi! What&apos;s the square footage of the bathroom you want to remodel?</p>
-                      </div>
-                    </div>
-
-                    {/* User message */}
-                    <div className="flex justify-end">
-                      <div className="bg-blue-600 rounded-2xl rounded-tr-md p-3 max-w-[80%]">
-                        <p className="text-white text-sm">About 65 sqft, I want new tiles and fixtures</p>
-                      </div>
-                    </div>
-
-                    {/* AI message */}
-                    <div className="flex gap-2">
-                      <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0">
-                        <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                        </svg>
-                      </div>
-                      <div className="bg-[#1e3a5f] rounded-2xl rounded-tl-md p-3 max-w-[80%]">
-                        <p className="text-white text-sm">Got it! Have you already picked out tiles, or do you need recommendations?</p>
-                      </div>
-                    </div>
-
-                    {/* Typing indicator */}
-                    <div className="flex gap-2">
-                      <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0">
-                        <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                        </svg>
-                      </div>
-                      <div className="bg-[#1e3a5f] rounded-2xl rounded-tl-md p-3">
-                        <div className="flex gap-1">
-                          <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                          <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                          <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Input area */}
-                  <div className="p-4 border-t border-[#1e3a5f]">
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1 bg-[#1e3a5f] rounded-full px-4 py-2">
-                        <p className="text-slate-500 text-sm">Type a message...</p>
-                      </div>
-                      <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
-                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                        </svg>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </div>
