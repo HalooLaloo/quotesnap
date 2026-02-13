@@ -55,14 +55,14 @@ function setupNativeBridge() {
     const callbackId = `cb_${++callbackCounter}`
     callbacks.set(callbackId, {
       resolve: (data: any) => callback?.(data),
-      reject: () => {},
+      reject: (err: any) => callback?.(null, err),
     })
     const msg = JSON.stringify({ callbackId, pluginId, methodName, options: options || {} })
     const bridge = (window as any).androidBridge
     if (bridge?.postMessage) {
       bridge.postMessage(msg)
     }
-    return callbackId
+    return { callbackId, remove: () => { callbacks.delete(callbackId) } }
   }
 
   // Set PluginHeaders so registerPlugin creates native proxies
@@ -81,6 +81,9 @@ function setupNativeBridge() {
           { name: 'createChannel', rtype: 'promise' },
           { name: 'deleteChannel', rtype: 'promise' },
           { name: 'listChannels', rtype: 'promise' },
+          { name: 'addListener' },
+          { name: 'removeListener' },
+          { name: 'removeAllListeners', rtype: 'promise' },
         ],
       },
     ]
