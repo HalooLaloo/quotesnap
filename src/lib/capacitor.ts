@@ -1,39 +1,34 @@
-import { Capacitor } from '@capacitor/core'
+import { Capacitor, registerPlugin } from '@capacitor/core'
 import { StatusBar, Style } from '@capacitor/status-bar'
 import { App } from '@capacitor/app'
 import { createClient } from '@/lib/supabase/client'
 
-// Ensure Capacitor native bridge has PluginHeaders for remote URL mode.
-// When server.url points to a remote URL, the bridge JS injection may not
-// set PluginHeaders, causing plugins to report "not implemented".
-function ensurePluginHeaders() {
-  const cap = Capacitor as any
-  if (cap.isNativePlatform() && !cap.PluginHeaders) {
-    cap.PluginHeaders = [
-      {
-        name: 'PushNotifications',
-        methods: [
-          { name: 'checkPermissions' },
-          { name: 'requestPermissions' },
-          { name: 'register' },
-          { name: 'unregister' },
-          { name: 'getDeliveredNotifications' },
-          { name: 'removeDeliveredNotifications' },
-          { name: 'removeAllDeliveredNotifications' },
-          { name: 'createChannel' },
-          { name: 'deleteChannel' },
-          { name: 'listChannels' },
-        ],
-      },
-    ]
-  }
+// For remote URL mode (server.url), the native bridge doesn't inject PluginHeaders.
+// We must set them BEFORE calling registerPlugin so it creates a native proxy.
+const cap = Capacitor as any
+if (typeof window !== 'undefined' && cap.isNativePlatform && cap.isNativePlatform() && !cap.PluginHeaders) {
+  cap.PluginHeaders = [
+    {
+      name: 'PushNotifications',
+      methods: [
+        { name: 'checkPermissions' },
+        { name: 'requestPermissions' },
+        { name: 'register' },
+        { name: 'unregister' },
+        { name: 'getDeliveredNotifications' },
+        { name: 'removeDeliveredNotifications' },
+        { name: 'removeAllDeliveredNotifications' },
+        { name: 'createChannel' },
+        { name: 'deleteChannel' },
+        { name: 'listChannels' },
+      ],
+    },
+  ]
 }
 
-ensurePluginHeaders()
-
-// Import PushNotifications AFTER ensuring headers are set
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-let PushNotifications: any = null
+// Register plugin ourselves — this creates a native bridge proxy
+// using the PluginHeaders we set above
+const PushNotifications: any = registerPlugin('PushNotifications')
 
 export function initCapacitor() {
   if (!Capacitor.isNativePlatform()) return
@@ -55,12 +50,6 @@ export function initCapacitor() {
 
 async function initPushNotifications() {
   try {
-    // Dynamic import to ensure PluginHeaders are set first
-    if (!PushNotifications) {
-      const mod = await import('@capacitor/push-notifications')
-      PushNotifications = mod.PushNotifications
-    }
-
     // Wait for user to be logged in before registering push
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
@@ -109,8 +98,11 @@ async function initPushNotifications() {
         window.location.href = url
       }
     })
-  } catch {
-    // Push not available on this device
+  } catch (err) {
+    // DEBUG: temporarily show errors
+    if (typeof alert !== 'undefined') {
+      alert('[PUSH ERROR] ' + (err instanceof Error ? err.message : String(err)))
+    }
   }
 }
 
