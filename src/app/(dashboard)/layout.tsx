@@ -60,7 +60,7 @@ export default async function DashboardLayout({
       {/* Main content */}
       <main className="flex-1 overflow-auto lg:ml-0">
         {/* Mobile top padding for menu button + safe area */}
-        <div className="lg:hidden h-14" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }} />
+        <div className="lg:hidden h-20" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }} />
         {children}
       </main>
 

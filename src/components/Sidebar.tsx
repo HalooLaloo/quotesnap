@@ -77,7 +77,7 @@ export function Sidebar({ userEmail, checklistData }: SidebarProps) {
       <button
         onClick={() => setIsMobileOpen(true)}
         className="lg:hidden fixed left-3 z-40 p-2 bg-[#132039] border border-[#1e3a5f] rounded-xl text-orange-500 hover:bg-[#1e3a5f] shadow-lg"
-        style={{ top: 'max(12px, env(safe-area-inset-top, 12px))' }}
+        style={{ top: 'calc(env(safe-area-inset-top, 0px) + 36px)' }}
       >
         <svg className="w-7 h-7" viewBox="0 0 24 24" fill="currentColor">
           <rect x="2" y="6" width="9" height="5" rx="0.5" />
@@ -97,12 +97,17 @@ export function Sidebar({ userEmail, checklistData }: SidebarProps) {
       )}
 
       {/* Sidebar */}
-      <aside className={`
-        fixed lg:static inset-y-0 left-0 z-50
-        w-64 bg-[#0a1628] border-r border-[#1e3a5f] flex flex-col
-        transform transition-transform duration-200 ease-in-out
-        ${isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-      `}>
+      <aside
+        className={`
+          fixed lg:static inset-y-0 left-0 z-50
+          w-64 bg-[#0a1628] border-r border-[#1e3a5f] flex flex-col
+          transform transition-transform duration-200 ease-in-out
+          ${isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        `}
+        style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
+      >
+        {/* Spacer for mobile status bar */}
+        <div className="lg:hidden h-8 shrink-0" />
         {/* Logo */}
         <div className="p-4 border-b border-[#1e3a5f] flex items-center justify-between">
           <Link href="/requests" className="flex items-center gap-2" onClick={() => setIsMobileOpen(false)}>
