@@ -66,45 +66,51 @@ export default async function QuoteDetailPage({
   const items = (quote.items || []) as QuoteItem[]
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       {/* Header */}
-      <div className="mb-8">
+      <div className="mb-6 md:mb-8">
         <Link
           href="/quotes"
-          className="text-slate-400 hover:text-white text-sm mb-4 inline-flex items-center gap-1"
+          className="text-slate-400 hover:text-white text-sm mb-3 inline-flex items-center gap-1"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
           Back to Quotes
         </Link>
-        <div className="flex items-start justify-between mt-2">
-          <div>
-            <h1 className="text-3xl font-bold text-white">
-              Quote for {quote.qs_quote_requests?.client_name || 'Client'}
-            </h1>
-            <p className="text-slate-400 mt-1">
-              Created {new Date(quote.created_at).toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-              })}
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <ExportPDFButton quote={quote} contractorName={contractorName} countryCode={countryCode} />
-            <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-              isExpired ? statusColors.expired : (statusColors[quote.status] || 'bg-slate-500/20 text-slate-400')
-            }`}>
-              {isExpired ? 'Expired' :
-               quote.status === 'draft' ? 'Draft' :
-               quote.status === 'sent' ? 'Sent' :
-               quote.status === 'accepted' ? 'Accepted' :
-               quote.status === 'rejected' ? 'Rejected' :
-               quote.status === 'expired' ? 'Expired' : quote.status}
-            </span>
+
+        <div className="card mt-2">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className={`shrink-0 px-2.5 py-0.5 text-xs font-medium rounded-full ${
+                  isExpired ? statusColors.expired : (statusColors[quote.status] || 'bg-slate-500/20 text-slate-400')
+                }`}>
+                  {isExpired ? 'Expired' :
+                   quote.status === 'draft' ? 'Draft' :
+                   quote.status === 'sent' ? 'Sent' :
+                   quote.status === 'accepted' ? 'Accepted' :
+                   quote.status === 'rejected' ? 'Rejected' :
+                   quote.status === 'expired' ? 'Expired' : quote.status}
+                </span>
+                <span className="text-slate-500 text-sm">
+                  {new Date(quote.created_at).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                  })}
+                </span>
+              </div>
+              <h1 className="text-xl md:text-2xl font-bold text-white mt-2">
+                {quote.qs_quote_requests?.client_name || 'Client'}
+              </h1>
+              {quote.qs_quote_requests?.client_email && (
+                <p className="text-slate-400 text-sm mt-0.5">{quote.qs_quote_requests.client_email}</p>
+              )}
+            </div>
+            <div className="shrink-0">
+              <ExportPDFButton quote={quote} contractorName={contractorName} countryCode={countryCode} />
+            </div>
           </div>
         </div>
       </div>

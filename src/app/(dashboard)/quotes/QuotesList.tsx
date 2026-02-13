@@ -157,20 +157,36 @@ export function QuotesList({ quotes }: QuotesListProps) {
       </div>
 
       {/* Status Tabs */}
-      <div className="flex flex-wrap gap-2 mb-6 border-b border-slate-700 pb-4">
-        {filterTabs.map(tab => (
-          <button
-            key={tab.key}
-            onClick={() => setStatusFilter(tab.key)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              statusFilter === tab.key
-                ? 'bg-blue-600 text-white'
-                : `bg-slate-700/50 hover:bg-slate-700 ${tab.color || 'text-slate-300'}`
-            }`}
-          >
-            {tab.label} ({statusCounts[tab.key]})
-          </button>
-        ))}
+      <div className="flex gap-1 mb-6 border-b border-slate-700 overflow-x-auto pb-px -mx-1 px-1">
+        {filterTabs.map(tab => {
+          const isActive = statusFilter === tab.key
+          const count = statusCounts[tab.key]
+          return (
+            <button
+              key={tab.key}
+              onClick={() => setStatusFilter(tab.key)}
+              className={`relative px-3 py-2.5 text-sm font-medium whitespace-nowrap transition-colors ${
+                isActive
+                  ? 'text-blue-400'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              {tab.label}
+              {count > 0 && (
+                <span className={`ml-1.5 text-xs px-1.5 py-0.5 rounded-full ${
+                  isActive
+                    ? 'bg-blue-600/30 text-blue-300'
+                    : 'bg-slate-700 text-slate-500'
+                }`}>
+                  {count}
+                </span>
+              )}
+              {isActive && (
+                <span className="absolute bottom-0 left-2 right-2 h-0.5 bg-blue-400 rounded-full" />
+              )}
+            </button>
+          )
+        })}
       </div>
 
       {/* Quote List */}
@@ -196,71 +212,73 @@ export function QuotesList({ quotes }: QuotesListProps) {
                     : 'bg-slate-700/50'
                 }`}
               >
-                <div className="flex items-center justify-between">
-                  <Link href={`/quotes/${quote.id}`} className="flex-1 min-w-0 hover:opacity-80">
-                    <div className="flex items-center gap-3 mb-1">
-                      <p className="text-white font-medium text-lg">
-                        {clientName}
-                        <span className={`ml-2 ${
-                          quote.status === 'accepted' ? 'text-green-400' :
-                          quote.status === 'rejected' ? 'text-red-400' :
-                          'text-blue-400'
-                        }`}>
-                          {currencySymbol}{total.toFixed(2)}
-                        </span>
-                      </p>
-                      <span className={`px-2 py-0.5 text-xs rounded-full ${
-                        viewed ? statusColors.viewed : statusColors[quote.status] || statusColors.draft
+                <Link href={`/quotes/${quote.id}`} className="block hover:opacity-90 transition-opacity">
+                  {/* Row 1: Name + Status + Amount */}
+                  <div className="flex items-center justify-between gap-3 mb-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <p className="text-white font-medium truncate">{clientName}</p>
+                      <span className={`shrink-0 px-2 py-0.5 text-xs rounded-full ${
+                        expired ? statusColors.expired :
+                        viewed ? statusColors.viewed :
+                        statusColors[quote.status] || statusColors.draft
                       }`}>
-                        {viewed ? 'viewed' : quote.status}
+                        {expired ? 'expired' : viewed ? 'viewed' : quote.status}
                       </span>
-                      {viewed && (
-                        <span className="flex items-center gap-1 text-purple-400 text-xs" title={`Viewed ${new Date(quote.viewed_at!).toLocaleString('en-US')}`}>
-                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      {viewed && !expired && (
+                        <span title={`Viewed ${new Date(quote.viewed_at!).toLocaleString('en-US')}`}>
+                          <svg className="w-3.5 h-3.5 shrink-0 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                           </svg>
                         </span>
                       )}
-                      {expired && (
-                        <span className="px-2 py-0.5 text-xs rounded-full bg-orange-500/20 text-orange-400">
-                          Expired
-                        </span>
-                      )}
                     </div>
-                    <p className="text-slate-400 text-sm">
-                      {quote.qs_quote_requests?.client_email || 'No email'}
-                    </p>
-                  </Link>
-                  <div className="flex items-center gap-4 ml-4">
-                    <div className="text-right">
-                      <p className="text-slate-500 text-sm">
-                        {new Date(quote.created_at).toLocaleDateString('en-US')}
-                      </p>
-                      {quote.valid_until && (
-                        <p className={`text-xs ${expired ? 'text-orange-400' : 'text-slate-600'}`}>
-                          Valid until: {new Date(quote.valid_until).toLocaleDateString('en-US')}
-                        </p>
-                      )}
-                    </div>
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault()
-                        setDeleteModal(quote)
-                      }}
-                      className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
-                      title="Delete quote"
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                    </button>
-                    <Link href={`/quotes/${quote.id}`} className="text-slate-500 hover:text-white">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </Link>
+                    <span className={`shrink-0 text-lg font-semibold ${
+                      quote.status === 'accepted' ? 'text-green-400' :
+                      quote.status === 'rejected' ? 'text-red-400' :
+                      'text-white'
+                    }`}>
+                      {currencySymbol}{total.toFixed(2)}
+                    </span>
                   </div>
+
+                  {/* Row 2: Email + Date */}
+                  <div className="flex items-center justify-between gap-3 text-sm">
+                    <span className="text-slate-400 truncate">
+                      {quote.qs_quote_requests?.client_email || 'No email'}
+                    </span>
+                    <span className="text-slate-500 shrink-0">
+                      {new Date(quote.created_at).toLocaleDateString('en-US')}
+                    </span>
+                  </div>
+
+                  {/* Row 3: Valid until (if present) */}
+                  {quote.valid_until && (
+                    <div className="flex items-center justify-between mt-1">
+                      <span />
+                      <span className={`text-xs ${expired ? 'text-orange-400' : 'text-slate-600'}`}>
+                        Valid until {new Date(quote.valid_until).toLocaleDateString('en-US')}
+                      </span>
+                    </div>
+                  )}
+                </Link>
+
+                {/* Delete button - separate from link */}
+                <div className="flex justify-end mt-2 pt-2 border-t border-slate-700/50">
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      setDeleteModal(quote)
+                    }}
+                    className="p-1.5 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors text-xs flex items-center gap-1"
+                    title="Delete quote"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    Delete
+                  </button>
                 </div>
               </div>
             )
