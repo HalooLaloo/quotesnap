@@ -24,7 +24,10 @@ export function initCapacitor() {
 
 async function initPushNotifications() {
   try {
-    alert('[DEBUG] Push init started, isNative=' + Capacitor.isNativePlatform())
+    const isAvailable = Capacitor.isPluginAvailable('PushNotifications')
+    const platform = Capacitor.getPlatform()
+    const plugins = (Capacitor as any).registeredPlugins?.() || 'N/A'
+    alert(`[DEBUG] platform=${platform}, isNative=${Capacitor.isNativePlatform()}, pluginAvailable=${isAvailable}, plugins=${JSON.stringify(plugins)}`)
 
     // Wait for user to be logged in before registering push
     const supabase = createClient()
@@ -40,6 +43,13 @@ async function initPushNotifications() {
     }
 
     alert('[DEBUG] User found: ' + user.id)
+
+    if (!isAvailable) {
+      alert('[DEBUG] Plugin not available - trying direct bridge call')
+      const result = await (Capacitor as any).nativeCallback?.('PushNotifications', 'checkPermissions', {})
+      alert('[DEBUG] Direct bridge result: ' + JSON.stringify(result))
+      return
+    }
 
     // Check/request permission
     let permStatus = await PushNotifications.checkPermissions()
