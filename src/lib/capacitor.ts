@@ -24,6 +24,19 @@ export function initCapacitor() {
 
 async function initPushNotifications() {
   try {
+    // Wait for user to be logged in before registering push
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      // Not logged in yet — listen for auth change and retry
+      supabase.auth.onAuthStateChange((event) => {
+        if (event === 'SIGNED_IN') {
+          initPushNotifications()
+        }
+      })
+      return
+    }
+
     // Check/request permission
     let permStatus = await PushNotifications.checkPermissions()
 
@@ -40,7 +53,7 @@ async function initPushNotifications() {
 
     // Listen for registration token
     PushNotifications.addListener('registration', async (token) => {
-      await saveFcmToken(token.value)
+      await saveFcmToken(user.id, token.value)
     })
 
     PushNotifications.addListener('registrationError', () => {
@@ -64,16 +77,13 @@ async function initPushNotifications() {
   }
 }
 
-async function saveFcmToken(token: string) {
+async function saveFcmToken(userId: string, token: string) {
   try {
     const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
-
     await supabase
       .from('profiles')
       .update({ fcm_token: token })
-      .eq('id', user.id)
+      .eq('id', userId)
   } catch {
     // Silent fail
   }
