@@ -110,12 +110,18 @@ export default async function PublicQuotePage({
                 on {new Date(quote.accepted_at).toLocaleDateString()}
               </p>
             )}
+            <p className="text-green-400/50 text-sm mt-3">
+              {contractorName} has been notified. You can close this page.
+            </p>
           </div>
         )}
 
         {quote.status === 'rejected' && (
           <div className="bg-red-600/20 border border-red-500/30 rounded-lg p-4 mb-6 text-center">
             <p className="text-red-400 font-medium">You have declined this quote</p>
+            <p className="text-red-400/50 text-sm mt-3">
+              {contractorName} has been notified. You can close this page.
+            </p>
           </div>
         )}
 

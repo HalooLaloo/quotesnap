@@ -154,12 +154,36 @@ export default async function QuoteDetailPage({
           </div>
 
           {/* Notes */}
-          {quote.notes && (
-            <div className="card">
-              <h2 className="text-lg font-semibold text-white mb-4">Notes</h2>
-              <p className="text-slate-300 whitespace-pre-wrap">{quote.notes}</p>
-            </div>
-          )}
+          {quote.notes && (() => {
+            const rawNotes = quote.notes || ''
+            const [generalNotes, clientAnswer] = rawNotes.split('---CLIENT_ANSWER---').map((s: string) => s.trim())
+            const questionMatch = quote.qs_quote_requests?.description?.match(/QUESTION FOR CONTRACTOR:\s*([\s\S]+?)(?=\n\n|---CONVERSATION---|$)/)
+            const clientQuestion = questionMatch?.[1]?.trim()
+
+            return (
+              <>
+                {generalNotes && (
+                  <div className="card">
+                    <h2 className="text-lg font-semibold text-white mb-4">Notes</h2>
+                    <p className="text-slate-300 whitespace-pre-wrap">{generalNotes}</p>
+                  </div>
+                )}
+                {clientQuestion && clientAnswer && (
+                  <div className="card bg-purple-600/10 border-purple-500/30">
+                    <h2 className="text-lg font-semibold text-purple-400 mb-4">Client Q&A</h2>
+                    <div className="mb-3">
+                      <p className="text-xs text-purple-400 uppercase tracking-wide mb-1">Client&apos;s question</p>
+                      <p className="text-slate-300 text-sm whitespace-pre-wrap">{clientQuestion}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-purple-400 uppercase tracking-wide mb-1">Your answer</p>
+                      <p className="text-slate-300 text-sm whitespace-pre-wrap">{clientAnswer}</p>
+                    </div>
+                  </div>
+                )}
+              </>
+            )
+          })()}
 
           {/* Original request */}
           {quote.qs_quote_requests?.description && (

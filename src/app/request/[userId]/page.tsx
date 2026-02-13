@@ -342,7 +342,7 @@ export default function ClientRequestPage() {
           clientName: contactData.client_name,
           description: summary || fullDescription.substring(0, 500),
         }),
-      }).catch(err => console.error('Notification failed:', err))
+      }).catch(() => {})
 
       setSubmitted(true)
     }
@@ -369,9 +369,9 @@ export default function ClientRequestPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="h-[100dvh] flex flex-col">
       {/* Header */}
-      <header className="bg-[#132039] border-b border-[#1e3a5f] px-4 py-4">
+      <header className="shrink-0 bg-[#132039] border-b border-[#1e3a5f] px-4 py-4">
         <div className="max-w-2xl mx-auto flex items-center gap-3">
           <div className="w-10 h-10 bg-[#132039] rounded-xl flex items-center justify-center">
             <svg className="w-6 h-6 text-orange-500" viewBox="0 0 24 24" fill="currentColor">
@@ -442,7 +442,7 @@ export default function ClientRequestPage() {
 
       {/* Contact form overlay */}
       {showContactForm && (
-        <div className="bg-slate-800 border-t border-slate-700 px-4 py-6">
+        <div className="shrink-0 overflow-y-auto max-h-[70dvh] bg-slate-800 border-t border-slate-700 px-4 py-6 pb-[env(safe-area-inset-bottom,24px)]">
           <div className="max-w-2xl mx-auto">
             <div className="card bg-green-600/10 border-green-500/30 mb-4">
               <h3 className="text-white font-semibold mb-2">✅ Scope of work established!</h3>
@@ -598,7 +598,7 @@ export default function ClientRequestPage() {
 
       {/* Input */}
       {!showContactForm && (
-        <div className="bg-slate-800 border-t border-slate-700 px-4 py-4">
+        <div className="shrink-0 bg-slate-800 border-t border-slate-700 px-4 py-4 pb-[env(safe-area-inset-bottom,16px)]">
           <div className="max-w-2xl mx-auto">
             {/* Progress indicator */}
             {userMessagesCount > 0 && (

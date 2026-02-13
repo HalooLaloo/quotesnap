@@ -27,7 +27,7 @@ export function QuoteActions({ token }: QuoteActionsProps) {
       const contentType = response.headers.get('content-type')
       if (!contentType || !contentType.includes('application/json')) {
         const text = await response.text()
-        console.error('Non-JSON response:', text)
+        void text
         throw new Error('Server error occurred. Please try again.')
       }
 
@@ -43,7 +43,7 @@ export function QuoteActions({ token }: QuoteActionsProps) {
         window.location.reload()
       }, 500)
     } catch (err) {
-      console.error('Accept quote error:', err)
+      void err
       setError(err instanceof Error ? err.message : 'Something went wrong')
       setLoading(null)
     }
