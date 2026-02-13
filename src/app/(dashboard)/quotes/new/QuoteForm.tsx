@@ -52,6 +52,7 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
   const [availableFrom, setAvailableFrom] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState<'sent' | 'draft' | null>(null)
   const [requestExpanded, setRequestExpanded] = useState(false)
 
   // Custom service form state
@@ -362,11 +363,17 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ quoteId: insertedQuote.id }),
-      }).catch((err) => console.error('Email send error:', err))
+      }).catch(() => {})
     }
 
-    router.push('/quotes')
-    router.refresh()
+    setLoading(false)
+    setSuccess(status)
+
+    // Redirect after short delay so user sees the confirmation
+    setTimeout(() => {
+      router.push('/quotes')
+      router.refresh()
+    }, 2000)
   }
 
   return (
@@ -455,7 +462,7 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
                           className="w-full font-medium text-white text-sm bg-transparent border-none p-0 focus:ring-0"
                         />
                         {suggestion.reason && (
-                          <p className="text-xs text-purple-400 mt-0.5 line-clamp-3">{suggestion.reason}</p>
+                          <p className="text-xs text-purple-400 mt-0.5">{suggestion.reason}</p>
                         )}
                       </div>
 
@@ -475,8 +482,8 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
                         type="number"
                         min="0.1"
                         step="0.1"
-                        value={suggestion.quantity || ''}
-                        onChange={(e) => updateSuggestionQuantity(index, parseFloat(e.target.value))}
+                        value={suggestion.quantity === 0 ? '' : suggestion.quantity}
+                        onChange={(e) => updateSuggestionQuantity(index, e.target.value === '' ? 0 : parseFloat(e.target.value))}
                         disabled={!suggestion.selected}
                         className="input w-16 text-center text-sm py-1"
                       />
@@ -497,8 +504,8 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
                         type="number"
                         min="0"
                         step="1"
-                        value={suggestion.unit_price || ''}
-                        onChange={(e) => updateSuggestionPrice(index, parseFloat(e.target.value))}
+                        value={suggestion.unit_price === 0 ? '' : suggestion.unit_price}
+                        onChange={(e) => updateSuggestionPrice(index, e.target.value === '' ? 0 : parseFloat(e.target.value))}
                         disabled={!suggestion.selected}
                         placeholder="Price"
                         className={`input w-20 text-center text-sm py-1 ${
@@ -574,8 +581,8 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
                       type="number"
                       min="0.1"
                       step="0.1"
-                      value={item.quantity || ''}
-                      onChange={(e) => updateManualQuantity(index, parseFloat(e.target.value))}
+                      value={item.quantity === 0 ? '' : item.quantity}
+                      onChange={(e) => updateManualQuantity(index, e.target.value === '' ? 0 : parseFloat(e.target.value))}
                       className="input w-16 text-center text-sm py-1"
                     />
                     <select
@@ -594,8 +601,8 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
                       type="number"
                       min="0"
                       step="1"
-                      value={item.unit_price || ''}
-                      onChange={(e) => updateManualPrice(index, parseFloat(e.target.value))}
+                      value={item.unit_price === 0 ? '' : item.unit_price}
+                      onChange={(e) => updateManualPrice(index, e.target.value === '' ? 0 : parseFloat(e.target.value))}
                       className={`input w-20 text-center text-sm py-1 ${
                         !item.unit_price ? 'border-amber-500 bg-amber-500/10' : ''
                       }`}
@@ -678,8 +685,8 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
                   type="number"
                   min="0.1"
                   step="0.1"
-                  value={customService.quantity}
-                  onChange={(e) => setCustomService({ ...customService, quantity: parseFloat(e.target.value) || 1 })}
+                  value={customService.quantity === 0 ? '' : customService.quantity}
+                  onChange={(e) => setCustomService({ ...customService, quantity: e.target.value === '' ? 0 : (parseFloat(e.target.value) || 0) })}
                   className="input"
                 />
               </div>
@@ -703,8 +710,8 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
                   type="number"
                   min="0"
                   step="1"
-                  value={customService.unit_price}
-                  onChange={(e) => setCustomService({ ...customService, unit_price: parseFloat(e.target.value) || 0 })}
+                  value={customService.unit_price === 0 ? '' : customService.unit_price}
+                  onChange={(e) => setCustomService({ ...customService, unit_price: e.target.value === '' ? 0 : (parseFloat(e.target.value) || 0) })}
                   className="input"
                 />
               </div>
@@ -804,8 +811,8 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
                   type="number"
                   min="0"
                   max="100"
-                  value={discountPercent}
-                  onChange={(e) => setDiscountPercent(parseFloat(e.target.value) || 0)}
+                  value={discountPercent === 0 ? '' : discountPercent}
+                  onChange={(e) => setDiscountPercent(e.target.value === '' ? 0 : parseFloat(e.target.value))}
                   className="input w-20 text-center text-sm"
                 />
                 <span className="text-slate-400">%</span>
@@ -844,8 +851,8 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
                     type="number"
                     min="0"
                     max="100"
-                    value={vatPercent}
-                    onChange={(e) => setVatPercent(parseFloat(e.target.value) || 0)}
+                    value={vatPercent === 0 ? '' : vatPercent}
+                    onChange={(e) => setVatPercent(e.target.value === '' ? 0 : parseFloat(e.target.value))}
                     className="input w-20 text-center text-sm"
                   />
                   <span className="text-slate-400">%</span>
@@ -882,6 +889,7 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
             <label className="label">Available Start Date</label>
             <input
               type="date"
+              lang="en"
               value={availableFrom}
               onChange={(e) => setAvailableFrom(e.target.value)}
               min={new Date().toISOString().split('T')[0]}
@@ -904,6 +912,22 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
 
         {/* Actions */}
         <div className="card">
+          {success && (
+            <div className={`flex items-center gap-3 px-4 py-4 rounded-lg mb-4 ${
+              success === 'sent' ? 'bg-green-600/20 border border-green-500/30' : 'bg-blue-600/20 border border-blue-500/30'
+            }`}>
+              <svg className={`w-6 h-6 ${success === 'sent' ? 'text-green-400' : 'text-blue-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              <div>
+                <p className={`font-medium ${success === 'sent' ? 'text-green-400' : 'text-blue-400'}`}>
+                  {success === 'sent' ? 'Quote sent to client!' : 'Draft saved!'}
+                </p>
+                <p className="text-slate-400 text-sm">Redirecting...</p>
+              </div>
+            </div>
+          )}
+
           {error && (
             <div className="bg-red-500/10 border border-red-500/50 text-red-400 px-4 py-3 rounded-lg text-sm mb-4">
               {error}
@@ -913,14 +937,14 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
           <div className="space-y-3">
             <button
               onClick={() => handleSubmit('sent')}
-              disabled={loading || items.length === 0}
+              disabled={loading || items.length === 0 || success !== null}
               className="btn-primary w-full"
             >
               {loading ? 'Saving...' : 'Send to Client'}
             </button>
             <button
               onClick={() => handleSubmit('draft')}
-              disabled={loading || items.length === 0}
+              disabled={loading || items.length === 0 || success !== null}
               className="btn-secondary w-full"
             >
               Save as Draft
