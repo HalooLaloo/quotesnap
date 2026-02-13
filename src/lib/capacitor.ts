@@ -24,11 +24,13 @@ export function initCapacitor() {
 
 async function initPushNotifications() {
   try {
+    alert('[DEBUG] Push init started, isNative=' + Capacitor.isNativePlatform())
+
     // Wait for user to be logged in before registering push
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
-      // Not logged in yet — listen for auth change and retry
+      alert('[DEBUG] No user yet, waiting for auth')
       supabase.auth.onAuthStateChange((event) => {
         if (event === 'SIGNED_IN') {
           initPushNotifications()
@@ -37,27 +39,34 @@ async function initPushNotifications() {
       return
     }
 
+    alert('[DEBUG] User found: ' + user.id)
+
     // Check/request permission
     let permStatus = await PushNotifications.checkPermissions()
+    alert('[DEBUG] Permission status: ' + permStatus.receive)
 
     if (permStatus.receive === 'prompt') {
       permStatus = await PushNotifications.requestPermissions()
+      alert('[DEBUG] After request: ' + permStatus.receive)
     }
 
     if (permStatus.receive !== 'granted') {
+      alert('[DEBUG] Permission not granted, stopping')
       return
     }
 
     // Register for push
     await PushNotifications.register()
+    alert('[DEBUG] Register called')
 
     // Listen for registration token
     PushNotifications.addListener('registration', async (token) => {
+      alert('[DEBUG] Got FCM token: ' + token.value.substring(0, 20) + '...')
       await saveFcmToken(user.id, token.value)
     })
 
-    PushNotifications.addListener('registrationError', () => {
-      // Silent fail — push is best-effort
+    PushNotifications.addListener('registrationError', (err) => {
+      alert('[DEBUG] Registration error: ' + JSON.stringify(err))
     })
 
     // Notification received while app is in foreground
@@ -72,8 +81,8 @@ async function initPushNotifications() {
         window.location.href = url
       }
     })
-  } catch {
-    // Push not available on this device
+  } catch (err) {
+    alert('[DEBUG] Push error: ' + (err instanceof Error ? err.message : String(err)))
   }
 }
 
