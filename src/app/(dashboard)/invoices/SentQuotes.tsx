@@ -46,7 +46,7 @@ export function SentQuotes({ quotes }: SentQuotesProps) {
   }
 
   return (
-    <div className="mb-8">
+    <div className="mb-6">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
         className="text-slate-500 hover:text-slate-300 text-sm flex items-center gap-2"
@@ -63,7 +63,7 @@ export function SentQuotes({ quotes }: SentQuotesProps) {
       </button>
 
       {isExpanded && (
-        <div className="mt-4 space-y-2">
+        <div className="mt-3 space-y-2">
           {quotes.map((quote) => {
             const currencySymbol = getCurrencySymbol(quote.currency || 'USD')
             const total = quote.total_gross || quote.total || 0
@@ -72,22 +72,24 @@ export function SentQuotes({ quotes }: SentQuotesProps) {
             return (
               <div
                 key={quote.id}
-                className="flex items-center justify-between p-3 bg-slate-800/50 border border-slate-700 rounded-lg"
+                className="p-3 border-l-4 border-l-blue-500 bg-slate-700/30 rounded-lg"
               >
-                <div className="flex-1 min-w-0">
-                  <p className="text-slate-300 text-sm">
-                    {client.name || 'Unknown Client'}
-                    <span className="text-slate-500 ml-2">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-white text-sm font-medium">
+                      {client.name || 'Unknown Client'}
+                    </p>
+                    <p className="text-slate-500 text-xs">
                       {currencySymbol}{total.toFixed(2)}
-                    </span>
-                  </p>
+                    </p>
+                  </div>
+                  <Link
+                    href={`/invoices/new?from_quote=${quote.id}`}
+                    className="shrink-0 px-3 py-1.5 text-xs font-medium text-blue-400 hover:text-white border border-blue-500/30 hover:bg-blue-600 rounded-lg transition-colors"
+                  >
+                    Create Invoice
+                  </Link>
                 </div>
-                <Link
-                  href={`/invoices/new?from_quote=${quote.id}`}
-                  className="text-slate-400 hover:text-white text-sm"
-                >
-                  Create Invoice
-                </Link>
               </div>
             )
           })}
