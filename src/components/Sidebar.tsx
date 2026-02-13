@@ -73,13 +73,18 @@ export function Sidebar({ userEmail, checklistData }: SidebarProps) {
 
   return (
     <>
-      {/* Mobile hamburger button */}
+      {/* Mobile menu button - brick logo */}
       <button
         onClick={() => setIsMobileOpen(true)}
-        className="lg:hidden fixed top-4 left-4 z-40 p-2 bg-[#132039] rounded-lg text-slate-300 hover:bg-[#1e3a5f]"
+        className="lg:hidden fixed left-3 z-40 p-2 bg-[#132039] border border-[#1e3a5f] rounded-xl text-orange-500 hover:bg-[#1e3a5f] shadow-lg"
+        style={{ top: 'max(12px, env(safe-area-inset-top, 12px))' }}
       >
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+        <svg className="w-7 h-7" viewBox="0 0 24 24" fill="currentColor">
+          <rect x="2" y="6" width="9" height="5" rx="0.5" />
+          <rect x="13" y="6" width="9" height="5" rx="0.5" />
+          <rect x="6" y="13" width="9" height="5" rx="0.5" />
+          <rect x="17" y="13" width="5" height="5" rx="0.5" />
+          <rect x="2" y="13" width="2" height="5" rx="0.5" />
         </svg>
       </button>
 
