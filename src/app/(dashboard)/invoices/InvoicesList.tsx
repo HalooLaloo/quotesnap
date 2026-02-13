@@ -138,11 +138,11 @@ export function InvoicesList({ invoices }: InvoicesListProps) {
     { key: 'draft', label: 'Drafts', bg: 'bg-slate-700/50 text-slate-400', active: 'bg-slate-600 text-white' },
   ]
 
-  const cardBorders: Record<string, string> = {
-    sent: 'border-l-blue-500',
-    paid: 'border-l-green-500',
-    overdue: 'border-l-red-500',
-    draft: 'border-l-slate-500',
+  const cardStyles: Record<string, string> = {
+    sent: 'border-l-blue-500 bg-blue-500/5 hover:bg-blue-500/10',
+    paid: 'border-l-green-500 bg-green-500/5 hover:bg-green-500/10',
+    overdue: 'border-l-red-500 bg-red-500/5 hover:bg-red-500/10',
+    draft: 'border-l-slate-500 bg-slate-700/30 hover:bg-slate-700/60',
   }
 
   const cs = getCurrencySymbol(invoices[0]?.currency || 'USD')
@@ -233,8 +233,8 @@ export function InvoicesList({ invoices }: InvoicesListProps) {
               <Link
                 key={invoice.id}
                 href={`/invoices/${invoice.id}`}
-                className={`block p-4 rounded-lg border-l-4 bg-slate-700/30 hover:bg-slate-700/60 transition-colors ${
-                  cardBorders[effectiveStatus] || 'border-l-slate-500'
+                className={`block p-4 rounded-lg border-l-4 transition-colors ${
+                  cardStyles[effectiveStatus] || cardStyles.draft
                 }`}
               >
                 {/* Row 1: Name + Badge + Amount */}

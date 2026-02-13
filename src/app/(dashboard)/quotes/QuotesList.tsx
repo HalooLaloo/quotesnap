@@ -195,21 +195,21 @@ export function QuotesList({ quotes }: QuotesListProps) {
 
             const effectiveStatus = expired ? 'expired' : viewed ? 'viewed' : quote.status
 
-            const cardBorders: Record<string, string> = {
-              sent: 'border-l-blue-500',
-              viewed: 'border-l-purple-500',
-              accepted: 'border-l-green-500',
-              rejected: 'border-l-red-500',
-              expired: 'border-l-orange-500',
-              draft: 'border-l-slate-500',
+            const cardStyles: Record<string, string> = {
+              sent: 'border-l-blue-500 bg-blue-500/5 hover:bg-blue-500/10',
+              viewed: 'border-l-purple-500 bg-purple-500/5 hover:bg-purple-500/10',
+              accepted: 'border-l-green-500 bg-green-500/5 hover:bg-green-500/10',
+              rejected: 'border-l-red-500 bg-red-500/5 hover:bg-red-500/10',
+              expired: 'border-l-orange-500 bg-orange-500/5 hover:bg-orange-500/10',
+              draft: 'border-l-slate-500 bg-slate-700/30 hover:bg-slate-700/60',
             }
 
             return (
               <Link
                 key={quote.id}
                 href={`/quotes/${quote.id}`}
-                className={`block p-4 rounded-lg border-l-4 bg-slate-700/30 hover:bg-slate-700/60 transition-colors ${
-                  cardBorders[effectiveStatus] || 'border-l-slate-500'
+                className={`block p-4 rounded-lg border-l-4 transition-colors ${
+                  cardStyles[effectiveStatus] || cardStyles.draft
                 }`}
               >
                 {/* Row 1: Name + Amount */}
