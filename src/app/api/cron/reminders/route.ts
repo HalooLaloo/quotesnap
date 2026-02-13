@@ -4,6 +4,8 @@ import { createClient } from '@supabase/supabase-js'
 import { COUNTRIES, formatDate } from '@/lib/countries'
 import { escapeHtml } from '@/lib/escapeHtml'
 import { emailUnsubscribeFooter } from '@/lib/emailFooter'
+import { emailLayout } from '@/lib/emailTemplate'
+import { sendPushNotification } from '@/lib/pushNotification'
 
 function getCurrencySymbol(currencyCode: string): string {
   const country = Object.values(COUNTRIES).find(c => c.currency === currencyCode)
@@ -96,15 +98,10 @@ export async function GET(request: NextRequest) {
             from: 'BrickQuote <contact@brickquote.app>',
             to: profile.email,
             subject: `You have ${newRequests.length} unanswered request${newRequests.length > 1 ? 's' : ''}`,
-            html: `
-              <!DOCTYPE html>
-              <html>
-              <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f3f4f6; margin: 0; padding: 20px;">
-                <div style="max-width: 500px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                  <div style="background: #3b82f6; padding: 24px; text-align: center;">
-                    <h1 style="color: white; margin: 0; font-size: 24px;">New Requests Waiting</h1>
-                  </div>
-                  <div style="padding: 32px;">
+            html: emailLayout({
+              accentColor: '#3b82f6',
+              title: 'New Requests Waiting',
+              content: `
                     <p style="color: #374151; font-size: 16px; margin: 0 0 16px 0;">
                       You have <strong>${newRequests.length}</strong> client request${newRequests.length > 1 ? 's' : ''} waiting for a quote.
                     </p>
@@ -128,18 +125,19 @@ export async function GET(request: NextRequest) {
 
                     <a href="${appUrl}/requests" style="display: block; background: #3b82f6; color: white; padding: 14px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; text-align: center;">
                       View Requests
-                    </a>
-                  </div>
-                  <div style="background: #f9fafb; padding: 16px; text-align: center; border-top: 1px solid #e5e7eb;">
-                    <p style="color: #9ca3af; font-size: 12px; margin: 0;">BrickQuote - Reminder</p>
-                    ${emailUnsubscribeFooter(profile.id, appUrl)}
-                  </div>
-                </div>
-              </body>
-              </html>
-            `,
+                    </a>`,
+              unsubscribeHtml: emailUnsubscribeFooter(profile.id, appUrl),
+            }),
           })
           results.newRequests += newRequests.length
+
+          // Push notification
+          await sendPushNotification({
+            userId: profile.id,
+            title: 'Unanswered requests',
+            body: `You have ${newRequests.length} request${newRequests.length > 1 ? 's' : ''} waiting`,
+            data: { url: '/requests' },
+          })
         } catch {
           results.errors.push(`Failed to send new requests email to ${profile.email}`)
         }
@@ -161,15 +159,10 @@ export async function GET(request: NextRequest) {
             from: 'BrickQuote <contact@brickquote.app>',
             to: profile.email,
             subject: `You have ${overdueInvoices.length} overdue invoice${overdueInvoices.length > 1 ? 's' : ''}`,
-            html: `
-              <!DOCTYPE html>
-              <html>
-              <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f3f4f6; margin: 0; padding: 20px;">
-                <div style="max-width: 500px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                  <div style="background: #ef4444; padding: 24px; text-align: center;">
-                    <h1 style="color: white; margin: 0; font-size: 24px;">Overdue Invoices</h1>
-                  </div>
-                  <div style="padding: 32px;">
+            html: emailLayout({
+              accentColor: '#ef4444',
+              title: 'Overdue Invoices',
+              content: `
                     <p style="color: #374151; font-size: 16px; margin: 0 0 16px 0;">
                       You have <strong>${overdueInvoices.length}</strong> overdue invoice${overdueInvoices.length > 1 ? 's' : ''} totaling <strong>${totalOverdue.toFixed(2)}</strong>.
                     </p>
@@ -185,18 +178,19 @@ export async function GET(request: NextRequest) {
 
                     <a href="${appUrl}/invoices" style="display: block; background: #ef4444; color: white; padding: 14px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; text-align: center;">
                       View Invoices
-                    </a>
-                  </div>
-                  <div style="background: #f9fafb; padding: 16px; text-align: center; border-top: 1px solid #e5e7eb;">
-                    <p style="color: #9ca3af; font-size: 12px; margin: 0;">BrickQuote - Reminder</p>
-                    ${emailUnsubscribeFooter(profile.id, appUrl)}
-                  </div>
-                </div>
-              </body>
-              </html>
-            `,
+                    </a>`,
+              unsubscribeHtml: emailUnsubscribeFooter(profile.id, appUrl),
+            }),
           })
           results.overdueInvoices += overdueInvoices.length
+
+          // Push notification
+          await sendPushNotification({
+            userId: profile.id,
+            title: 'Overdue invoices',
+            body: `${overdueInvoices.length} invoice${overdueInvoices.length > 1 ? 's' : ''} overdue`,
+            data: { url: '/invoices' },
+          })
         } catch {
           results.errors.push(`Failed to send overdue email to ${profile.email}`)
         }
@@ -217,15 +211,10 @@ export async function GET(request: NextRequest) {
             from: 'BrickQuote <contact@brickquote.app>',
             to: profile.email,
             subject: `${expiringQuotes.length} quote${expiringQuotes.length > 1 ? 's' : ''} expiring in 2 days`,
-            html: `
-              <!DOCTYPE html>
-              <html>
-              <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f3f4f6; margin: 0; padding: 20px;">
-                <div style="max-width: 500px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                  <div style="background: #f97316; padding: 24px; text-align: center;">
-                    <h1 style="color: white; margin: 0; font-size: 24px;">Expiring Quotes</h1>
-                  </div>
-                  <div style="padding: 32px;">
+            html: emailLayout({
+              accentColor: '#f97316',
+              title: 'Expiring Quotes',
+              content: `
                     <p style="color: #374151; font-size: 16px; margin: 0 0 16px 0;">
                       <strong>${expiringQuotes.length}</strong> of your quote${expiringQuotes.length > 1 ? 's' : ''} will expire in the next 2 days.
                     </p>
@@ -249,18 +238,19 @@ export async function GET(request: NextRequest) {
 
                     <a href="${appUrl}/quotes" style="display: block; background: #f97316; color: white; padding: 14px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; text-align: center;">
                       View Quotes
-                    </a>
-                  </div>
-                  <div style="background: #f9fafb; padding: 16px; text-align: center; border-top: 1px solid #e5e7eb;">
-                    <p style="color: #9ca3af; font-size: 12px; margin: 0;">BrickQuote - Reminder</p>
-                    ${emailUnsubscribeFooter(profile.id, appUrl)}
-                  </div>
-                </div>
-              </body>
-              </html>
-            `,
+                    </a>`,
+              unsubscribeHtml: emailUnsubscribeFooter(profile.id, appUrl),
+            }),
           })
           results.expiringQuotes += expiringQuotes.length
+
+          // Push notification
+          await sendPushNotification({
+            userId: profile.id,
+            title: 'Quotes expiring soon',
+            body: `${expiringQuotes.length} quote${expiringQuotes.length > 1 ? 's' : ''} expire in 2 days`,
+            data: { url: '/quotes' },
+          })
         } catch {
           results.errors.push(`Failed to send expiring quotes email to ${profile.email}`)
         }
@@ -316,15 +306,11 @@ export async function GET(request: NextRequest) {
             from: 'BrickQuote <contact@brickquote.app>',
             to: inv.client_email,
             subject: `Payment reminder — ${inv.invoice_number} from ${contractorName}`,
-            html: `
-              <!DOCTYPE html>
-              <html>
-              <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f3f4f6; margin: 0; padding: 20px;">
-                <div style="max-width: 500px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                  <div style="background: linear-gradient(135deg, #f97316, #ea580c); padding: 24px; text-align: center;">
-                    <h1 style="color: white; margin: 0; font-size: 24px;">Payment Reminder</h1>
-                  </div>
-                  <div style="padding: 32px;">
+            html: emailLayout({
+              accentColor: '#f97316',
+              title: 'Payment Reminder',
+              subtitle: inv.invoice_number,
+              content: `
                     <p style="color: #374151; font-size: 16px; margin: 0 0 16px 0;">
                       Hi <strong>${escapeHtml(inv.client_name || 'there')}</strong>,
                     </p>
@@ -336,18 +322,11 @@ export async function GET(request: NextRequest) {
                       <p style="color: #78350f; font-size: 24px; font-weight: 700; margin: 0;">${currencySymbol}${inv.total_gross?.toFixed(2)}</p>
                     </div>
                     ${bankHtml}
-                    <div style="text-align: center; margin: 24px 0;">
+                    <div style="text-align: center; margin: 24px 0 0 0;">
                       <a href="${appUrl}/invoice/${inv.token}" style="display: inline-block; background: #f97316; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px;">View Invoice &amp; Pay</a>
                     </div>
-                    ${contractorProfile?.phone ? `<p style="color: #6b7280; font-size: 13px; text-align: center;">Questions? Contact ${contractorName}: <a href="tel:${contractorProfile.phone}" style="color: #3b82f6;">${contractorProfile.phone}</a></p>` : ''}
-                  </div>
-                  <div style="background: #f9fafb; padding: 16px; text-align: center; border-top: 1px solid #e5e7eb;">
-                    <p style="color: #9ca3af; font-size: 12px; margin: 0;">BrickQuote - Payment Reminder</p>
-                  </div>
-                </div>
-              </body>
-              </html>
-            `,
+                    ${contractorProfile?.phone ? `<p style="color: #6b7280; font-size: 13px; text-align: center; margin: 16px 0 0 0;">Questions? Contact ${contractorName}: <a href="tel:${contractorProfile.phone}" style="color: #3b82f6;">${contractorProfile.phone}</a></p>` : ''}`,
+            }),
           })
 
           // Update reminder tracking

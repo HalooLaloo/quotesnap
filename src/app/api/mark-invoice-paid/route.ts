@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { escapeHtml } from '@/lib/escapeHtml'
 import { emailUnsubscribeFooter } from '@/lib/emailFooter'
+import { emailLayout } from '@/lib/emailTemplate'
 
 export async function POST(request: NextRequest) {
   try {
@@ -84,15 +85,11 @@ export async function POST(request: NextRequest) {
           from: 'BrickQuote <contact@brickquote.app>',
           to: workerEmail,
           subject: `Invoice paid - ${invoice.client_name}`,
-          html: `
-            <!DOCTYPE html>
-            <html>
-            <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f3f4f6; margin: 0; padding: 20px;">
-              <div style="max-width: 500px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                <div style="background: #22c55e; padding: 24px; text-align: center;">
-                  <h1 style="color: white; margin: 0; font-size: 24px;">Invoice Paid!</h1>
-                </div>
-                <div style="padding: 32px;">
+          html: emailLayout({
+            accentColor: '#22c55e',
+            title: 'Invoice Paid!',
+            subtitle: invoice.invoice_number,
+            content: `
                   <p style="color: #374151; font-size: 16px; margin: 0 0 16px 0;">
                     Invoice <strong>${invoice.invoice_number}</strong> for client <strong>${escapeHtml(invoice.client_name || 'Client')}</strong> has been marked as paid.
                   </p>
@@ -103,18 +100,11 @@ export async function POST(request: NextRequest) {
                     </p>
                   </div>
 
-                  <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://brickquote.app'}/invoices/${invoice.id}" style="display: block; background: #22c55e; color: white; padding: 14px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; text-align: center;">
+                  <a href="${appUrl}/invoices/${invoice.id}" style="display: block; background: #22c55e; color: white; padding: 14px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; text-align: center;">
                     View Invoice
-                  </a>
-                </div>
-                <div style="background: #f9fafb; padding: 16px; text-align: center; border-top: 1px solid #e5e7eb;">
-                  <p style="color: #9ca3af; font-size: 12px; margin: 0;">BrickQuote</p>
-                  ${emailUnsubscribeFooter(user.id, appUrl)}
-                </div>
-              </div>
-            </body>
-            </html>
-          `,
+                  </a>`,
+            unsubscribeHtml: emailUnsubscribeFooter(user.id, appUrl),
+          }),
         })
       }
     }

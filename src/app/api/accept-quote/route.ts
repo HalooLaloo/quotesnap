@@ -4,6 +4,8 @@ import { createClient } from '@supabase/supabase-js'
 import { COUNTRIES } from '@/lib/countries'
 import { escapeHtml } from '@/lib/escapeHtml'
 import { emailUnsubscribeFooter } from '@/lib/emailFooter'
+import { emailLayout } from '@/lib/emailTemplate'
+import { sendPushNotification } from '@/lib/pushNotification'
 import { rateLimiter, getClientIP } from '@/lib/ratelimit'
 
 function getCurrencySymbol(currencyCode: string): string {
@@ -140,15 +142,10 @@ export async function POST(request: NextRequest) {
         from: 'BrickQuote <contact@brickquote.app>',
         to: contractorEmail,
         subject: `Quote ${statusText} by ${clientName}`,
-        html: `
-          <!DOCTYPE html>
-          <html>
-          <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f3f4f6; margin: 0; padding: 20px;">
-            <div style="max-width: 500px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-              <div style="background: ${statusColor}; padding: 24px; text-align: center;">
-                <h1 style="color: white; margin: 0; font-size: 24px;">Quote ${statusText.charAt(0).toUpperCase() + statusText.slice(1)}!</h1>
-              </div>
-              <div style="padding: 32px;">
+        html: emailLayout({
+          accentColor: statusColor,
+          title: `Quote ${statusText.charAt(0).toUpperCase() + statusText.slice(1)}!`,
+          content: `
                 <p style="color: #374151; font-size: 16px; margin: 0 0 16px 0;">
                   <strong>${clientName}</strong> has ${statusText} your quote.
                 </p>
@@ -163,18 +160,19 @@ export async function POST(request: NextRequest) {
                   <p style="color: #991b1b; font-size: 14px; margin: 0; background: #fef2f2; padding: 16px; border-radius: 8px;">
                     The client has declined this quote. Consider reaching out to discuss their concerns.
                   </p>
-                `}
-              </div>
-              <div style="background: #f9fafb; padding: 16px; text-align: center; border-top: 1px solid #e5e7eb;">
-                <p style="color: #9ca3af; font-size: 12px; margin: 0;">BrickQuote Notification</p>
-                ${emailUnsubscribeFooter(quote.user_id, appUrl)}
-              </div>
-            </div>
-          </body>
-          </html>
-        `,
+                `}`,
+          unsubscribeHtml: emailUnsubscribeFooter(quote.user_id, appUrl),
+        }),
       })
     }
+
+    // Send push notification to contractor
+    await sendPushNotification({
+      userId: quote.user_id,
+      title: `Quote ${action === 'accept' ? 'accepted' : 'rejected'}!`,
+      body: `${quote.qs_quote_requests?.client_name || 'Client'} has ${action === 'accept' ? 'accepted' : 'rejected'} your quote`,
+      data: { url: '/quotes' },
+    })
 
     return NextResponse.json({
       success: true,

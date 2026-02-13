@@ -3,6 +3,8 @@ import { Resend } from 'resend'
 import { createClient } from '@supabase/supabase-js'
 import { escapeHtml } from '@/lib/escapeHtml'
 import { emailUnsubscribeFooter } from '@/lib/emailFooter'
+import { emailLayout } from '@/lib/emailTemplate'
+import { sendPushNotification } from '@/lib/pushNotification'
 import { rateLimiter, getClientIP } from '@/lib/ratelimit'
 
 export async function POST(request: NextRequest) {
@@ -89,15 +91,11 @@ export async function POST(request: NextRequest) {
       from: 'BrickQuote <contact@brickquote.app>',
       to: contractorEmail,
       subject: `New quote request from ${clientName}`,
-      html: `
-        <!DOCTYPE html>
-        <html>
-        <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f3f4f6; margin: 0; padding: 20px;">
-          <div style="max-width: 500px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-            <div style="background: #3b82f6; padding: 24px; text-align: center;">
-              <h1 style="color: white; margin: 0; font-size: 24px;">New Quote Request!</h1>
-            </div>
-            <div style="padding: 32px;">
+      html: emailLayout({
+        accentColor: '#3b82f6',
+        title: 'New Quote Request!',
+        subtitle: `from ${escapeHtml(clientName)}`,
+        content: `
               <p style="color: #374151; font-size: 16px; margin: 0 0 16px 0;">
                 You have received a new quote request from <strong>${escapeHtml(clientName)}</strong>.
               </p>
@@ -107,18 +105,11 @@ export async function POST(request: NextRequest) {
                 <p style="color: #374151; font-size: 14px; margin: 0; white-space: pre-wrap;">${escapeHtml(shortDescription)}</p>
               </div>
 
-              <a href="https://brickquote.app/requests" style="display: block; background: #ea580c; color: white; padding: 14px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; text-align: center;">
+              <a href="${appUrl}/requests" style="display: block; background: #ea580c; color: white; padding: 14px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; text-align: center;">
                 View Request
-              </a>
-            </div>
-            <div style="background: #f9fafb; padding: 16px; text-align: center; border-top: 1px solid #e5e7eb;">
-              <p style="color: #9ca3af; font-size: 12px; margin: 0;">BrickQuote</p>
-              ${emailUnsubscribeFooter(contractorId, appUrl)}
-            </div>
-          </div>
-        </body>
-        </html>
-      `,
+              </a>`,
+        unsubscribeHtml: emailUnsubscribeFooter(contractorId, appUrl),
+      }),
     })
 
     if (sendError) {
@@ -126,6 +117,14 @@ export async function POST(request: NextRequest) {
       // Don't return error - notification is not critical
       return NextResponse.json({ success: true, emailSent: false })
     }
+
+    // Send push notification
+    await sendPushNotification({
+      userId: contractorId,
+      title: 'New quote request',
+      body: `${clientName} sent a quote request`,
+      data: { url: '/requests' },
+    })
 
     return NextResponse.json({ success: true, emailSent: true })
   } catch (error) {

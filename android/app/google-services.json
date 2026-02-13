@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "725805971225",
+    "project_id": "brickquote-5ddf5",
+    "storage_bucket": "brickquote-5ddf5.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:725805971225:android:67b60fde683303328e7788",
+        "android_client_info": {
+          "package_name": "app.brickquote"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA5Hn2LFMFRTm8Gkp-x0e16K46qxvM79Xc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

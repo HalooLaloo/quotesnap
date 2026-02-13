@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { headers } from 'next/headers'
 import { COUNTRIES, formatDate } from '@/lib/countries'
 import { escapeHtml } from '@/lib/escapeHtml'
+import { emailLayout } from '@/lib/emailTemplate'
 
 function getCurrencySymbol(currencyCode: string): string {
   const country = Object.values(COUNTRIES).find(c => c.currency === currencyCode)
@@ -102,20 +103,7 @@ export async function POST(request: NextRequest) {
 
     const resend = new Resend(process.env.RESEND_API_KEY)
 
-    const emailHtml = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      </head>
-      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f3f4f6; margin: 0; padding: 20px;">
-        <div style="max-width: 500px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-          <div style="background: linear-gradient(135deg, #f97316, #ea580c); padding: 32px; text-align: center;">
-            <h1 style="color: white; margin: 0; font-size: 24px;">Payment Reminder</h1>
-            <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0 0;">${invoice.invoice_number}</p>
-          </div>
-          <div style="padding: 32px;">
+    const reminderContent = `
             <p style="color: #374151; font-size: 16px; margin: 0 0 16px 0;">
               Hi <strong>${escapeHtml(invoice.client_name || 'there')}</strong>,
             </p>
@@ -138,7 +126,7 @@ export async function POST(request: NextRequest) {
 
             ${bankHtml}
 
-            <div style="text-align: center; margin: 32px 0 16px 0;">
+            <div style="text-align: center; margin: 32px 0 0 0;">
               <a href="${invoiceUrl}" style="display: inline-block; background: #f97316; color: white; padding: 16px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px;">
                 View Invoice &amp; Pay
               </a>
@@ -148,15 +136,14 @@ export async function POST(request: NextRequest) {
               <p style="color: #6b7280; font-size: 14px; text-align: center; margin: 16px 0 0 0;">
                 Questions? Contact ${contractorName}: <a href="tel:${profile.phone}" style="color: #3b82f6;">${profile.phone}</a>
               </p>
-            ` : ''}
-          </div>
-          <div style="background: #f9fafb; padding: 16px; text-align: center; border-top: 1px solid #e5e7eb;">
-            <p style="color: #9ca3af; font-size: 12px; margin: 0;">BrickQuote - Payment Reminder</p>
-          </div>
-        </div>
-      </body>
-      </html>
-    `
+            ` : ''}`
+
+    const emailHtml = emailLayout({
+      accentColor: '#f97316',
+      title: 'Payment Reminder',
+      subtitle: invoice.invoice_number,
+      content: reminderContent,
+    })
 
     const { error: sendError } = await resend.emails.send({
       from: 'BrickQuote <contact@brickquote.app>',
