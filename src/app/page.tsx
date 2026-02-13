@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { headers } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { FAQSection } from '@/components/FAQSection'
@@ -10,6 +11,13 @@ export default async function Home() {
 
   if (user) {
     redirect('/requests')
+  }
+
+  // Native app users should see login, not the marketing page
+  const headersList = await headers()
+  const userAgent = headersList.get('user-agent') || ''
+  if (userAgent.includes('BrickQuoteApp')) {
+    redirect('/login')
   }
 
   const demoUserId = process.env.NEXT_PUBLIC_DEMO_USER_ID

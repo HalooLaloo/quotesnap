@@ -36,7 +36,14 @@ function LoginForm() {
       setError(error.message)
       setLoading(false)
     } else {
-      // Check subscription status
+      // In native app, skip subscription check — go straight to dashboard
+      const isNativeApp = navigator.userAgent.includes('BrickQuoteApp')
+      if (isNativeApp) {
+        window.location.href = '/requests'
+        return
+      }
+
+      // Check subscription status (web only)
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
         const { data: profile } = await supabase
