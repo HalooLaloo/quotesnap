@@ -1,8 +1,39 @@
 import { Capacitor } from '@capacitor/core'
 import { StatusBar, Style } from '@capacitor/status-bar'
 import { App } from '@capacitor/app'
-import { PushNotifications } from '@capacitor/push-notifications'
 import { createClient } from '@/lib/supabase/client'
+
+// Ensure Capacitor native bridge has PluginHeaders for remote URL mode.
+// When server.url points to a remote URL, the bridge JS injection may not
+// set PluginHeaders, causing plugins to report "not implemented".
+function ensurePluginHeaders() {
+  const cap = Capacitor as any
+  if (cap.isNativePlatform() && !cap.PluginHeaders) {
+    cap.PluginHeaders = [
+      {
+        name: 'PushNotifications',
+        methods: [
+          { name: 'checkPermissions' },
+          { name: 'requestPermissions' },
+          { name: 'register' },
+          { name: 'unregister' },
+          { name: 'getDeliveredNotifications' },
+          { name: 'removeDeliveredNotifications' },
+          { name: 'removeAllDeliveredNotifications' },
+          { name: 'createChannel' },
+          { name: 'deleteChannel' },
+          { name: 'listChannels' },
+        ],
+      },
+    ]
+  }
+}
+
+ensurePluginHeaders()
+
+// Import PushNotifications AFTER ensuring headers are set
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+let PushNotifications: any = null
 
 export function initCapacitor() {
   if (!Capacitor.isNativePlatform()) return
@@ -24,17 +55,17 @@ export function initCapacitor() {
 
 async function initPushNotifications() {
   try {
-    const isAvailable = Capacitor.isPluginAvailable('PushNotifications')
-    const platform = Capacitor.getPlatform()
-    const headers = (Capacitor as any).PluginHeaders
-    const headerNames = headers ? headers.map((h: any) => h.name) : 'NO_HEADERS'
-    alert(`[DEBUG] platform=${platform}, pluginAvailable=${isAvailable}, headers=${JSON.stringify(headerNames)}`)
+    // Dynamic import to ensure PluginHeaders are set first
+    if (!PushNotifications) {
+      const mod = await import('@capacitor/push-notifications')
+      PushNotifications = mod.PushNotifications
+    }
 
     // Wait for user to be logged in before registering push
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
-      alert('[DEBUG] No user yet, waiting for auth')
+      // Not logged in yet — listen for auth change and retry
       supabase.auth.onAuthStateChange((event) => {
         if (event === 'SIGNED_IN') {
           initPushNotifications()
@@ -43,41 +74,27 @@ async function initPushNotifications() {
       return
     }
 
-    alert('[DEBUG] User found: ' + user.id)
-
-    if (!isAvailable) {
-      alert('[DEBUG] Plugin not available - trying direct bridge call')
-      const result = await (Capacitor as any).nativeCallback?.('PushNotifications', 'checkPermissions', {})
-      alert('[DEBUG] Direct bridge result: ' + JSON.stringify(result))
-      return
-    }
-
     // Check/request permission
     let permStatus = await PushNotifications.checkPermissions()
-    alert('[DEBUG] Permission status: ' + permStatus.receive)
 
     if (permStatus.receive === 'prompt') {
       permStatus = await PushNotifications.requestPermissions()
-      alert('[DEBUG] After request: ' + permStatus.receive)
     }
 
     if (permStatus.receive !== 'granted') {
-      alert('[DEBUG] Permission not granted, stopping')
       return
     }
 
     // Register for push
     await PushNotifications.register()
-    alert('[DEBUG] Register called')
 
     // Listen for registration token
-    PushNotifications.addListener('registration', async (token) => {
-      alert('[DEBUG] Got FCM token: ' + token.value.substring(0, 20) + '...')
+    PushNotifications.addListener('registration', async (token: any) => {
       await saveFcmToken(user.id, token.value)
     })
 
-    PushNotifications.addListener('registrationError', (err) => {
-      alert('[DEBUG] Registration error: ' + JSON.stringify(err))
+    PushNotifications.addListener('registrationError', () => {
+      // Silent fail — push is best-effort
     })
 
     // Notification received while app is in foreground
@@ -86,14 +103,14 @@ async function initPushNotifications() {
     })
 
     // User tapped on notification
-    PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
+    PushNotifications.addListener('pushNotificationActionPerformed', (notification: any) => {
       const url = notification.notification.data?.url
       if (url && typeof url === 'string') {
         window.location.href = url
       }
     })
-  } catch (err) {
-    alert('[DEBUG] Push error: ' + (err instanceof Error ? err.message : String(err)))
+  } catch {
+    // Push not available on this device
   }
 }
 
