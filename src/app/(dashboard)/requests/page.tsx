@@ -185,13 +185,13 @@ export default async function RequestsPage({
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-2 md:gap-6 mb-6">
-        <div className="card p-3 md:p-6">
-          <div className="flex items-center justify-between gap-1">
-            <div className="min-w-0">
-              <p className="text-slate-400 text-xs md:text-sm truncate">New Requests</p>
-              <p className="text-2xl md:text-3xl font-bold text-white mt-1">{newRequestsCount || 0}</p>
+        <div className="card p-3 md:p-6 text-center md:text-left">
+          <div className="flex flex-col md:flex-row items-center md:justify-between gap-1 md:gap-2">
+            <div className="order-2 md:order-1">
+              <p className="text-slate-400 text-[11px] md:text-sm">New</p>
+              <p className="text-2xl md:text-3xl font-bold text-white">{newRequestsCount || 0}</p>
             </div>
-            <div className="w-8 h-8 md:w-12 md:h-12 bg-yellow-600/20 rounded-lg flex items-center justify-center shrink-0">
+            <div className="order-1 md:order-2 w-8 h-8 md:w-12 md:h-12 bg-yellow-600/20 rounded-lg flex items-center justify-center">
               <svg className="w-4 h-4 md:w-6 md:h-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
               </svg>
@@ -199,30 +199,30 @@ export default async function RequestsPage({
           </div>
         </div>
 
-        <div className="card p-3 md:p-6">
-          <div className="flex items-center justify-between gap-1">
-            <div className="min-w-0">
-              <p className="text-slate-400 text-xs md:text-sm truncate">Pending Quotes</p>
-              <p className="text-2xl md:text-3xl font-bold text-white mt-1">{pendingQuotesCount || 0}</p>
+        <div className="card p-3 md:p-6 text-center md:text-left">
+          <div className="flex flex-col md:flex-row items-center md:justify-between gap-1 md:gap-2">
+            <div className="order-2 md:order-1">
+              <p className="text-slate-400 text-[11px] md:text-sm">Pending</p>
+              <p className="text-2xl md:text-3xl font-bold text-white">{pendingQuotesCount || 0}</p>
             </div>
-            <div className="w-8 h-8 md:w-12 md:h-12 bg-purple-600/20 rounded-lg flex items-center justify-center shrink-0">
+            <div className="order-1 md:order-2 w-8 h-8 md:w-12 md:h-12 bg-purple-600/20 rounded-lg flex items-center justify-center">
               <svg className="w-4 h-4 md:w-6 md:h-6 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
           </div>
-          <Link href="/quotes" className="text-blue-500 text-xs md:text-sm mt-2 md:mt-4 inline-block hover:text-blue-400">
+          <Link href="/quotes" className="text-blue-500 text-[10px] md:text-sm mt-1 md:mt-4 inline-block hover:text-blue-400">
             View →
           </Link>
         </div>
 
-        <div className="card p-3 md:p-6">
-          <div className="flex items-center justify-between gap-1">
-            <div className="min-w-0">
-              <p className="text-slate-400 text-xs md:text-sm truncate">Accepted</p>
-              <p className="text-2xl md:text-3xl font-bold text-white mt-1">{acceptedQuotesCount || 0}</p>
+        <div className="card p-3 md:p-6 text-center md:text-left">
+          <div className="flex flex-col md:flex-row items-center md:justify-between gap-1 md:gap-2">
+            <div className="order-2 md:order-1">
+              <p className="text-slate-400 text-[11px] md:text-sm">Accepted</p>
+              <p className="text-2xl md:text-3xl font-bold text-white">{acceptedQuotesCount || 0}</p>
             </div>
-            <div className="w-8 h-8 md:w-12 md:h-12 bg-green-600/20 rounded-lg flex items-center justify-center shrink-0">
+            <div className="order-1 md:order-2 w-8 h-8 md:w-12 md:h-12 bg-green-600/20 rounded-lg flex items-center justify-center">
               <svg className="w-4 h-4 md:w-6 md:h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
