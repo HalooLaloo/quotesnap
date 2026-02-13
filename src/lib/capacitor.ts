@@ -1,33 +1,96 @@
-import { Capacitor, registerPlugin } from '@capacitor/core'
+import { Capacitor } from '@capacitor/core'
 import { StatusBar, Style } from '@capacitor/status-bar'
 import { App } from '@capacitor/app'
 import { createClient } from '@/lib/supabase/client'
 
-// For remote URL mode (server.url), the native bridge doesn't inject PluginHeaders.
-// We must set them BEFORE calling registerPlugin so it creates a native proxy.
-const cap = Capacitor as any
-if (typeof window !== 'undefined' && cap.isNativePlatform && cap.isNativePlatform() && !cap.PluginHeaders) {
-  cap.PluginHeaders = [
-    {
-      name: 'PushNotifications',
-      methods: [
-        { name: 'checkPermissions' },
-        { name: 'requestPermissions' },
-        { name: 'register' },
-        { name: 'unregister' },
-        { name: 'getDeliveredNotifications' },
-        { name: 'removeDeliveredNotifications' },
-        { name: 'removeAllDeliveredNotifications' },
-        { name: 'createChannel' },
-        { name: 'deleteChannel' },
-        { name: 'listChannels' },
-      ],
-    },
-  ]
+/**
+ * Minimal native bridge for Capacitor remote URL mode.
+ * When server.url points to a remote URL, the full bridge JS may not be injected,
+ * so nativeCallback/nativePromise are unavailable. This implements direct communication
+ * with the androidBridge Java interface.
+ */
+function setupNativeBridge() {
+  if (typeof window === 'undefined') return
+  const cap = (window as any).Capacitor as any
+  if (!cap || !cap.isNativePlatform?.()) return
+
+  // If nativePromise already exists, bridge JS was injected — no need for polyfill
+  if (typeof cap.nativePromise === 'function') return
+
+  let callbackCounter = 0
+  const callbacks = new Map<string, { resolve: (v: any) => void; reject: (e: any) => void }>()
+
+  // Handle responses from native
+  cap.fromNative = (result: any) => {
+    const callbackId = result.callbackId
+    const cb = callbacks.get(callbackId)
+    if (!cb) return
+    if (!result.save) {
+      callbacks.delete(callbackId)
+    }
+    if (result.success) {
+      cb.resolve(result.data || {})
+    } else {
+      cb.reject(result.error || { message: 'Native call failed' })
+    }
+  }
+
+  // Send message to native and get promise back
+  cap.nativePromise = (pluginId: string, methodName: string, options: any) => {
+    return new Promise((resolve, reject) => {
+      const callbackId = `cb_${++callbackCounter}`
+      callbacks.set(callbackId, { resolve, reject })
+      const msg = JSON.stringify({ callbackId, pluginId, methodName, options: options || {} })
+      const bridge = (window as any).androidBridge
+      if (bridge?.postMessage) {
+        bridge.postMessage(msg)
+      } else {
+        callbacks.delete(callbackId)
+        reject(new Error('androidBridge not available'))
+      }
+    })
+  }
+
+  cap.nativeCallback = (pluginId: string, methodName: string, options: any, callback?: any) => {
+    const callbackId = `cb_${++callbackCounter}`
+    callbacks.set(callbackId, {
+      resolve: (data: any) => callback?.(data),
+      reject: () => {},
+    })
+    const msg = JSON.stringify({ callbackId, pluginId, methodName, options: options || {} })
+    const bridge = (window as any).androidBridge
+    if (bridge?.postMessage) {
+      bridge.postMessage(msg)
+    }
+    return callbackId
+  }
+
+  // Set PluginHeaders so registerPlugin creates native proxies
+  if (!cap.PluginHeaders) {
+    cap.PluginHeaders = [
+      {
+        name: 'PushNotifications',
+        methods: [
+          { name: 'checkPermissions' },
+          { name: 'requestPermissions' },
+          { name: 'register' },
+          { name: 'unregister' },
+          { name: 'getDeliveredNotifications' },
+          { name: 'removeDeliveredNotifications' },
+          { name: 'removeAllDeliveredNotifications' },
+          { name: 'createChannel' },
+          { name: 'deleteChannel' },
+          { name: 'listChannels' },
+        ],
+      },
+    ]
+  }
 }
 
-// Register plugin ourselves — this creates a native bridge proxy
-// using the PluginHeaders we set above
+// Must run before any registerPlugin calls
+setupNativeBridge()
+
+import { registerPlugin } from '@capacitor/core'
 const PushNotifications: any = registerPlugin('PushNotifications')
 
 export function initCapacitor() {
