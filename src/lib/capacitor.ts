@@ -26,8 +26,9 @@ async function initPushNotifications() {
   try {
     const isAvailable = Capacitor.isPluginAvailable('PushNotifications')
     const platform = Capacitor.getPlatform()
-    const plugins = (Capacitor as any).registeredPlugins?.() || 'N/A'
-    alert(`[DEBUG] platform=${platform}, isNative=${Capacitor.isNativePlatform()}, pluginAvailable=${isAvailable}, plugins=${JSON.stringify(plugins)}`)
+    const headers = (Capacitor as any).PluginHeaders
+    const headerNames = headers ? headers.map((h: any) => h.name) : 'NO_HEADERS'
+    alert(`[DEBUG] platform=${platform}, pluginAvailable=${isAvailable}, headers=${JSON.stringify(headerNames)}`)
 
     // Wait for user to be logged in before registering push
     const supabase = createClient()
