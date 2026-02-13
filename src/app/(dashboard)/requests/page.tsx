@@ -120,14 +120,21 @@ export default async function RequestsPage({
               }
               const statusLabel = statusLabels[request.status] || request.status
 
+              const cardStyles: Record<string, string> = {
+                'new': 'border-l-yellow-500 bg-yellow-500/5 hover:bg-yellow-500/10',
+                'reviewing': 'border-l-blue-500 bg-blue-500/5 hover:bg-blue-500/10',
+                'quoted': 'border-l-purple-500 bg-purple-500/5 hover:bg-purple-500/10',
+                'accepted': 'border-l-green-500 bg-green-500/5 hover:bg-green-500/10',
+                'rejected': 'border-l-red-500 bg-red-500/5 hover:bg-red-500/10',
+                'archived': 'border-l-slate-500 bg-slate-700/30 hover:bg-slate-700/60',
+              }
+
               return (
                 <Link
                   key={request.id}
                   href={`/requests/${request.id}`}
-                  className={`block p-4 rounded-lg transition-colors ${
-                    request.status === 'new'
-                      ? 'bg-yellow-500/10 border border-yellow-500/30 hover:bg-yellow-500/20'
-                      : 'bg-slate-700/50 hover:bg-slate-700'
+                  className={`block p-4 rounded-lg border-l-4 transition-colors ${
+                    cardStyles[request.status] || cardStyles.archived
                   }`}
                 >
                   <div className="flex items-start justify-between gap-3">
