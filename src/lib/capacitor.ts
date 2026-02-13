@@ -128,26 +128,32 @@ async function initPushNotifications() {
 
     // Check/request permission
     let permStatus = await PushNotifications.checkPermissions()
+    alert('[PUSH] permStatus=' + JSON.stringify(permStatus))
 
     if (permStatus.receive === 'prompt') {
       permStatus = await PushNotifications.requestPermissions()
     }
 
     if (permStatus.receive !== 'granted') {
+      alert('[PUSH] not granted, stopping')
       return
     }
 
-    // Register for push
-    await PushNotifications.register()
-
-    // Listen for registration token
+    // Listen for registration token BEFORE calling register
     PushNotifications.addListener('registration', async (token: any) => {
+      alert('[PUSH] GOT TOKEN: ' + token.value?.substring(0, 30))
       await saveFcmToken(user.id, token.value)
+      alert('[PUSH] Token saved!')
     })
 
-    PushNotifications.addListener('registrationError', () => {
-      // Silent fail — push is best-effort
+    PushNotifications.addListener('registrationError', (err: any) => {
+      alert('[PUSH] REG ERROR: ' + JSON.stringify(err))
     })
+
+    // Register for push
+    alert('[PUSH] Calling register()...')
+    await PushNotifications.register()
+    alert('[PUSH] register() resolved')
 
     // Notification received while app is in foreground
     PushNotifications.addListener('pushNotificationReceived', () => {
