@@ -134,7 +134,7 @@ export function QuotesList({ quotes }: QuotesListProps) {
   ]
 
   return (
-    <div className="card">
+    <div>
       {/* Search */}
       <div className="mb-4">
         <div className="relative">
