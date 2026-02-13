@@ -83,7 +83,7 @@ export default async function QuotePDFPage({
 
       {/* Print / Save button - hidden when printing */}
       <div className="no-print px-4 md:px-8 py-3">
-        <PrintButton clientName={clientName} />
+        <PrintButton clientName={clientName} quoteId={id} />
       </div>
 
       {/* The document itself - styled like a PDF */}
