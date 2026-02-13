@@ -54,11 +54,11 @@ export default async function InvoicesPage() {
     .order('created_at', { ascending: false })
 
   return (
-    <div className="p-8">
-      <div className="flex items-center justify-between mb-8">
+    <div className="p-4 md:p-8">
+      <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-white">Invoices</h1>
-          <p className="text-slate-400 mt-1">
+          <h1 className="text-2xl md:text-3xl font-bold text-white">Invoices</h1>
+          <p className="text-slate-400 text-sm mt-1">
             Create and manage invoices for completed work.
           </p>
         </div>
