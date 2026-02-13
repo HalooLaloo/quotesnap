@@ -55,14 +55,14 @@ export default function SubscribePage() {
         setLoading(null)
       }
     } catch (err) {
-      console.error('Checkout error:', err)
+      void err
       setError('Failed to start checkout')
       setLoading(null)
     }
   }
 
   return (
-    <div className="min-h-screen bg-[#0a1628] flex items-center justify-center px-4">
+    <div className="min-h-screen bg-[#0a1628] flex items-center justify-center px-4 py-12">
       <div className="max-w-2xl w-full">
         {/* Logo */}
         <div className="text-center mb-8">

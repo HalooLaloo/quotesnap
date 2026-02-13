@@ -503,11 +503,11 @@ export function OnboardingWizard({ onClose, userId }: OnboardingWizardProps) {
                     type="text"
                     readOnly
                     value={shareUrl}
-                    className="flex-1 bg-[#132039] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm"
+                    className="flex-1 min-w-0 bg-[#132039] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm truncate"
                   />
                   <button
                     onClick={handleCopyLink}
-                    className={`px-4 py-2 rounded-lg transition-colors text-sm font-medium ${
+                    className={`shrink-0 px-4 py-2 rounded-lg transition-colors text-sm font-medium ${
                       copied
                         ? 'bg-green-600 text-white'
                         : 'bg-blue-500 hover:bg-blue-400 text-white'
@@ -522,13 +522,13 @@ export function OnboardingWizard({ onClose, userId }: OnboardingWizardProps) {
                   href={shareUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full flex items-center justify-center gap-2 py-2.5 mb-3 bg-purple-600 hover:bg-purple-500 text-white rounded-lg transition-colors text-sm font-medium"
+                  className="w-full flex items-center justify-center gap-2 py-2.5 mb-3 bg-purple-600 hover:bg-purple-500 text-white rounded-lg transition-colors text-sm font-medium text-center"
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                   </svg>
-                  Preview - See What Clients See
+                  <span>Preview - See What Clients See</span>
                 </a>
 
                 <div className="flex gap-2">

@@ -91,8 +91,14 @@ export default function RegisterPage() {
                 We sent a confirmation link to:<br />
                 <span className="text-white font-medium">{email}</span>
               </p>
-              <p className="text-slate-500 text-sm">
+              <p className="text-slate-500 text-sm mb-6">
                 Click the link in the email to activate your account.
+              </p>
+              <Link href="/login" className="btn-primary inline-block px-6">
+                Go to Login
+              </Link>
+              <p className="text-slate-500 text-xs mt-4">
+                Didn&apos;t receive the email? Check your spam folder.
               </p>
             </div>
           ) : (
