@@ -236,6 +236,13 @@ export default function SettingsPage() {
   }
 
   const handleSignOut = () => {
+    // Clear Supabase auth cookies manually so middleware sees unauthenticated state
+    document.cookie.split(';').forEach(c => {
+      const name = c.split('=')[0].trim()
+      if (name.startsWith('sb-')) {
+        document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`
+      }
+    })
     supabase.auth.signOut().catch(() => {})
     window.location.href = '/login'
   }
