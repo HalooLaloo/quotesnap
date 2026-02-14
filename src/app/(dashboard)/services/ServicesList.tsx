@@ -25,6 +25,14 @@ export function ServicesList({ services, currencySymbol }: ServicesListProps) {
   const [addLoading, setAddLoading] = useState(false)
   const [addError, setAddError] = useState('')
 
+  // AI suggest state
+  const [showAi, setShowAi] = useState(false)
+  const [aiPrompt, setAiPrompt] = useState('')
+  const [aiLoading, setAiLoading] = useState(false)
+  const [aiError, setAiError] = useState('')
+  const [aiSuggestions, setAiSuggestions] = useState<{ name: string; unit: string; price: number; selected: boolean }[]>([])
+  const [aiSaving, setAiSaving] = useState(false)
+
   const router = useRouter()
   const supabase = createClient()
 
@@ -92,6 +100,71 @@ export function ServicesList({ services, currencySymbol }: ServicesListProps) {
       router.refresh()
     }
     setLoading(false)
+  }
+
+  // AI suggest
+  const handleAiSuggest = async () => {
+    if (!aiPrompt.trim() || aiPrompt.trim().length < 10) {
+      setAiError('Please describe your work in more detail (at least 10 characters).')
+      return
+    }
+    setAiError('')
+    setAiLoading(true)
+    setAiSuggestions([])
+
+    try {
+      const response = await fetch('/api/suggest-services', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ description: aiPrompt }),
+      })
+      const data = await response.json()
+
+      if (!response.ok) {
+        setAiError(data.error || 'Failed to generate suggestions')
+      } else {
+        const existingNames = new Set(services.map(s => s.name.toLowerCase()))
+        setAiSuggestions(
+          (data.services || []).map((s: { name: string; unit: string; price: number }) => ({
+            ...s,
+            selected: !existingNames.has(s.name.toLowerCase()),
+          }))
+        )
+      }
+    } catch {
+      setAiError('Something went wrong. Please try again.')
+    }
+    setAiLoading(false)
+  }
+
+  const toggleAiSuggestion = (index: number) => {
+    setAiSuggestions(prev => prev.map((s, i) => i === index ? { ...s, selected: !s.selected } : s))
+  }
+
+  const handleAddAiSelected = async () => {
+    const selected = aiSuggestions.filter(s => s.selected)
+    if (selected.length === 0) return
+
+    setAiSaving(true)
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { setAiSaving(false); return }
+
+    const { error } = await supabase
+      .from('qs_services')
+      .insert(selected.map(s => ({
+        user_id: user.id,
+        name: s.name,
+        unit: s.unit,
+        price: s.price,
+      })))
+
+    if (!error) {
+      setAiSuggestions([])
+      setShowAi(false)
+      setAiPrompt('')
+      router.refresh()
+    }
+    setAiSaving(false)
   }
 
   // Delete service
@@ -182,15 +255,151 @@ export function ServicesList({ services, currencySymbol }: ServicesListProps) {
           </div>
         </form>
       ) : (
-        <button
-          onClick={() => setShowAdd(true)}
-          className="w-full py-3 border-2 border-dashed border-slate-600 hover:border-blue-500 rounded-xl text-slate-400 hover:text-blue-400 transition-colors flex items-center justify-center gap-2"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          Add Service
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={() => setShowAdd(true)}
+            className="flex-1 py-3 border-2 border-dashed border-slate-600 hover:border-blue-500 rounded-xl text-slate-400 hover:text-blue-400 transition-colors flex items-center justify-center gap-2"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Add Service
+          </button>
+          <button
+            onClick={() => setShowAi(true)}
+            className="flex-1 py-3 border-2 border-dashed border-purple-600/50 hover:border-purple-500 rounded-xl text-purple-400/70 hover:text-purple-400 transition-colors flex items-center justify-center gap-2"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+            </svg>
+            AI Suggest
+          </button>
+        </div>
+      )}
+
+      {/* AI Suggest Panel */}
+      {showAi && (
+        <div className="card bg-purple-600/10 border-purple-500/30">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+              </svg>
+              <h2 className="text-lg font-semibold text-white">AI Service Suggestions</h2>
+            </div>
+            <button
+              onClick={() => { setShowAi(false); setAiSuggestions([]); setAiError('') }}
+              className="p-1.5 text-slate-400 hover:text-white rounded-lg transition-colors"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          {aiSuggestions.length === 0 ? (
+            <>
+              <p className="text-slate-400 text-sm mb-3">
+                Describe your specialization and AI will suggest services with prices.
+              </p>
+              <textarea
+                value={aiPrompt}
+                onChange={(e) => setAiPrompt(e.target.value)}
+                className="input min-h-[80px] resize-y text-sm mb-3"
+                placeholder="e.g. I'm a tiler and painter, I do bathrooms and kitchens..."
+              />
+              {aiError && (
+                <div className="bg-red-500/10 border border-red-500/50 text-red-400 px-4 py-3 rounded-lg text-sm mb-3">
+                  {aiError}
+                </div>
+              )}
+              <button
+                onClick={handleAiSuggest}
+                disabled={aiLoading}
+                className="btn-primary w-full flex items-center justify-center gap-2"
+              >
+                {aiLoading ? (
+                  <>
+                    <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                    Generating...
+                  </>
+                ) : 'Generate Suggestions'}
+              </button>
+            </>
+          ) : (
+            <>
+              <p className="text-slate-400 text-sm mb-3">
+                Select services to add to your price list. You can edit prices later.
+              </p>
+              <div className="space-y-2 mb-4">
+                {aiSuggestions.map((suggestion, index) => (
+                  <button
+                    key={index}
+                    type="button"
+                    onClick={() => toggleAiSuggestion(index)}
+                    className={`w-full p-3 rounded-lg border text-left transition-all flex items-center gap-3 ${
+                      suggestion.selected
+                        ? 'bg-purple-600/15 border-purple-500/40'
+                        : 'bg-slate-800/30 border-slate-700/50 opacity-60'
+                    }`}
+                  >
+                    <div className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${
+                      suggestion.selected
+                        ? 'bg-purple-600 border-purple-600'
+                        : 'border-slate-500'
+                    }`}>
+                      {suggestion.selected && (
+                        <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <span className="text-white text-sm font-medium">{suggestion.name}</span>
+                    </div>
+                    <span className="text-purple-300 text-sm font-semibold shrink-0">
+                      {cs}{suggestion.price.toFixed(2)} / {UNITS[suggestion.unit as keyof typeof UNITS] || suggestion.unit}
+                    </span>
+                  </button>
+                ))}
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={handleAiSuggest}
+                  disabled={aiLoading}
+                  className="btn-secondary flex-1 flex items-center justify-center gap-2"
+                >
+                  {aiLoading ? (
+                    <>
+                      <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      </svg>
+                      Regenerating...
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                      </svg>
+                      Regenerate
+                    </>
+                  )}
+                </button>
+                <button
+                  onClick={handleAddAiSelected}
+                  disabled={aiSaving || aiSuggestions.filter(s => s.selected).length === 0}
+                  className="btn-primary flex-1 flex items-center justify-center gap-2"
+                >
+                  {aiSaving ? 'Adding...' : `Add ${aiSuggestions.filter(s => s.selected).length} Selected`}
+                </button>
+              </div>
+            </>
+          )}
+        </div>
       )}
 
       {/* Services Grid */}
