@@ -223,14 +223,7 @@ export default function SettingsPage() {
   const handleChangePassword = async () => {
     setPasswordResetLoading(true)
     try {
-      // Use implicit flow (not PKCE) so reset link works cross-device
-      const { createBrowserClient } = await import('@supabase/ssr')
-      const implicitClient = createBrowserClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-        { auth: { flowType: 'implicit' } }
-      )
-      const { error } = await implicitClient.auth.resetPasswordForEmail(email, {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/reset-password`,
       })
       if (error) throw error

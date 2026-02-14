@@ -18,8 +18,9 @@ export function ResetPasswordForm() {
     let mounted = true
 
     const init = async () => {
-      // 0. Check for error from auth/callback (e.g. expired OTP)
       const urlParams = new URLSearchParams(window.location.search)
+
+      // 0. Check for error from auth/callback (e.g. expired OTP)
       if (urlParams.get('error') === 'expired') {
         if (mounted) {
           setError('Reset link expired or invalid. Please request a new one.')
@@ -28,22 +29,41 @@ export function ResetPasswordForm() {
         return
       }
 
-      // 1. Check URL hash for recovery tokens (implicit flow)
+      // 1. token_hash from custom email template (works cross-device, no PKCE needed)
+      const tokenHash = urlParams.get('token_hash')
+      const type = urlParams.get('type')
+      if (tokenHash && type === 'recovery') {
+        const { error } = await supabase.auth.verifyOtp({
+          token_hash: tokenHash,
+          type: 'recovery',
+        })
+        if (mounted) {
+          if (!error) {
+            window.history.replaceState(null, '', window.location.pathname)
+            setReady(true)
+          } else {
+            setError('Reset link expired or invalid. Please request a new one.')
+          }
+          setCheckDone(true)
+        }
+        return
+      }
+
+      // 2. URL hash for recovery tokens (implicit flow fallback)
       const hash = window.location.hash
       if (hash) {
         const params = new URLSearchParams(hash.substring(1))
         const accessToken = params.get('access_token')
         const refreshToken = params.get('refresh_token')
-        const type = params.get('type')
+        const hashType = params.get('type')
 
-        if (accessToken && refreshToken && type === 'recovery') {
+        if (accessToken && refreshToken && hashType === 'recovery') {
           const { error } = await supabase.auth.setSession({
             access_token: accessToken,
             refresh_token: refreshToken,
           })
           if (mounted) {
             if (!error) {
-              // Clear hash from URL
               window.history.replaceState(null, '', window.location.pathname)
               setReady(true)
             } else {
@@ -55,9 +75,8 @@ export function ResetPasswordForm() {
         }
       }
 
-      // 2. Check URL query for PKCE code
-      const params = new URLSearchParams(window.location.search)
-      const code = params.get('code')
+      // 3. PKCE code (same-device only)
+      const code = urlParams.get('code')
       if (code) {
         const { error } = await supabase.auth.exchangeCodeForSession(code)
         if (mounted) {
@@ -72,7 +91,7 @@ export function ResetPasswordForm() {
         return
       }
 
-      // 3. Fallback: check existing session
+      // 4. Fallback: existing session
       const { data: { session } } = await supabase.auth.getSession()
       if (mounted) {
         if (session) setReady(true)
