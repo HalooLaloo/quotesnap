@@ -236,7 +236,7 @@ export default function SettingsPage() {
   }
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut()
+    try { await supabase.auth.signOut() } catch { /* ignore */ }
     window.location.href = '/login'
   }
 
