@@ -13,22 +13,20 @@ export function DownloadPDFButton({ url, fileName, className = 'btn-secondary fl
   const [downloading, setDownloading] = useState(false)
 
   const handleDownload = async () => {
+    // On touch devices (mobile/tablet), use window.print() — most reliable
+    // Shows "Save as PDF" on Android, works in Capacitor WebView
+    if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+      window.print()
+      return
+    }
+
+    // Desktop: fetch blob and trigger download
     setDownloading(true)
     try {
       const response = await fetch(url)
       if (!response.ok) throw new Error('Failed to generate PDF')
 
       const blob = await response.blob()
-
-      // Try Web Share API first (works on Android)
-      try {
-        const file = new File([blob], fileName, { type: 'application/pdf' })
-        await navigator.share({ files: [file], title: fileName })
-        setDownloading(false)
-        return
-      } catch { /* share not supported or cancelled, try download */ }
-
-      // Try blob download (works on desktop)
       const blobUrl = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = blobUrl
@@ -39,7 +37,8 @@ export function DownloadPDFButton({ url, fileName, className = 'btn-secondary fl
       setTimeout(() => URL.revokeObjectURL(blobUrl), 1000)
     } catch (error) {
       console.error('PDF download error:', error)
-      alert('Failed to download PDF. Please try again.')
+      // Fallback: print
+      window.print()
     }
     setDownloading(false)
   }

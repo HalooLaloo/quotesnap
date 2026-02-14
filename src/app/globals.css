@@ -64,6 +64,36 @@ body {
   background: #64748b;
 }
 
+/* Print styles — hide navigation, buttons, dark bg → white */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  .no-print,
+  nav,
+  header,
+  footer,
+  button,
+  [role="navigation"] {
+    display: none !important;
+  }
+  .card {
+    border: none !important;
+    background: white !important;
+    box-shadow: none !important;
+  }
+  .print-doc {
+    box-shadow: none !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+  }
+  a {
+    color: inherit !important;
+    text-decoration: none !important;
+  }
+}
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;
