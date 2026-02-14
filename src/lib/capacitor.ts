@@ -136,6 +136,13 @@ async function initPushNotifications() {
       return
     }
 
+    // Clear FCM token on sign out so notifications don't go to wrong account
+    supabase.auth.onAuthStateChange(async (event) => {
+      if (event === 'SIGNED_OUT') {
+        await clearFcmToken(user.id)
+      }
+    })
+
     // Check/request permission
     let permStatus = await PushNotifications.checkPermissions()
 
@@ -179,9 +186,28 @@ async function initPushNotifications() {
 async function saveFcmToken(userId: string, token: string) {
   try {
     const supabase = createClient()
+    // Clear this token from any other account first (prevents duplicate tokens)
+    await supabase
+      .from('profiles')
+      .update({ fcm_token: null })
+      .eq('fcm_token', token)
+      .neq('id', userId)
+    // Save token to current user
     await supabase
       .from('profiles')
       .update({ fcm_token: token })
+      .eq('id', userId)
+  } catch {
+    // Silent fail
+  }
+}
+
+async function clearFcmToken(userId: string) {
+  try {
+    const supabase = createClient()
+    await supabase
+      .from('profiles')
+      .update({ fcm_token: null })
       .eq('id', userId)
   } catch {
     // Silent fail
