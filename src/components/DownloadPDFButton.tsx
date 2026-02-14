@@ -19,22 +19,24 @@ export function DownloadPDFButton({ url, fileName, className = 'btn-secondary fl
       if (!response.ok) throw new Error('Failed to generate PDF')
 
       const blob = await response.blob()
-      const file = new File([blob], fileName, { type: 'application/pdf' })
 
-      // Mobile: use Web Share API (shows share sheet — save, email, WhatsApp, etc.)
-      if (navigator.canShare?.({ files: [file] })) {
+      // Try Web Share API first (works on Android)
+      try {
+        const file = new File([blob], fileName, { type: 'application/pdf' })
         await navigator.share({ files: [file], title: fileName })
-      } else {
-        // Desktop: download via <a download>
-        const blobUrl = URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = blobUrl
-        a.download = fileName
-        document.body.appendChild(a)
-        a.click()
-        document.body.removeChild(a)
-        URL.revokeObjectURL(blobUrl)
-      }
+        setDownloading(false)
+        return
+      } catch { /* share not supported or cancelled, try download */ }
+
+      // Try blob download (works on desktop)
+      const blobUrl = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = blobUrl
+      a.download = fileName
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 1000)
     } catch (error) {
       console.error('PDF download error:', error)
       alert('Failed to download PDF. Please try again.')

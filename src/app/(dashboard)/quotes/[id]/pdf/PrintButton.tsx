@@ -13,22 +13,24 @@ export function PrintButton({ clientName, quoteId }: { clientName: string; quote
 
       const blob = await response.blob()
       const fileName = `quote-${clientName.toLowerCase().replace(/\s+/g, '-')}.pdf`
-      const file = new File([blob], fileName, { type: 'application/pdf' })
 
-      // Mobile: use Web Share API (shows share sheet — save, email, WhatsApp, etc.)
-      if (navigator.canShare?.({ files: [file] })) {
+      // Try Web Share API first (works on Android)
+      try {
+        const file = new File([blob], fileName, { type: 'application/pdf' })
         await navigator.share({ files: [file], title: fileName })
-      } else {
-        // Desktop: download via <a download>
-        const url = URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = fileName
-        document.body.appendChild(a)
-        a.click()
-        document.body.removeChild(a)
-        URL.revokeObjectURL(url)
-      }
+        setDownloading(false)
+        return
+      } catch { /* share not supported or cancelled, try download */ }
+
+      // Try blob download (works on desktop)
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = fileName
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      setTimeout(() => URL.revokeObjectURL(url), 1000)
     } catch (error) {
       console.error('PDF download error:', error)
       alert('Failed to download PDF. Please try again.')

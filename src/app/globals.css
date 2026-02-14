@@ -49,6 +49,21 @@ body {
   background: var(--muted-foreground);
 }
 
+/* Scrollbar on light backgrounds (e.g. PDF preview) */
+.scrollbar-light::-webkit-scrollbar-track {
+  background: #e2e8f0;
+  border-radius: 4px;
+}
+
+.scrollbar-light::-webkit-scrollbar-thumb {
+  background: #94a3b8;
+  border-radius: 4px;
+}
+
+.scrollbar-light::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;

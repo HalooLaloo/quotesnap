@@ -151,7 +151,7 @@ export default async function QuotePDFPage({
             </div>
 
             {/* Items table */}
-            <div style={{ overflowX: 'auto', marginBottom: '24px' }}>
+            <div className="scrollbar-light" style={{ overflowX: 'auto', marginBottom: '24px' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '400px' }}>
                 <thead>
                   <tr style={{ background: '#1e3a5f' }}>
