@@ -2,20 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { ResetPasswordForm } from './ResetPasswordForm'
 
-export default async function ResetPasswordPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ code?: string }>
-}) {
-  const { code } = await searchParams
+export default async function ResetPasswordPage() {
   const supabase = await createClient()
-
-  // Exchange PKCE code for session (server-side)
-  if (code) {
-    await supabase.auth.exchangeCodeForSession(code)
-  }
-
-  // Check if we have a valid session (either from code exchange or existing)
   const { data: { user } } = await supabase.auth.getUser()
 
   return (

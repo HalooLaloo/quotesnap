@@ -29,6 +29,21 @@ export async function updateSession(request: NextRequest) {
     }
   )
 
+  // Handle PKCE code exchange for password reset
+  const code = request.nextUrl.searchParams.get('code')
+  if (code && request.nextUrl.pathname === '/reset-password') {
+    await supabase.auth.exchangeCodeForSession(code)
+    // Strip code from URL and redirect (cookies are set on supabaseResponse)
+    const cleanUrl = request.nextUrl.clone()
+    cleanUrl.searchParams.delete('code')
+    const redirectResponse = NextResponse.redirect(cleanUrl)
+    // Copy cookies from supabaseResponse to redirect response
+    supabaseResponse.cookies.getAll().forEach(cookie => {
+      redirectResponse.cookies.set(cookie.name, cookie.value)
+    })
+    return redirectResponse
+  }
+
   const {
     data: { user },
   } = await supabase.auth.getUser()
