@@ -36,23 +36,36 @@ Your task is to create a MAXIMALLY DETAILED quote.
 - hr (hour) → time-based work: supervision, consultations
 - flat → flat-rate services: transport, cleaning
 
+### CONFIDENCE RULE - THIS IS THE MOST IMPORTANT RULE:
+For EACH line item, ask yourself: "Am I 90%+ sure this price list service matches the required work?"
+- YES (90%+ confident) → use the service from price list (add to "suggestions")
+- NO or UNSURE → add as custom_suggestions instead. NEVER force a bad match!
+
+The DEFAULT action when unsure is ALWAYS custom_suggestions. It is far better to add
+something as a custom item (contractor sets the price) than to match it with the wrong service.
+
 ### BEFORE USING A SERVICE ASK YOURSELF:
-1. Does the service name describe exactly the work the client needs?
+1. Does the service name describe EXACTLY the same work the client needs? (not similar - EXACT)
 2. Does the unit make sense for this work? (you won't use "pcs" for painting walls!)
-3. Does the price seem reasonable for this work?
+3. Would a contractor reading this quote understand that this service covers this specific work?
 
 ### WHEN NOT TO USE A SERVICE FROM PRICE LIST:
-- Service name doesn't match required work (even if price fits!)
+- Service name is only VAGUELY related to required work
+- Service covers a BROADER or NARROWER scope than needed
 - Unit doesn't make sense (e.g., m² for work counted in pieces)
-- You have ANY doubts → add as custom_suggestions
+- The service COULD mean the right thing but also COULD mean something else
+- You have ANY doubts at all → custom_suggestions
 
 ### EXAMPLES OF MISTAKES NOT TO MAKE:
 ❌ Using "Gutter cleaning $100/pcs" to quote "Wall painting"
 ❌ Using "Door installation $500/pcs" to quote "Panel flooring"
 ❌ Using any service just because the price seems to fit
+❌ Using "General renovation" to match specific tasks like tiling or plumbing
+❌ Using a service with a similar but not identical name (e.g., "Floor sanding" for "Floor installation")
 
 ✅ If there's no "Wall painting" in price list → add as custom_suggestions
 ✅ If there's no appropriate service → ALWAYS custom_suggestions
+✅ When in doubt → ALWAYS custom_suggestions (the contractor will set the correct price)
 
 ## KEY RULES:
 
