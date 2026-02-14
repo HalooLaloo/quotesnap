@@ -192,18 +192,6 @@ export async function GET(request: NextRequest) {
     doc.text('TOTAL:', 120, y + 2)
     doc.text(`${cs}${totalGross.toFixed(2)}`, 190, y + 2, { align: 'right' })
 
-    // Notes
-    const pdfNotes = quote.notes?.split('---CLIENT_ANSWER---')[0]?.trim()
-    if (pdfNotes) {
-      if (y > 240) { doc.addPage(); y = 20 } else { y += 20 }
-      doc.setFontSize(10)
-      doc.setTextColor(0, 0, 0)
-      doc.setFont('helvetica', 'bold')
-      doc.text('Notes:', 20, y)
-      doc.setFont('helvetica', 'normal')
-      doc.text(doc.splitTextToSize(toAscii(pdfNotes), 170), 20, y + 6)
-    }
-
     // Footer
     const pageCount = doc.getNumberOfPages()
     doc.setPage(pageCount)

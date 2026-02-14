@@ -86,6 +86,12 @@ function setupNativeBridge() {
           { name: 'removeAllListeners', rtype: 'promise' },
         ],
       },
+      {
+        name: 'FileDownloader',
+        methods: [
+          { name: 'download', rtype: 'promise' },
+        ],
+      },
     ]
   }
 }
@@ -95,6 +101,7 @@ setupNativeBridge()
 
 import { registerPlugin } from '@capacitor/core'
 const PushNotifications: any = registerPlugin('PushNotifications')
+export const FileDownloader: any = registerPlugin('FileDownloader')
 
 export function initCapacitor() {
   if (!Capacitor.isNativePlatform()) return

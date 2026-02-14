@@ -1,6 +1,8 @@
 'use client'
 
 import { useState } from 'react'
+import { Capacitor } from '@capacitor/core'
+import { FileDownloader } from '@/lib/capacitor'
 
 interface DownloadPDFButtonProps {
   url: string
@@ -13,19 +15,22 @@ export function DownloadPDFButton({ url, fileName, className = 'btn-secondary fl
   const [downloading, setDownloading] = useState(false)
 
   const handleDownload = async () => {
-    // On touch devices (mobile/tablet), use window.print() — most reliable
-    // Shows "Save as PDF" on Android, works in Capacitor WebView
-    if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
-      window.print()
+    // Native Android: use DownloadManager via native plugin
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const fullUrl = url.startsWith('http') ? url : `${window.location.origin}${url}`
+        await FileDownloader.download({ url: fullUrl, fileName })
+      } catch {
+        alert('Download failed. Please try again.')
+      }
       return
     }
 
-    // Desktop: fetch blob and trigger download
+    // Desktop/mobile browser: fetch blob and trigger download
     setDownloading(true)
     try {
       const response = await fetch(url)
-      if (!response.ok) throw new Error('Failed to generate PDF')
-
+      if (!response.ok) throw new Error('Failed')
       const blob = await response.blob()
       const blobUrl = URL.createObjectURL(blob)
       const a = document.createElement('a')
@@ -35,10 +40,8 @@ export function DownloadPDFButton({ url, fileName, className = 'btn-secondary fl
       a.click()
       document.body.removeChild(a)
       setTimeout(() => URL.revokeObjectURL(blobUrl), 1000)
-    } catch (error) {
-      console.error('PDF download error:', error)
-      // Fallback: print
-      window.print()
+    } catch {
+      alert('Failed to download PDF.')
     }
     setDownloading(false)
   }

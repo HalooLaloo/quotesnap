@@ -51,8 +51,6 @@ export default async function QuotePDFPage({
   const vatPercent = Number(quote.vat_percent) || 0
   const totalNet = Number(quote.total_net) || 0
   const totalGross = Number(quote.total_gross) || Number(quote.total) || 0
-  const pdfNotes = quote.notes?.split('---CLIENT_ANSWER---')[0]?.trim()
-
   return (
     <>
       {/* Print styles */}
@@ -114,14 +112,14 @@ export default async function QuotePDFPage({
           {/* Content */}
           <div style={{ padding: '16px' }} className="md:!p-[30px]">
             {/* Contractor & Client */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '24px', gap: '20px', flexWrap: 'wrap' }}>
+            <div className="flex flex-col sm:flex-row sm:justify-between gap-4 mb-6">
               <div>
                 <div style={{ fontWeight: 'bold', fontSize: '12px', color: '#666', textTransform: 'uppercase', marginBottom: '4px' }}>
                   Contractor
                 </div>
                 <div style={{ fontSize: '15px', fontWeight: '600' }}>{contractorName}</div>
               </div>
-              <div style={{ textAlign: 'right' }}>
+              <div className="sm:text-right">
                 <div style={{ fontWeight: 'bold', fontSize: '12px', color: '#666', textTransform: 'uppercase', marginBottom: '4px' }}>
                   Client
                 </div>
@@ -224,14 +222,6 @@ export default async function QuotePDFPage({
                 </div>
               </div>
             </div>
-
-            {/* Notes */}
-            {pdfNotes && (
-              <div style={{ marginTop: '24px', padding: '16px', background: '#f8fafc', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
-                <div style={{ fontWeight: 'bold', fontSize: '13px', marginBottom: '6px' }}>Notes:</div>
-                <div style={{ fontSize: '13px', color: '#555', whiteSpace: 'pre-wrap' }}>{pdfNotes}</div>
-              </div>
-            )}
 
             {/* Footer */}
             <div style={{ marginTop: '32px', textAlign: 'center' }}>
