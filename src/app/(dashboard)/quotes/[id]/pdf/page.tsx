@@ -112,7 +112,7 @@ export default async function QuotePDFPage({
           </div>
 
           {/* Content */}
-          <div style={{ padding: '30px' }}>
+          <div style={{ padding: '16px' }} className="md:!p-[30px]">
             {/* Contractor & Client */}
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '24px', gap: '20px', flexWrap: 'wrap' }}>
               <div>
@@ -151,42 +151,44 @@ export default async function QuotePDFPage({
             </div>
 
             {/* Items table */}
-            <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '24px' }}>
-              <thead>
-                <tr style={{ background: '#1e3a5f' }}>
-                  <th style={{ color: '#fff', padding: '10px 12px', textAlign: 'left', fontSize: '13px', fontWeight: '600' }}>
-                    Service
-                  </th>
-                  <th style={{ color: '#fff', padding: '10px 12px', textAlign: 'center', fontSize: '13px', fontWeight: '600' }}>
-                    Qty
-                  </th>
-                  <th style={{ color: '#fff', padding: '10px 12px', textAlign: 'right', fontSize: '13px', fontWeight: '600' }}>
-                    Unit Price
-                  </th>
-                  <th style={{ color: '#fff', padding: '10px 12px', textAlign: 'right', fontSize: '13px', fontWeight: '600' }}>
-                    Amount
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {items.map((item, i) => (
-                  <tr key={i} style={{ background: i % 2 === 0 ? '#f8fafc' : '#fff', borderBottom: '1px solid #e2e8f0' }}>
-                    <td style={{ padding: '10px 12px', fontSize: '13px' }}>
-                      {item.service_name || ''}
-                    </td>
-                    <td style={{ padding: '10px 12px', textAlign: 'center', fontSize: '13px' }}>
-                      {Number(item.quantity) || 0} {item.unit || ''}
-                    </td>
-                    <td style={{ padding: '10px 12px', textAlign: 'right', fontSize: '13px' }}>
-                      {cs}{(Number(item.unit_price) || 0).toFixed(2)}
-                    </td>
-                    <td style={{ padding: '10px 12px', textAlign: 'right', fontSize: '13px', fontWeight: '500' }}>
-                      {cs}{(Number(item.total) || 0).toFixed(2)}
-                    </td>
+            <div style={{ overflowX: 'auto', marginBottom: '24px' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '400px' }}>
+                <thead>
+                  <tr style={{ background: '#1e3a5f' }}>
+                    <th style={{ color: '#fff', padding: '8px 10px', textAlign: 'left', fontSize: '12px', fontWeight: '600' }}>
+                      Service
+                    </th>
+                    <th style={{ color: '#fff', padding: '8px 10px', textAlign: 'center', fontSize: '12px', fontWeight: '600', whiteSpace: 'nowrap' }}>
+                      Qty
+                    </th>
+                    <th style={{ color: '#fff', padding: '8px 10px', textAlign: 'right', fontSize: '12px', fontWeight: '600', whiteSpace: 'nowrap' }}>
+                      Unit Price
+                    </th>
+                    <th style={{ color: '#fff', padding: '8px 10px', textAlign: 'right', fontSize: '12px', fontWeight: '600' }}>
+                      Amount
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {items.map((item, i) => (
+                    <tr key={i} style={{ background: i % 2 === 0 ? '#f8fafc' : '#fff', borderBottom: '1px solid #e2e8f0' }}>
+                      <td style={{ padding: '8px 10px', fontSize: '12px' }}>
+                        {item.service_name || ''}
+                      </td>
+                      <td style={{ padding: '8px 10px', textAlign: 'center', fontSize: '12px', whiteSpace: 'nowrap' }}>
+                        {Number(item.quantity) || 0} {item.unit || ''}
+                      </td>
+                      <td style={{ padding: '8px 10px', textAlign: 'right', fontSize: '12px', whiteSpace: 'nowrap' }}>
+                        {cs}{(Number(item.unit_price) || 0).toFixed(2)}
+                      </td>
+                      <td style={{ padding: '8px 10px', textAlign: 'right', fontSize: '12px', fontWeight: '500', whiteSpace: 'nowrap' }}>
+                        {cs}{(Number(item.total) || 0).toFixed(2)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
             {/* Totals */}
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>

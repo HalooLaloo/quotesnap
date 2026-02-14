@@ -139,31 +139,31 @@ export default async function RequestsPage({
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <p className="text-white font-medium truncate">{request.client_name}</p>
-                        <span className={`shrink-0 px-2 py-0.5 text-xs rounded-full ${
-                          request.status === 'new' ? 'bg-yellow-500/20 text-yellow-400' :
-                          request.status === 'reviewing' ? 'bg-blue-500/20 text-blue-400' :
-                          request.status === 'quoted' ? 'bg-purple-500/20 text-purple-400' :
-                          request.status === 'accepted' ? 'bg-green-500/20 text-green-400' :
-                          request.status === 'archived' ? 'bg-slate-500/20 text-slate-400' :
-                          'bg-red-500/20 text-red-400'
-                        }`}>
-                          {statusLabel}
-                        </span>
+                      <p className="text-white font-medium">{request.client_name}</p>
+                      <p className="text-slate-400 text-sm truncate mt-1">{workType}</p>
+                      <div className="flex items-center gap-2 mt-2">
+                        <p className="text-slate-500 text-xs">
+                          {new Date(request.created_at).toLocaleDateString('en-US')}
+                          {request.client_phone && ` • ${request.client_phone}`}
+                        </p>
+                        {request.status === 'new' && (
+                          <span className="btn-primary text-xs py-1 px-2.5">
+                            Quote
+                          </span>
+                        )}
                       </div>
-                      <p className="text-slate-400 text-sm truncate">{workType}</p>
-                      <p className="text-slate-500 text-xs mt-1">
-                        {new Date(request.created_at).toLocaleDateString('en-US')}
-                        {request.client_phone && ` • ${request.client_phone}`}
-                      </p>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
-                      {request.status === 'new' && (
-                        <span className="btn-primary text-sm py-1.5 px-3">
-                          Quote
-                        </span>
-                      )}
+                      <span className={`px-2 py-0.5 text-xs rounded-full ${
+                        request.status === 'new' ? 'bg-yellow-500/20 text-yellow-400' :
+                        request.status === 'reviewing' ? 'bg-blue-500/20 text-blue-400' :
+                        request.status === 'quoted' ? 'bg-purple-500/20 text-purple-400' :
+                        request.status === 'accepted' ? 'bg-green-500/20 text-green-400' :
+                        request.status === 'archived' ? 'bg-slate-500/20 text-slate-400' :
+                        'bg-red-500/20 text-red-400'
+                      }`}>
+                        {statusLabel}
+                      </span>
                       <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>

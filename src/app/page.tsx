@@ -86,7 +86,7 @@ export default async function Home() {
               {demoUserId ? (
                 <Link
                   href={`/request/${demoUserId}`}
-                  className="w-full sm:w-auto bg-orange-600 hover:bg-orange-700 text-white px-8 py-4 rounded-xl text-lg font-semibold transition flex items-center justify-center gap-2"
+                  className="sm:w-auto bg-orange-600 hover:bg-orange-700 text-white px-8 py-4 rounded-xl text-lg font-semibold transition inline-flex items-center justify-center gap-2"
                 >
                   See What Your Clients See
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -96,7 +96,7 @@ export default async function Home() {
               ) : null}
               <Link
                 href="/register"
-                className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-xl text-lg font-semibold transition flex items-center justify-center gap-2"
+                className="sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-xl text-lg font-semibold transition inline-flex items-center justify-center gap-2"
               >
                 Start 3-day free trial
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

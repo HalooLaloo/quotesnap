@@ -138,8 +138,8 @@ export default function TermsOfService() {
             <h2 className="text-xl font-semibold text-white">14. Contact</h2>
             <p>
               For questions about these Terms, contact us at{' '}
-              <a href="mailto:support@brickquote.app" className="text-blue-400 hover:text-blue-300">
-                support@brickquote.app
+              <a href="mailto:contact@brickquote.app" className="text-blue-400 hover:text-blue-300">
+                contact@brickquote.app
               </a>
             </p>
           </section>

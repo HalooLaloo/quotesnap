@@ -4,7 +4,7 @@
     "target": {
       "namespace": "android_app",
       "package_name": "app.brickquote",
-      "sha256_cert_fingerprints": ["TODO:REPLACE_WITH_KEYSTORE_SHA256_FINGERPRINT"]
+      "sha256_cert_fingerprints": ["15:89:B4:23:86:09:DA:06:37:E4:5F:31:86:42:82:85:38:24:3D:89:D1:1C:13:76:6E:E1:E8:D2:43:36:AE:53"]
     }
   }
 ]
