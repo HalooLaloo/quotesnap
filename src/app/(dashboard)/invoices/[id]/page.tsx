@@ -77,9 +77,16 @@ export default async function InvoiceDetailPage({
               })}
             </p>
           </div>
-          <span className={`px-3 py-1 rounded-full text-sm font-medium ${statusColors[invoice.status] || 'bg-slate-500/20 text-slate-400'}`}>
-            {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
-          </span>
+          <div className="flex items-center gap-3">
+            <DownloadPDFButton
+              url={`/api/invoice-pdf/${invoice.token}`}
+              fileName={`invoice-${invoice.invoice_number || invoice.id}.pdf`}
+              className="btn-secondary inline-flex items-center gap-2 text-sm"
+            />
+            <span className={`px-3 py-1 rounded-full text-sm font-medium ${statusColors[invoice.status] || 'bg-slate-500/20 text-slate-400'}`}>
+              {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
+            </span>
+          </div>
         </div>
       </div>
 
@@ -254,12 +261,6 @@ export default async function InvoiceDetailPage({
           ) : null
         })()}
 
-        {/* Download PDF */}
-        <DownloadPDFButton
-          url={`/api/invoice-pdf/${invoice.token}`}
-          fileName={`invoice-${invoice.invoice_number || invoice.id}.pdf`}
-          className="btn-secondary w-full flex items-center justify-center gap-2"
-        />
       </div>
     </div>
   )

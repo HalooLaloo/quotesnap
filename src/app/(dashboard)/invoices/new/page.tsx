@@ -33,7 +33,6 @@ function InvoiceForm() {
   ])
   const [discountPercent, setDiscountPercent] = useState(0)
   const [vatPercent, setVatPercent] = useState(23)
-  const [notes, setNotes] = useState('')
   const [dueDate, setDueDate] = useState('')
   const [paymentTerms, setPaymentTerms] = useState('Bank transfer within 7 days')
 
@@ -111,8 +110,6 @@ function InvoiceForm() {
       setClientAddress(quote.qs_quote_requests?.address || '')
       setDiscountPercent(quote.discount_percent || 0)
       setVatPercent(quote.vat_percent || 23)
-      setNotes(quote.notes || '')
-
       // Convert quote items to invoice items
       const quoteItems = (quote.items || []) as QuoteItem[]
       if (quoteItems.length > 0) {
@@ -224,7 +221,6 @@ function InvoiceForm() {
           vat_percent: vatPercent,
           total_net: totalNet,
           total_gross: totalGross,
-          notes: notes || null,
           due_date: dueDate || null,
           payment_terms: paymentTerms || null,
           status: 'draft',
@@ -590,17 +586,6 @@ function InvoiceForm() {
             </p>
           )}
         </div>
-      </div>
-
-      {/* Notes */}
-      <div className="card mb-8">
-        <h2 className="text-lg font-semibold text-white mb-4">Notes</h2>
-        <textarea
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          className="input min-h-[100px]"
-          placeholder="Additional notes for the client..."
-        />
       </div>
 
       {/* Actions */}
