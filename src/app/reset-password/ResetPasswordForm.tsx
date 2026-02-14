@@ -18,6 +18,16 @@ export function ResetPasswordForm() {
     let mounted = true
 
     const init = async () => {
+      // 0. Check for error from auth/callback (e.g. expired OTP)
+      const urlParams = new URLSearchParams(window.location.search)
+      if (urlParams.get('error') === 'expired') {
+        if (mounted) {
+          setError('Reset link expired or invalid. Please request a new one.')
+          setCheckDone(true)
+        }
+        return
+      }
+
       // 1. Check URL hash for recovery tokens (implicit flow)
       const hash = window.location.hash
       if (hash) {

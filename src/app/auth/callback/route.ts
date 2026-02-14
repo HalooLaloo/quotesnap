@@ -9,8 +9,12 @@ export async function GET(request: Request) {
   const errorDescription = searchParams.get('error_description')
   const next = searchParams.get('next') ?? '/requests'
 
-  // If Supabase sent an error, redirect to login
+  // If Supabase sent an error (e.g. OTP expired)
   if (error) {
+    if (next === '/reset-password') {
+      // Show "link expired" on the reset page
+      return NextResponse.redirect(`${origin}/reset-password?error=expired`)
+    }
     // Email might still be verified, suggest manual login
     return NextResponse.redirect(`${origin}/login?verified=true`)
   }
@@ -69,8 +73,10 @@ export async function GET(request: Request) {
       return NextResponse.redirect(`${origin}${next}`)
     }
 
-    // PKCE error (likely different device/browser) - email is already verified by Supabase
-    // Redirect to login with message to log in manually
+    // PKCE error (likely different device/browser or expired code)
+    if (next === '/reset-password') {
+      return NextResponse.redirect(`${origin}/reset-password?error=expired`)
+    }
     return NextResponse.redirect(`${origin}/login?verified=true`)
   }
 
