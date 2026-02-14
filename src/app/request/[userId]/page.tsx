@@ -284,6 +284,7 @@ export default function ClientRequestPage() {
     }
 
     setLoading(false)
+    inputRef.current?.focus()
   }
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
