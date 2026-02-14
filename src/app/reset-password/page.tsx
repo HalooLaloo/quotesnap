@@ -3,7 +3,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
-import { useSearchParams } from 'next/navigation'
 
 export default function ResetPasswordPage() {
   const [password, setPassword] = useState('')
@@ -12,48 +11,21 @@ export default function ResetPasswordPage() {
   const [success, setSuccess] = useState(false)
   const [loading, setLoading] = useState(false)
   const [ready, setReady] = useState(false)
-  const [exchanging, setExchanging] = useState(false)
+  const [checkDone, setCheckDone] = useState(false)
   const supabase = useMemo(() => createClient(), [])
-  const searchParams = useSearchParams()
 
   useEffect(() => {
-    let mounted = true
-
-    const init = async () => {
-      // PKCE flow: exchange code from URL for session
-      const code = searchParams.get('code')
-      if (code) {
-        setExchanging(true)
-        const { error } = await supabase.auth.exchangeCodeForSession(code)
-        if (mounted) {
-          if (!error) {
-            setReady(true)
-          } else {
-            setError('Reset link expired or invalid. Please request a new one.')
-          }
-          setExchanging(false)
-        }
-        return
-      }
-
-      // Legacy implicit flow: listen for PASSWORD_RECOVERY event from hash
-      const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-        if (event === 'PASSWORD_RECOVERY' && mounted) {
-          setReady(true)
-        }
-      })
-
-      // Fallback: check if already authenticated (e.g. page refresh with session)
+    const checkSession = async () => {
+      // After /auth/callback exchanges the code, user has an active session
       const { data: { user } } = await supabase.auth.getUser()
-      if (user && mounted) setReady(true)
-
-      return () => subscription.unsubscribe()
+      if (user) {
+        setReady(true)
+      }
+      setCheckDone(true)
     }
 
-    init()
-
-    return () => { mounted = false }
-  }, [supabase, searchParams])
+    checkSession()
+  }, [supabase])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -116,7 +88,7 @@ export default function ResetPasswordPage() {
                 Sign in
               </Link>
             </div>
-          ) : error && !ready ? (
+          ) : checkDone && !ready ? (
             <div className="text-center py-4">
               <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <svg className="w-8 h-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -124,7 +96,9 @@ export default function ResetPasswordPage() {
                 </svg>
               </div>
               <h2 className="text-xl font-bold text-white mb-2">Link expired</h2>
-              <p className="text-slate-400 mb-6">{error}</p>
+              <p className="text-slate-400 mb-6">
+                This reset link is expired or invalid. Please request a new one.
+              </p>
               <Link href="/login" className="btn-primary inline-block px-8">
                 Back to login
               </Link>
@@ -132,9 +106,7 @@ export default function ResetPasswordPage() {
           ) : !ready ? (
             <div className="text-center py-8">
               <div className="w-8 h-8 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin mx-auto mb-4" />
-              <p className="text-slate-400 text-sm">
-                {exchanging ? 'Verifying reset link...' : 'Verifying reset link...'}
-              </p>
+              <p className="text-slate-400 text-sm">Verifying reset link...</p>
             </div>
           ) : (
             <>

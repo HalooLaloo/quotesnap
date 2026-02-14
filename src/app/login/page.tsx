@@ -80,7 +80,7 @@ function LoginForm() {
     setResetLoading(true)
 
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: 'https://www.brickquote.app/reset-password',
+      redirectTo: `${window.location.origin}/auth/callback?next=/reset-password`,
     })
 
     if (error) {
