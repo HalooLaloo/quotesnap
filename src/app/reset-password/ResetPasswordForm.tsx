@@ -1,16 +1,79 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 
-export function ResetPasswordForm({ hasSession }: { hasSession: boolean }) {
+export function ResetPasswordForm() {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [ready, setReady] = useState(false)
+  const [checkDone, setCheckDone] = useState(false)
   const supabase = useMemo(() => createClient(), [])
+
+  useEffect(() => {
+    let mounted = true
+
+    const init = async () => {
+      // 1. Check URL hash for recovery tokens (implicit flow)
+      const hash = window.location.hash
+      if (hash) {
+        const params = new URLSearchParams(hash.substring(1))
+        const accessToken = params.get('access_token')
+        const refreshToken = params.get('refresh_token')
+        const type = params.get('type')
+
+        if (accessToken && refreshToken && type === 'recovery') {
+          const { error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          })
+          if (mounted) {
+            if (!error) {
+              // Clear hash from URL
+              window.history.replaceState(null, '', window.location.pathname)
+              setReady(true)
+            } else {
+              setError('Reset link expired or invalid.')
+            }
+            setCheckDone(true)
+          }
+          return
+        }
+      }
+
+      // 2. Check URL query for PKCE code
+      const params = new URLSearchParams(window.location.search)
+      const code = params.get('code')
+      if (code) {
+        const { error } = await supabase.auth.exchangeCodeForSession(code)
+        if (mounted) {
+          if (!error) {
+            window.history.replaceState(null, '', window.location.pathname)
+            setReady(true)
+          } else {
+            setError('Reset link expired or invalid.')
+          }
+          setCheckDone(true)
+        }
+        return
+      }
+
+      // 3. Fallback: check existing session
+      const { data: { session } } = await supabase.auth.getSession()
+      if (mounted) {
+        if (session) setReady(true)
+        setCheckDone(true)
+      }
+    }
+
+    init()
+
+    return () => { mounted = false }
+  }, [supabase])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -57,7 +120,7 @@ export function ResetPasswordForm({ hasSession }: { hasSession: boolean }) {
     )
   }
 
-  if (!hasSession) {
+  if (checkDone && !ready) {
     return (
       <div className="text-center py-4">
         <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -72,6 +135,15 @@ export function ResetPasswordForm({ hasSession }: { hasSession: boolean }) {
         <Link href="/login" className="btn-primary inline-block px-8">
           Back to login
         </Link>
+      </div>
+    )
+  }
+
+  if (!ready) {
+    return (
+      <div className="text-center py-8">
+        <div className="w-8 h-8 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin mx-auto mb-4" />
+        <p className="text-slate-400 text-sm">Verifying reset link...</p>
       </div>
     )
   }

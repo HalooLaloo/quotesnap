@@ -1,11 +1,7 @@
-import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { ResetPasswordForm } from './ResetPasswordForm'
 
-export default async function ResetPasswordPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
+export default function ResetPasswordPage() {
   return (
     <div className="min-h-screen flex items-center justify-center px-4">
       <div className="w-full max-w-md">
@@ -26,7 +22,7 @@ export default async function ResetPasswordPage() {
         </div>
 
         <div className="card">
-          <ResetPasswordForm hasSession={!!user} />
+          <ResetPasswordForm />
         </div>
       </div>
     </div>
