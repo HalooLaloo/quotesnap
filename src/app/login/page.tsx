@@ -36,34 +36,7 @@ function LoginForm() {
       setError(error.message)
       setLoading(false)
     } else {
-      // In native app, skip subscription check — go straight to dashboard
-      const isNativeApp = navigator.userAgent.includes('BrickQuoteApp')
-      if (isNativeApp) {
-        window.location.href = '/requests'
-        return
-      }
-
-      // Check subscription status (web only)
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('subscription_status')
-          .eq('id', user.id)
-          .single()
-
-        const hasActiveSubscription =
-          profile?.subscription_status === 'active' ||
-          profile?.subscription_status === 'trialing'
-
-        if (hasActiveSubscription) {
-          window.location.href = '/requests'
-        } else {
-          window.location.href = '/subscribe'
-        }
-      } else {
-        window.location.href = '/requests'
-      }
+      window.location.href = '/requests'
     }
   }
 
