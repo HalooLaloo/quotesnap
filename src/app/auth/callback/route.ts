@@ -42,11 +42,6 @@ export async function GET(request: Request) {
     const { error } = await supabase.auth.exchangeCodeForSession(code)
 
     if (!error) {
-      // Password reset flow — always honor the redirect, skip subscription check
-      if (next === '/reset-password') {
-        return NextResponse.redirect(`${origin}/reset-password`)
-      }
-
       // Check if user has active subscription
       const { data: { user } } = await supabase.auth.getUser()
 
