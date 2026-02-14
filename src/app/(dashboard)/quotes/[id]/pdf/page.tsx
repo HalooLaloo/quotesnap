@@ -30,11 +30,13 @@ export default async function QuotePDFPage({
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('full_name, company_name, country')
+    .select('full_name, company_name, country, phone')
     .eq('id', user?.id)
     .single()
 
   const contractorName = profile?.company_name || profile?.full_name || 'Contractor'
+  const contractorEmail = user?.email || ''
+  const contractorPhone = profile?.phone || ''
   const clientName = quote.qs_quote_requests?.client_name || 'Client'
   const countryCode = profile?.country || 'US'
   const countryConfig = COUNTRIES[countryCode] || COUNTRIES.US
@@ -118,6 +120,12 @@ export default async function QuotePDFPage({
                   Contractor
                 </div>
                 <div style={{ fontSize: '15px', fontWeight: '600' }}>{contractorName}</div>
+                {contractorPhone && (
+                  <div style={{ fontSize: '13px', color: '#555' }}>Tel: {contractorPhone}</div>
+                )}
+                {contractorEmail && (
+                  <div style={{ fontSize: '13px', color: '#555' }}>{contractorEmail}</div>
+                )}
               </div>
               <div className="sm:text-right">
                 <div style={{ fontWeight: 'bold', fontSize: '12px', color: '#666', textTransform: 'uppercase', marginBottom: '4px' }}>

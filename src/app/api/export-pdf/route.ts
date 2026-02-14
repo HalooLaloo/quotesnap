@@ -60,11 +60,13 @@ export async function GET(request: NextRequest) {
 
     const { data: profile } = await supabase
       .from('profiles')
-      .select('full_name, company_name, country')
+      .select('full_name, company_name, country, phone')
       .eq('id', user.id)
       .single()
 
     const contractorName = toAscii(profile?.company_name || profile?.full_name || 'Contractor')
+    const contractorPhone = profile?.phone || ''
+    const contractorEmail = user.email || ''
     const clientName = toAscii(quote.qs_quote_requests?.client_name || 'Client')
     const countryCode = profile?.country || 'US'
     const countryConfig = COUNTRIES[countryCode] || COUNTRIES.US
@@ -104,6 +106,14 @@ export async function GET(request: NextRequest) {
     doc.text('Contractor:', 20, y)
     doc.setFont('helvetica', 'normal')
     doc.text(contractorName, 20, y + 6)
+    let contractorY = y + 12
+    if (contractorPhone) {
+      doc.text(`Tel: ${contractorPhone}`, 20, contractorY)
+      contractorY += 6
+    }
+    if (contractorEmail) {
+      doc.text(toAscii(contractorEmail), 20, contractorY)
+    }
 
     doc.setFont('helvetica', 'bold')
     doc.text('Client:', 120, y)
