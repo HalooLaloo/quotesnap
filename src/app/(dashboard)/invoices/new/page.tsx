@@ -604,14 +604,14 @@ function InvoiceForm() {
       </div>
 
       {/* Actions */}
-      <div className="flex gap-4 justify-end">
-        <Link href="/invoices" className="btn-secondary">
+      <div className="flex gap-4 justify-center">
+        <Link href="/invoices" className="btn-secondary flex-1 text-center">
           Cancel
         </Link>
         <button
           onClick={handleSubmit}
           disabled={loading}
-          className="btn-primary"
+          className="btn-primary flex-1"
         >
           {loading ? 'Creating...' : 'Create Invoice'}
         </button>

@@ -274,10 +274,12 @@ export default async function QuoteDetailPage({
           {/* Status Timeline */}
           <StatusTimeline steps={getQuoteTimelineSteps(quote)} />
 
-          {/* Create Invoice button for accepted quotes */}
-          {quote.status === 'accepted' && (
+          {/* Create Invoice button for accepted/sent quotes */}
+          {(quote.status === 'accepted' || quote.status === 'sent') && (
             <div className="card bg-blue-600/10 border-blue-500/30">
-              <h3 className="text-blue-400 font-medium mb-2">Work completed?</h3>
+              <h3 className="text-blue-400 font-medium mb-2">
+                {quote.status === 'accepted' ? 'Work completed?' : 'Ready to invoice?'}
+              </h3>
               <p className="text-slate-400 text-sm mb-4">
                 Create an invoice based on this quote.
               </p>

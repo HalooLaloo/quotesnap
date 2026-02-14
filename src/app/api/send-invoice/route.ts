@@ -16,7 +16,7 @@ const resend = new Resend(process.env.RESEND_API_KEY)
 
 export async function POST(request: NextRequest) {
   try {
-    const { invoiceId } = await request.json()
+    const { invoiceId, personalMessage } = await request.json()
     const headersList = await headers()
     const host = headersList.get('host') || 'localhost:3000'
     const protocol = host.includes('localhost') ? 'http' : 'https'
@@ -84,6 +84,7 @@ export async function POST(request: NextRequest) {
       totalGross: invoice.total_gross || invoice.subtotal,
       dueDate: invoice.due_date,
       notes: invoice.notes,
+      personalMessage: personalMessage ? escapeHtml(personalMessage) : null,
       invoiceUrl,
       bankName: invoice.bank_name || profile?.bank_name,
       bankRouting: invoice.bank_routing || profile?.bank_routing,
@@ -148,6 +149,7 @@ interface InvoiceEmailData {
   totalGross: number
   dueDate?: string
   notes?: string
+  personalMessage?: string | null
   invoiceUrl?: string
   bankName?: string
   bankRouting?: string
@@ -217,6 +219,13 @@ function generateInvoiceEmailHtml(data: InvoiceEmailData): string {
       <p style="color: #6b7280; font-size: 15px; margin: 0 0 32px 0;">
         Please find below the invoice for services provided:
       </p>
+
+      ${data.personalMessage ? `
+        <div style="background: #f0f9ff; border-left: 4px solid #0ea5e9; padding: 16px; margin-bottom: 24px; border-radius: 0 8px 8px 0;">
+          <p style="margin: 0 0 4px 0; color: #0369a1; font-size: 13px; font-weight: 600;">Message from ${data.contractorName}:</p>
+          <p style="margin: 0; color: #1e3a5f; font-size: 14px; white-space: pre-line;">${data.personalMessage}</p>
+        </div>
+      ` : ''}
 
       <!-- Items table -->
       <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">

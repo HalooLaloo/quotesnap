@@ -62,8 +62,11 @@ export default async function InvoicesPage() {
             Create and manage invoices for completed work.
           </p>
         </div>
-        <Link href="/invoices/new" className="btn-primary">
-          + New Invoice
+        <Link href="/invoices/new" className="btn-primary inline-flex items-center gap-1.5 shrink-0">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+          <span>New Invoice</span>
         </Link>
       </div>
 

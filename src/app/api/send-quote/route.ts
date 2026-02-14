@@ -16,7 +16,7 @@ const resend = new Resend(process.env.RESEND_API_KEY)
 
 export async function POST(request: NextRequest) {
   try {
-    const { quoteId } = await request.json()
+    const { quoteId, personalMessage } = await request.json()
     const headersList = await headers()
     const host = headersList.get('host') || 'localhost:3000'
     const protocol = host.includes('localhost') ? 'http' : 'https'
@@ -79,9 +79,11 @@ export async function POST(request: NextRequest) {
     const currencySymbol = getCurrencySymbol(quote.currency || 'USD')
     const countryCode = profile?.country || 'US'
     const countryConfig = COUNTRIES[countryCode] || COUNTRIES.US
-    // Parse notes: separate general notes from client answer
+    // Parse client answer from notes field
     const rawNotes = quote.notes || ''
-    const [generalNotes, clientAnswer] = rawNotes.split('---CLIENT_ANSWER---').map((s: string) => s.trim())
+    const clientAnswer = rawNotes.includes('---CLIENT_ANSWER---')
+      ? rawNotes.split('---CLIENT_ANSWER---')[1]?.trim()
+      : null
 
     // Extract client question from request description
     const questionMatch = quote.qs_quote_requests?.description?.match(/QUESTION FOR CONTRACTOR:\s*([\s\S]+?)(?=\n\n|---CONVERSATION---|$)/)
@@ -100,9 +102,9 @@ export async function POST(request: NextRequest) {
       total: quote.total,
       validUntil: quote.valid_until,
       availableFrom: quote.available_from,
-      notes: generalNotes || null,
       clientQuestion: clientQuestion || null,
       clientAnswer: clientAnswer || null,
+      personalMessage: personalMessage ? escapeHtml(personalMessage) : null,
       quoteUrl,
       currencySymbol,
       taxLabel: countryConfig.taxLabel,
@@ -147,9 +149,9 @@ interface QuoteEmailData {
   total: number
   validUntil?: string
   availableFrom?: string
-  notes?: string | null
   clientQuestion?: string | null
   clientAnswer?: string | null
+  personalMessage?: string | null
   quoteUrl?: string
   currencySymbol: string
   taxLabel: string
@@ -201,6 +203,13 @@ function generateQuoteEmailHtml(data: QuoteEmailData): string {
         Thank you for your interest. Below you will find a detailed quote for the work:
       </p>
 
+      ${data.personalMessage ? `
+        <div style="background: #f0f9ff; border-left: 4px solid #0ea5e9; padding: 16px; margin-bottom: 24px; border-radius: 0 8px 8px 0;">
+          <p style="margin: 0 0 4px 0; color: #0369a1; font-size: 13px; font-weight: 600;">Message from ${data.contractorName}:</p>
+          <p style="margin: 0; color: #1e3a5f; font-size: 14px; white-space: pre-line;">${data.personalMessage}</p>
+        </div>
+      ` : ''}
+
       <!-- Items table -->
       <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
         <thead>
@@ -227,15 +236,6 @@ function generateQuoteEmailHtml(data: QuoteEmailData): string {
           </tr>
         </tfoot>
       </table>
-
-      ${data.notes ? `
-        <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 16px; margin-bottom: 24px; border-radius: 0 8px 8px 0;">
-          <p style="margin: 0; color: #92400e; font-size: 14px;">
-            <strong>Notes:</strong><br>
-            ${data.notes}
-          </p>
-        </div>
-      ` : ''}
 
       ${data.clientQuestion && data.clientAnswer ? `
         <div style="background: #ede9fe; border-left: 4px solid #8b5cf6; padding: 16px; margin-bottom: 24px; border-radius: 0 8px 8px 0;">
