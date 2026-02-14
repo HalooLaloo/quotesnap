@@ -15,7 +15,7 @@ export default async function NewQuotePage({
   // Get user profile for currency
   const { data: profile } = await supabase
     .from('profiles')
-    .select('country, currency')
+    .select('country, currency, full_name, company_name, phone')
     .eq('id', user?.id)
     .single()
 
@@ -64,6 +64,7 @@ export default async function NewQuotePage({
         currencySymbol={country.currencySymbol}
         taxLabel={country.taxLabel}
         defaultTaxPercent={country.defaultTaxPercent}
+        profileComplete={!!(profile?.full_name && profile?.company_name && profile?.phone)}
       />
     </div>
   )
