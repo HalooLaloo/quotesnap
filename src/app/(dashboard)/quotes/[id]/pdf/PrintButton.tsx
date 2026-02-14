@@ -15,8 +15,8 @@ export function PrintButton({ clientName, quoteId }: { clientName: string; quote
       try {
         const fullUrl = `${window.location.origin}/api/export-pdf?id=${quoteId}`
         await FileDownloader.download({ url: fullUrl, fileName })
-      } catch {
-        alert('Download failed. Please try again.')
+      } catch (err: any) {
+        alert('Debug: ' + (err?.message || err?.errorMessage || JSON.stringify(err)))
       }
       return
     }
