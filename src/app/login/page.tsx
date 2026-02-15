@@ -189,8 +189,7 @@ function LoginForm() {
           <button
             onClick={async () => {
               try {
-                const { registerPlugin } = await import('@capacitor/core')
-                const ExternalBrowser = registerPlugin<{ open(opts: { url: string }): Promise<void> }>('ExternalBrowser')
+                const { ExternalBrowser } = await import('@/lib/capacitor')
                 await ExternalBrowser.open({ url: 'https://brickquote.app/register' })
               } catch {
                 navigator.clipboard.writeText('https://brickquote.app/register')

@@ -92,6 +92,12 @@ function setupNativeBridge() {
           { name: 'download', rtype: 'promise' },
         ],
       },
+      {
+        name: 'ExternalBrowser',
+        methods: [
+          { name: 'open', rtype: 'promise' },
+        ],
+      },
     ]
   }
 }
@@ -102,6 +108,7 @@ setupNativeBridge()
 import { registerPlugin } from '@capacitor/core'
 const PushNotifications: any = registerPlugin('PushNotifications')
 export const FileDownloader: any = registerPlugin('FileDownloader')
+export const ExternalBrowser: any = registerPlugin('ExternalBrowser')
 
 export function initCapacitor() {
   if (!Capacitor.isNativePlatform()) return
