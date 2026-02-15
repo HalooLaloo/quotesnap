@@ -185,10 +185,8 @@ function LoginForm() {
 
       {isNativeApp ? (
         <p className="mt-6 text-center text-slate-400 text-sm">
-          Don&apos;t have an account? Register at{' '}
-          <a href="https://brickquote.app/register" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300">
-            brickquote.app
-          </a>
+          Don&apos;t have an account?<br />
+          Visit <span className="text-blue-400 font-medium">brickquote.app</span> in your browser to sign up.
         </p>
       ) : (
         <p className="mt-6 text-center text-slate-400 text-sm">
