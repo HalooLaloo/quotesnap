@@ -18,6 +18,7 @@ public class MainActivity extends BridgeActivity {
     protected void onCreate(Bundle savedInstanceState) {
         registerPlugin(PushNotificationsPlugin.class);
         registerPlugin(FileDownloaderPlugin.class);
+        registerPlugin(ExternalBrowserPlugin.class);
         super.onCreate(savedInstanceState);
 
         WebView webView = getBridge().getWebView();
