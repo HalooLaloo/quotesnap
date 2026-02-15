@@ -93,6 +93,21 @@ export async function GET(request: Request) {
     }
   }
 
+  // MRR timeline — cumulative MRR for each day in range
+  const payingUsers = enrichedUsers.filter(u => u.subscription_status === 'active')
+  const mrrTimeline: { date: string; mrr: number }[] = []
+  for (let d = new Date(rangeStart); d <= now; d.setDate(d.getDate() + 1)) {
+    const dayStr = d.toISOString().split('T')[0]
+    let dayMrr = 0
+    for (const u of payingUsers) {
+      if (new Date(u.created_at) <= d) {
+        if (u.stripe_price_id === yearlyPriceId) dayMrr += 249 / 12
+        else if (u.stripe_price_id === monthlyPriceId) dayMrr += 29
+      }
+    }
+    mrrTimeline.push({ date: dayStr, mrr: Math.round(dayMrr * 100) / 100 })
+  }
+
   // Signups over time (last 30 days, grouped by day)
   const dailySignups: Record<string, number> = {}
   for (const u of enrichedUsers) {
@@ -187,5 +202,6 @@ export async function GET(request: Request) {
     topReferrers,
     topUtmSources,
     topCountries,
+    mrrTimeline,
   })
 }

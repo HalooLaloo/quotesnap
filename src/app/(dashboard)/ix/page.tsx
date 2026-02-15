@@ -32,6 +32,7 @@ interface AnalyticsData {
   topReferrers: { referrer: string; views: number }[]
   topUtmSources: { source: string; views: number }[]
   topCountries: { country: string; code: string; visitors: number }[]
+  mrrTimeline: { date: string; mrr: number }[]
 }
 
 const rangeLabel = (r: Range) => ({ '1d': 'Today', '7d': '7 Days', '30d': '30 Days', '365d': '1 Year' }[r])
@@ -94,6 +95,45 @@ export default function AdminPage() {
           {data.overview.activeSubscriptions} active &middot; {data.overview.trials} trialing
         </p>
       </div>
+
+      {/* MRR Chart */}
+      {data.mrrTimeline?.length > 0 && (
+        <div className="card">
+          <h2 className="text-lg font-semibold text-white mb-4">MRR Over Time</h2>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={data.mrrTimeline}>
+                <defs>
+                  <linearGradient id="gradMrr" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#22c55e" stopOpacity={0.3} />
+                    <stop offset="100%" stopColor="#22c55e" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+                <XAxis
+                  dataKey="date"
+                  stroke="#475569"
+                  fontSize={11}
+                  tickFormatter={d => formatDate(d, range)}
+                />
+                <YAxis
+                  stroke="#475569"
+                  fontSize={11}
+                  tickFormatter={v => `$${v}`}
+                />
+                <Tooltip
+                  contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: 8 }}
+                  labelStyle={{ color: '#94a3b8' }}
+                  itemStyle={{ color: '#4ade80' }}
+                  labelFormatter={d => formatTooltipDate(d)}
+                  formatter={(v: number | undefined) => [`$${(v ?? 0).toFixed(2)}`, 'MRR']}
+                />
+                <Area type="monotone" dataKey="mrr" name="MRR" stroke="#22c55e" fill="url(#gradMrr)" strokeWidth={2} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      )}
 
       {/* Overview Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
