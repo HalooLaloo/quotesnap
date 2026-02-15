@@ -101,7 +101,7 @@ export async function GET() {
       created_at: u.created_at,
     }))
 
-  // PostHog page views (last 30 days)
+  // PostHog analytics (last 30 days) via HogQL Query API
   let pageViews: { path: string; views: number }[] = []
   let totalViews = 0
   let uniqueVisitors = 0
@@ -112,105 +112,45 @@ export async function GET() {
   const posthogKey = process.env.POSTHOG_PERSONAL_API_KEY
   const posthogProjectId = process.env.POSTHOG_PROJECT_ID
   if (posthogKey && posthogProjectId) {
-    const phHost = 'https://us.posthog.com'
-    const dateFrom = thirtyDaysAgo.toISOString().split('T')[0]
+    const phUrl = `https://us.posthog.com/api/projects/${posthogProjectId}/query/`
+    const phHeaders = {
+      Authorization: `Bearer ${posthogKey}`,
+      'Content-Type': 'application/json',
+    }
 
-    // Top pages
-    try {
-      const pagesRes = await fetch(`${phHost}/api/projects/${posthogProjectId}/insights/trend/?` + new URLSearchParams({
-        events: JSON.stringify([{ id: '$pageview', math: 'total' }]),
-        date_from: dateFrom,
-        breakdown: '$pathname',
-        breakdown_type: 'event',
-      }), {
-        headers: { Authorization: `Bearer ${posthogKey}` },
+    const hogql = async (query: string) => {
+      const res = await fetch(phUrl, {
+        method: 'POST',
+        headers: phHeaders,
+        body: JSON.stringify({ query: { kind: 'HogQLQuery', query } }),
       })
+      if (!res.ok) return []
+      const data = await res.json()
+      return data.results || []
+    }
 
-      if (pagesRes.ok) {
-        const pagesData = await pagesRes.json()
-        const results = pagesData.result || []
-        pageViews = results
-          .map((r: any) => ({
-            path: r.breakdown_value || r.label || 'unknown',
-            views: (r.data || []).reduce((sum: number, v: number) => sum + v, 0),
-          }))
-          .sort((a: any, b: any) => b.views - a.views)
-          .slice(0, 15)
+    // All queries in parallel
+    const [pagesRows, totalRow, visitorsRow, dailyRows, referrerRows, utmRows] = await Promise.all([
+      // Top pages
+      hogql("SELECT properties['$pathname'] as path, count() as views FROM events WHERE event = '$pageview' AND timestamp > now() - interval 30 day GROUP BY path ORDER BY views DESC LIMIT 15"),
+      // Total views
+      hogql("SELECT count() as views FROM events WHERE event = '$pageview' AND timestamp > now() - interval 30 day"),
+      // Unique visitors
+      hogql("SELECT count(DISTINCT distinct_id) as visitors FROM events WHERE event = '$pageview' AND timestamp > now() - interval 30 day"),
+      // Daily visitors
+      hogql("SELECT toDate(timestamp) as day, count(DISTINCT distinct_id) as visitors FROM events WHERE event = '$pageview' AND timestamp > now() - interval 30 day GROUP BY day ORDER BY day"),
+      // Top referrers
+      hogql("SELECT properties['$referring_domain'] as referrer, count() as views FROM events WHERE event = '$pageview' AND timestamp > now() - interval 30 day AND referrer != '' GROUP BY referrer ORDER BY views DESC LIMIT 10"),
+      // UTM sources
+      hogql("SELECT properties['utm_source'] as source, count() as views FROM events WHERE event = '$pageview' AND timestamp > now() - interval 30 day AND source != '' GROUP BY source ORDER BY views DESC LIMIT 10"),
+    ])
 
-        totalViews = results.reduce((sum: number, r: any) =>
-          sum + (r.data || []).reduce((s: number, v: number) => s + v, 0), 0)
-      }
-    } catch {}
-
-    // Top referrers
-    try {
-      const refRes = await fetch(`${phHost}/api/projects/${posthogProjectId}/insights/trend/?` + new URLSearchParams({
-        events: JSON.stringify([{ id: '$pageview', math: 'total' }]),
-        date_from: dateFrom,
-        breakdown: '$referring_domain',
-        breakdown_type: 'event',
-      }), {
-        headers: { Authorization: `Bearer ${posthogKey}` },
-      })
-
-      if (refRes.ok) {
-        const refData = await refRes.json()
-        topReferrers = (refData.result || [])
-          .map((r: any) => ({
-            referrer: r.breakdown_value || 'direct',
-            views: (r.data || []).reduce((sum: number, v: number) => sum + v, 0),
-          }))
-          .filter((r: any) => r.views > 0)
-          .sort((a: any, b: any) => b.views - a.views)
-          .slice(0, 10)
-      }
-    } catch {}
-
-    // Top UTM sources (traffic)
-    try {
-      const utmRes = await fetch(`${phHost}/api/projects/${posthogProjectId}/insights/trend/?` + new URLSearchParams({
-        events: JSON.stringify([{ id: '$pageview', math: 'total' }]),
-        date_from: dateFrom,
-        breakdown: '$utm_source',
-        breakdown_type: 'event',
-      }), {
-        headers: { Authorization: `Bearer ${posthogKey}` },
-      })
-
-      if (utmRes.ok) {
-        const utmData = await utmRes.json()
-        topUtmSources = (utmData.result || [])
-          .map((r: any) => ({
-            source: r.breakdown_value || 'none',
-            views: (r.data || []).reduce((sum: number, v: number) => sum + v, 0),
-          }))
-          .filter((r: any) => r.views > 0 && r.source !== 'none')
-          .sort((a: any, b: any) => b.views - a.views)
-          .slice(0, 10)
-      }
-    } catch {}
-
-    // Unique visitors
-    try {
-      const visitorsRes = await fetch(`${phHost}/api/projects/${posthogProjectId}/insights/trend/?` + new URLSearchParams({
-        events: JSON.stringify([{ id: '$pageview', math: 'dau' }]),
-        date_from: dateFrom,
-      }), {
-        headers: { Authorization: `Bearer ${posthogKey}` },
-      })
-
-      if (visitorsRes.ok) {
-        const visitorsData = await visitorsRes.json()
-        const result = visitorsData.result?.[0]
-        if (result) {
-          uniqueVisitors = (result.data || []).reduce((sum: number, v: number) => sum + v, 0)
-          dailyViews = (result.labels || []).map((label: string, i: number) => ({
-            date: label,
-            views: result.data?.[i] || 0,
-          }))
-        }
-      }
-    } catch {}
+    pageViews = pagesRows.map((r: any[]) => ({ path: r[0] || '/', views: r[1] }))
+    totalViews = totalRow[0]?.[0] || 0
+    uniqueVisitors = visitorsRow[0]?.[0] || 0
+    dailyViews = dailyRows.map((r: any[]) => ({ date: r[0], views: r[1] }))
+    topReferrers = referrerRows.map((r: any[]) => ({ referrer: r[0] || 'direct', views: r[1] }))
+    topUtmSources = utmRows.map((r: any[]) => ({ source: r[0], views: r[1] }))
   }
 
   return NextResponse.json({
