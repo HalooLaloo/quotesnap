@@ -21,6 +21,9 @@ function LoginForm() {
     if (searchParams.get('verified') === 'true') {
       setSuccess('Email verified! Please log in with your password.')
     }
+    if (searchParams.get('error') === 'verification_expired') {
+      setError('Verification link expired. Please register again.')
+    }
   }, [searchParams])
 
   const handleLogin = async (e: React.FormEvent) => {

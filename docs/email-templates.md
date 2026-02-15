@@ -21,7 +21,7 @@ Image hosted at: `https://www.brickquote.app/brick-icon.png`
   <div style="text-align:center">
     <h1 style="font-size:22px;font-weight:700;color:#0f172a;margin:0 0 12px">Confirm your email</h1>
     <p style="font-size:15px;color:#64748b;line-height:1.6;margin:0 0 32px">Thanks for signing up! Click the button below to verify your email address and get started.</p>
-    <a href="{{ .ConfirmationURL }}" style="display:inline-block;background:#2563eb;color:#ffffff;padding:14px 36px;border-radius:8px;text-decoration:none;font-weight:600;font-size:15px">Verify Email</a>
+    <a href="{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=signup&next=/subscribe" style="display:inline-block;background:#2563eb;color:#ffffff;padding:14px 36px;border-radius:8px;text-decoration:none;font-weight:600;font-size:15px">Verify Email</a>
     <p style="font-size:13px;color:#94a3b8;margin:32px 0 0;line-height:1.5">If you didn't create an account, you can safely ignore this email.</p>
   </div>
   <div style="margin-top:40px;padding-top:24px;border-top:1px solid #e2e8f0;text-align:center">
