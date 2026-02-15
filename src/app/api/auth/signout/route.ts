@@ -1,10 +1,20 @@
-import { createClient } from '@/lib/supabase/server'
+import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 
-export async function POST() {
-  const supabase = await createClient()
-  await supabase.auth.signOut()
+export async function GET() {
+  const origin = process.env.NEXT_PUBLIC_APP_URL || 'https://brickquote.app'
+  const response = NextResponse.redirect(new URL('/login', origin), 302)
 
-  // Redirect to login after server-side sign out
-  return NextResponse.redirect(new URL('/login', process.env.NEXT_PUBLIC_APP_URL || 'https://brickquote.app'))
+  // Delete all Supabase auth cookies directly on the redirect response
+  const cookieStore = await cookies()
+  for (const cookie of cookieStore.getAll()) {
+    if (cookie.name.startsWith('sb-')) {
+      response.cookies.set(cookie.name, '', {
+        expires: new Date(0),
+        path: '/',
+      })
+    }
+  }
+
+  return response
 }
