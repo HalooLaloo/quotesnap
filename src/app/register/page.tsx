@@ -2,9 +2,11 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { Suspense } from 'react'
 
-export default function RegisterPage() {
+function RegisterForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -12,6 +14,8 @@ export default function RegisterPage() {
   const [success, setSuccess] = useState(false)
   const [loading, setLoading] = useState(false)
   const [agreedToTerms, setAgreedToTerms] = useState(false)
+  const searchParams = useSearchParams()
+  const utmSource = searchParams.get('utm_source')
   const supabase = createClient()
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -37,6 +41,7 @@ export default function RegisterPage() {
         emailRedirectTo: 'https://www.brickquote.app/auth/callback',
         data: {
           source_app: 'brickquote',
+          ...(utmSource && { utm_source: utmSource }),
         },
       },
     })
@@ -192,5 +197,13 @@ export default function RegisterPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="text-slate-400">Loading...</div></div>}>
+      <RegisterForm />
+    </Suspense>
   )
 }

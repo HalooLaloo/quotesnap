@@ -1,7 +1,25 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
+// Short tracking links → /register with utm_source
+const trackingRedirects: Record<string, string> = {
+  '/try': 'ig_brand',
+  '/go': 'ig_personal',
+  '/start': 'fb_brand',
+  '/free': 'email',
+  '/join': 'tiktok',
+  '/pro': 'youtube',
+}
+
 export async function updateSession(request: NextRequest) {
+  const utmSource = trackingRedirects[request.nextUrl.pathname]
+  if (utmSource) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/register'
+    url.searchParams.set('utm_source', utmSource)
+    return NextResponse.redirect(url)
+  }
+
   let supabaseResponse = NextResponse.next({
     request,
   })
