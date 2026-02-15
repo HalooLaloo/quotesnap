@@ -1,75 +1,50 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import {
+  AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
+} from 'recharts'
 
-interface OverviewData {
-  totalUsers: number
-  activeSubscriptions: number
-  trials: number
-  last7Days: number
-  last30Days: number
-}
-
-interface SourceData {
-  source: string
-  total: number
-  paid: number
-  conversion: number
-}
-
-interface TimelinePoint {
-  date: string
-  count: number
-}
-
-interface RecentSignup {
-  email: string
-  name: string
-  source: string
-  status: string
-  created_at: string
-}
-
-interface PageView {
-  path: string
-  views: number
-}
-
-interface ReferrerData {
-  referrer: string
-  views: number
-}
-
-interface UtmSourceData {
-  source: string
-  views: number
-}
-
-interface CountryData {
-  country: string
-  code: string
-  visitors: number
-}
+type Range = '1d' | '7d' | '30d' | '365d'
+const RANGES: { key: Range; label: string }[] = [
+  { key: '1d', label: '1D' },
+  { key: '7d', label: '1W' },
+  { key: '30d', label: '1M' },
+  { key: '365d', label: '1Y' },
+]
 
 interface AnalyticsData {
-  overview: OverviewData & { mrr: number; totalViews: number; uniqueVisitors: number }
-  signupsBySource: SourceData[]
-  timeline: TimelinePoint[]
-  recentSignups: RecentSignup[]
-  pageViews: PageView[]
+  overview: {
+    totalUsers: number
+    activeSubscriptions: number
+    trials: number
+    last7Days: number
+    signupsInRange: number
+    mrr: number
+    totalViews: number
+    uniqueVisitors: number
+  }
+  signupsBySource: { source: string; total: number; paid: number; conversion: number }[]
+  timeline: { date: string; count: number }[]
+  recentSignups: { email: string; name: string; source: string; status: string; created_at: string }[]
+  pageViews: { path: string; views: number }[]
   dailyViews: { date: string; views: number }[]
-  topReferrers: ReferrerData[]
-  topUtmSources: UtmSourceData[]
-  topCountries: CountryData[]
+  topReferrers: { referrer: string; views: number }[]
+  topUtmSources: { source: string; views: number }[]
+  topCountries: { country: string; code: string; visitors: number }[]
 }
+
+const rangeLabel = (r: Range) => ({ '1d': 'Today', '7d': '7 Days', '30d': '30 Days', '365d': '1 Year' }[r])
 
 export default function AdminPage() {
   const [data, setData] = useState<AnalyticsData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [range, setRange] = useState<Range>('30d')
 
-  useEffect(() => {
-    fetch('/api/admin/analytics')
+  const fetchData = useCallback((r: Range) => {
+    setLoading(true)
+    fetch(`/api/admin/analytics?range=${r}`)
       .then(res => {
         if (!res.ok) throw new Error('Unauthorized')
         return res.json()
@@ -79,15 +54,35 @@ export default function AdminPage() {
       .finally(() => setLoading(false))
   }, [])
 
-  if (loading) return <div className="p-8 text-slate-400">Loading analytics...</div>
-  if (error) return <div className="p-8 text-red-400">{error}</div>
-  if (!data) return null
+  useEffect(() => { fetchData(range) }, [range, fetchData])
 
-  const maxTimeline = Math.max(...data.timeline.map(t => t.count), 1)
+  if (error) return <div className="p-8 text-red-400">{error}</div>
+  if (!data && loading) return <div className="p-8 text-slate-400">Loading analytics...</div>
+  if (!data) return null
 
   return (
     <div className="p-4 lg:p-8 max-w-6xl mx-auto space-y-8">
-      <h1 className="text-2xl font-bold text-white">Analytics</h1>
+      {/* Header + Range Toggle */}
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <h1 className="text-2xl font-bold text-white">Analytics</h1>
+        <div className="flex bg-slate-800 rounded-lg p-1 gap-1">
+          {RANGES.map(r => (
+            <button
+              key={r.key}
+              onClick={() => setRange(r.key)}
+              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+                range === r.key
+                  ? 'bg-blue-600 text-white'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              {r.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {loading && <div className="text-slate-500 text-sm">Updating...</div>}
 
       {/* MRR Hero Card */}
       <div className="card !p-6 border border-green-500/30 bg-green-500/5">
@@ -105,18 +100,83 @@ export default function AdminPage() {
         <StatCard label="Total Users" value={data.overview.totalUsers} />
         <StatCard label="Active Subs" value={data.overview.activeSubscriptions} color="green" />
         <StatCard label="Trials" value={data.overview.trials} color="blue" />
-        <StatCard label="Signups 7d" value={data.overview.last7Days} color="orange" />
-        <StatCard label="Signups 30d" value={data.overview.last30Days} color="orange" />
-        <StatCard label="Page Views 30d" value={data.overview.totalViews} color="purple" />
+        <StatCard label={`Signups ${rangeLabel(range)}`} value={data.overview.signupsInRange} color="orange" />
+        <StatCard label={`Views ${rangeLabel(range)}`} value={data.overview.totalViews} color="purple" />
         <StatCard label="Unique Visitors" value={data.overview.uniqueVisitors} color="purple" />
       </div>
 
+      {/* Visitors Chart */}
+      {data.dailyViews.length > 0 && (
+        <div className="card">
+          <h2 className="text-lg font-semibold text-white mb-4">Visitors</h2>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={data.dailyViews}>
+                <defs>
+                  <linearGradient id="gradVisitors" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#8b5cf6" stopOpacity={0.3} />
+                    <stop offset="100%" stopColor="#8b5cf6" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+                <XAxis
+                  dataKey="date"
+                  stroke="#475569"
+                  fontSize={11}
+                  tickFormatter={d => formatDate(d, range)}
+                />
+                <YAxis stroke="#475569" fontSize={11} allowDecimals={false} />
+                <Tooltip
+                  contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: 8 }}
+                  labelStyle={{ color: '#94a3b8' }}
+                  itemStyle={{ color: '#a78bfa' }}
+                  labelFormatter={d => formatTooltipDate(d)}
+                />
+                <Area type="monotone" dataKey="views" name="Visitors" stroke="#8b5cf6" fill="url(#gradVisitors)" strokeWidth={2} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      )}
+
+      {/* Signups Chart */}
+      {data.timeline.length > 0 && (
+        <div className="card">
+          <h2 className="text-lg font-semibold text-white mb-4">Signups</h2>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={data.timeline}>
+                <defs>
+                  <linearGradient id="gradSignups" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.3} />
+                    <stop offset="100%" stopColor="#3b82f6" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+                <XAxis
+                  dataKey="date"
+                  stroke="#475569"
+                  fontSize={11}
+                  tickFormatter={d => formatDate(d, range)}
+                />
+                <YAxis stroke="#475569" fontSize={11} allowDecimals={false} />
+                <Tooltip
+                  contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: 8 }}
+                  labelStyle={{ color: '#94a3b8' }}
+                  itemStyle={{ color: '#60a5fa' }}
+                  labelFormatter={d => formatTooltipDate(d)}
+                />
+                <Area type="monotone" dataKey="count" name="Signups" stroke="#3b82f6" fill="url(#gradSignups)" strokeWidth={2} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      )}
+
       {/* Signups by Source */}
-      <div className="card">
-        <h2 className="text-lg font-semibold text-white mb-4">Signups by Source</h2>
-        {data.signupsBySource.length === 0 ? (
-          <p className="text-slate-500 text-sm">No data yet</p>
-        ) : (
+      {data.signupsBySource.length > 0 && (
+        <div className="card">
+          <h2 className="text-lg font-semibold text-white mb-4">Signups by Source</h2>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -150,13 +210,12 @@ export default function AdminPage() {
               </tbody>
             </table>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Traffic Sources - side by side */}
       {(data.topReferrers.length > 0 || data.topUtmSources.length > 0) && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {/* Top Referrers */}
           {data.topReferrers.length > 0 && (
             <div className="card">
               <h2 className="text-lg font-semibold text-white mb-4">Top Referrers</h2>
@@ -168,11 +227,8 @@ export default function AdminPage() {
                       <span className="text-slate-300 text-sm w-36 truncate shrink-0" title={r.referrer}>
                         {r.referrer || 'direct'}
                       </span>
-                      <div className="flex-1 bg-slate-800 rounded-full h-4 relative">
-                        <div
-                          className="bg-emerald-500/40 rounded-full h-4"
-                          style={{ width: `${(r.views / maxRef) * 100}%` }}
-                        />
+                      <div className="flex-1 bg-slate-800 rounded-full h-4">
+                        <div className="bg-emerald-500/40 rounded-full h-4" style={{ width: `${(r.views / maxRef) * 100}%` }} />
                       </div>
                       <span className="text-slate-400 text-sm w-12 text-right shrink-0">{r.views}</span>
                     </div>
@@ -181,8 +237,6 @@ export default function AdminPage() {
               </div>
             </div>
           )}
-
-          {/* UTM Sources (campaign traffic) */}
           {data.topUtmSources.length > 0 && (
             <div className="card">
               <h2 className="text-lg font-semibold text-white mb-4">Campaign Traffic (UTM)</h2>
@@ -194,11 +248,8 @@ export default function AdminPage() {
                       <span className="text-slate-300 text-sm w-36 truncate shrink-0" title={u.source}>
                         {u.source}
                       </span>
-                      <div className="flex-1 bg-slate-800 rounded-full h-4 relative">
-                        <div
-                          className="bg-orange-500/40 rounded-full h-4"
-                          style={{ width: `${(u.views / maxUtm) * 100}%` }}
-                        />
+                      <div className="flex-1 bg-slate-800 rounded-full h-4">
+                        <div className="bg-orange-500/40 rounded-full h-4" style={{ width: `${(u.views / maxUtm) * 100}%` }} />
                       </div>
                       <span className="text-slate-400 text-sm w-12 text-right shrink-0">{u.views}</span>
                     </div>
@@ -213,7 +264,7 @@ export default function AdminPage() {
       {/* Visitors by Country */}
       {data.topCountries?.length > 0 && (
         <div className="card">
-          <h2 className="text-lg font-semibold text-white mb-4">Visitors by Country - Last 30 Days</h2>
+          <h2 className="text-lg font-semibold text-white mb-4">Visitors by Country</h2>
           <div className="space-y-2">
             {data.topCountries.map(c => {
               const maxC = data.topCountries[0]?.visitors || 1
@@ -223,11 +274,8 @@ export default function AdminPage() {
                   <span className="text-slate-300 text-sm w-32 truncate shrink-0" title={c.country}>
                     {c.country}
                   </span>
-                  <div className="flex-1 bg-slate-800 rounded-full h-4 relative">
-                    <div
-                      className="bg-cyan-500/40 rounded-full h-4"
-                      style={{ width: `${(c.visitors / maxC) * 100}%` }}
-                    />
+                  <div className="flex-1 bg-slate-800 rounded-full h-4">
+                    <div className="bg-cyan-500/40 rounded-full h-4" style={{ width: `${(c.visitors / maxC) * 100}%` }} />
                   </div>
                   <span className="text-slate-400 text-sm w-12 text-right shrink-0">{c.visitors}</span>
                 </div>
@@ -237,67 +285,18 @@ export default function AdminPage() {
         </div>
       )}
 
-      {/* Timeline (last 30 days) */}
-      <div className="card">
-        <h2 className="text-lg font-semibold text-white mb-4">Signups - Last 30 Days</h2>
-        {data.timeline.length === 0 ? (
-          <p className="text-slate-500 text-sm">No data yet</p>
-        ) : (
-          <div className="flex items-end gap-1 h-40">
-            {data.timeline.map(t => (
-              <div key={t.date} className="flex-1 flex flex-col items-center gap-1">
-                <span className="text-xs text-slate-500">{t.count}</span>
-                <div
-                  className="w-full bg-blue-500 rounded-t min-h-[4px]"
-                  style={{ height: `${(t.count / maxTimeline) * 120}px` }}
-                  title={`${t.date}: ${t.count} signups`}
-                />
-                <span className="text-[10px] text-slate-600 -rotate-45 origin-top-left whitespace-nowrap">
-                  {t.date.slice(5)}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Daily Visitors (PostHog) */}
-      {data.dailyViews.length > 0 && (
-        <div className="card">
-          <h2 className="text-lg font-semibold text-white mb-4">Daily Visitors - Last 30 Days</h2>
-          <div className="flex items-end gap-1 h-40">
-            {data.dailyViews.map(t => {
-              const maxDV = Math.max(...data.dailyViews.map(d => d.views), 1)
-              return (
-                <div key={t.date} className="flex-1 flex flex-col items-center gap-1">
-                  {t.views > 0 && <span className="text-xs text-slate-500">{t.views}</span>}
-                  <div
-                    className="w-full bg-purple-500 rounded-t min-h-[2px]"
-                    style={{ height: `${(t.views / maxDV) * 120}px` }}
-                    title={`${t.date}: ${t.views} visitors`}
-                  />
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* Top Pages (PostHog) */}
+      {/* Top Pages */}
       {data.pageViews.length > 0 && (
         <div className="card">
-          <h2 className="text-lg font-semibold text-white mb-4">Top Pages - Last 30 Days</h2>
+          <h2 className="text-lg font-semibold text-white mb-4">Top Pages</h2>
           <div className="space-y-2">
             {data.pageViews.map(p => {
               const maxPV = data.pageViews[0]?.views || 1
               return (
                 <div key={p.path} className="flex items-center gap-3">
                   <span className="text-slate-300 text-sm w-48 truncate shrink-0" title={p.path}>{p.path}</span>
-                  <div className="flex-1 bg-slate-800 rounded-full h-5 relative">
-                    <div
-                      className="bg-purple-500/40 rounded-full h-5"
-                      style={{ width: `${(p.views / maxPV) * 100}%` }}
-                    />
+                  <div className="flex-1 bg-slate-800 rounded-full h-5">
+                    <div className="bg-purple-500/40 rounded-full h-5" style={{ width: `${(p.views / maxPV) * 100}%` }} />
                   </div>
                   <span className="text-slate-400 text-sm w-16 text-right shrink-0">{p.views}</span>
                 </div>
@@ -353,8 +352,20 @@ export default function AdminPage() {
   )
 }
 
+function formatDate(d: string, range: Range) {
+  if (range === '1d') return d.slice(11, 16)
+  if (range === '365d') return d.slice(0, 7)
+  return d.slice(5)
+}
+
+function formatTooltipDate(d: string) {
+  try {
+    return new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+  } catch { return d }
+}
+
 function countryFlag(code: string) {
-  if (!code || code.length !== 2) return '🌍'
+  if (!code || code.length !== 2) return '\u{1F30D}'
   return String.fromCodePoint(
     ...code.toUpperCase().split('').map(c => 0x1F1E6 + c.charCodeAt(0) - 65)
   )

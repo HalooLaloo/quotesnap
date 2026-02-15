@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server'
 
 const ADMIN_EMAILS = ['pawellewandowsky@gmail.com']
 
-export async function GET() {
+export async function GET(request: Request) {
   // Auth check
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -12,6 +12,10 @@ export async function GET() {
   if (!user || !ADMIN_EMAILS.includes(user.email || '')) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
+
+  const { searchParams } = new URL(request.url)
+  const range = searchParams.get('range') || '30d'
+  const rangeDays = { '1d': 1, '7d': 7, '30d': 30, '365d': 365 }[range] || 30
 
   // Service role client to access auth.users
   const admin = createAdminClient(
@@ -32,7 +36,7 @@ export async function GET() {
 
   // Build analytics
   const now = new Date()
-  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+  const rangeStart = new Date(now.getTime() - rangeDays * 24 * 60 * 60 * 1000)
   const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
 
   // Users with enriched data
@@ -93,7 +97,7 @@ export async function GET() {
   const dailySignups: Record<string, number> = {}
   for (const u of enrichedUsers) {
     const date = new Date(u.created_at).toISOString().split('T')[0]
-    if (new Date(u.created_at) >= thirtyDaysAgo) {
+    if (new Date(u.created_at) >= rangeStart) {
       dailySignups[date] = (dailySignups[date] || 0) + 1
     }
   }
@@ -144,21 +148,15 @@ export async function GET() {
     }
 
     // All queries in parallel
+    const iv = `interval ${rangeDays} day`
     const [pagesRows, totalRow, visitorsRow, dailyRows, referrerRows, utmRows, countryRows] = await Promise.all([
-      // Top pages
-      hogql("SELECT properties['$pathname'] as path, count() as views FROM events WHERE event = '$pageview' AND timestamp > now() - interval 30 day GROUP BY path ORDER BY views DESC LIMIT 15"),
-      // Total views
-      hogql("SELECT count() as views FROM events WHERE event = '$pageview' AND timestamp > now() - interval 30 day"),
-      // Unique visitors
-      hogql("SELECT count(DISTINCT distinct_id) as visitors FROM events WHERE event = '$pageview' AND timestamp > now() - interval 30 day"),
-      // Daily visitors
-      hogql("SELECT toDate(timestamp) as day, count(DISTINCT distinct_id) as visitors FROM events WHERE event = '$pageview' AND timestamp > now() - interval 30 day GROUP BY day ORDER BY day"),
-      // Top referrers
-      hogql("SELECT properties['$referring_domain'] as referrer, count() as views FROM events WHERE event = '$pageview' AND timestamp > now() - interval 30 day AND referrer != '' GROUP BY referrer ORDER BY views DESC LIMIT 10"),
-      // UTM sources
-      hogql("SELECT properties['utm_source'] as source, count() as views FROM events WHERE event = '$pageview' AND timestamp > now() - interval 30 day AND source != '' GROUP BY source ORDER BY views DESC LIMIT 10"),
-      // Visitors by country
-      hogql("SELECT properties['$geoip_country_name'] as country, properties['$geoip_country_code'] as code, count(DISTINCT distinct_id) as visitors FROM events WHERE event = '$pageview' AND timestamp > now() - interval 30 day AND country != '' GROUP BY country, code ORDER BY visitors DESC LIMIT 20"),
+      hogql(`SELECT properties['$pathname'] as path, count() as views FROM events WHERE event = '$pageview' AND timestamp > now() - ${iv} GROUP BY path ORDER BY views DESC LIMIT 15`),
+      hogql(`SELECT count() as views FROM events WHERE event = '$pageview' AND timestamp > now() - ${iv}`),
+      hogql(`SELECT count(DISTINCT distinct_id) as visitors FROM events WHERE event = '$pageview' AND timestamp > now() - ${iv}`),
+      hogql(`SELECT toDate(timestamp) as day, count(DISTINCT distinct_id) as visitors FROM events WHERE event = '$pageview' AND timestamp > now() - ${iv} GROUP BY day ORDER BY day`),
+      hogql(`SELECT properties['$referring_domain'] as referrer, count() as views FROM events WHERE event = '$pageview' AND timestamp > now() - ${iv} AND referrer != '' GROUP BY referrer ORDER BY views DESC LIMIT 10`),
+      hogql(`SELECT properties['utm_source'] as source, count() as views FROM events WHERE event = '$pageview' AND timestamp > now() - ${iv} AND source != '' GROUP BY source ORDER BY views DESC LIMIT 10`),
+      hogql(`SELECT properties['$geoip_country_name'] as country, properties['$geoip_country_code'] as code, count(DISTINCT distinct_id) as visitors FROM events WHERE event = '$pageview' AND timestamp > now() - ${iv} AND country != '' GROUP BY country, code ORDER BY visitors DESC LIMIT 20`),
     ])
 
     pageViews = pagesRows.map((r: any[]) => ({ path: r[0] || '/', views: r[1] }))
@@ -176,7 +174,7 @@ export async function GET() {
       activeSubscriptions: activeUsers.length,
       trials: trialingUsers.length,
       last7Days: enrichedUsers.filter(u => new Date(u.created_at) >= sevenDaysAgo).length,
-      last30Days: enrichedUsers.filter(u => new Date(u.created_at) >= thirtyDaysAgo).length,
+      signupsInRange: enrichedUsers.filter(u => new Date(u.created_at) >= rangeStart).length,
       mrr: Math.round(mrr * 100) / 100,
       totalViews,
       uniqueVisitors,
