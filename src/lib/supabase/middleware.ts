@@ -33,6 +33,17 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
+  // Native app: block /register and /subscribe — registration & payments via web only
+  const isNativeApp = request.headers.get('user-agent')?.includes('BrickQuoteApp')
+  if (isNativeApp) {
+    const blockedInApp = ['/register', '/subscribe', '/pricing']
+    if (blockedInApp.some(path => request.nextUrl.pathname.startsWith(path))) {
+      const url = request.nextUrl.clone()
+      url.pathname = user ? '/requests' : '/login'
+      return NextResponse.redirect(url)
+    }
+  }
+
   // Public paths - no login required
   const publicPaths = ['/login', '/register', '/reset-password', '/request', '/quote', '/invoice', '/pricing', '/api', '/privacy', '/terms', '/contact', '/subscribe', '/unsubscribe', '/auth']
   const isPublicPath = publicPaths.some(path =>

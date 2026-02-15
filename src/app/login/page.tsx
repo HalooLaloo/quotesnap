@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
+import { useState, useEffect, useMemo, Suspense } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
@@ -15,6 +15,7 @@ function LoginForm() {
   const [resetLoading, setResetLoading] = useState(false)
   const searchParams = useSearchParams()
   const supabase = createClient()
+  const isNativeApp = useMemo(() => typeof navigator !== 'undefined' && navigator.userAgent.includes('BrickQuoteApp'), [])
 
   useEffect(() => {
     if (searchParams.get('verified') === 'true') {
@@ -182,12 +183,21 @@ function LoginForm() {
         </button>
       </form>
 
-      <p className="mt-6 text-center text-slate-400 text-sm">
-        Don&apos;t have an account?{' '}
-        <Link href="/register" className="text-blue-400 hover:text-blue-300">
-          Sign up
-        </Link>
-      </p>
+      {isNativeApp ? (
+        <p className="mt-6 text-center text-slate-400 text-sm">
+          Don&apos;t have an account? Register at{' '}
+          <a href="https://brickquote.app/register" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300">
+            brickquote.app
+          </a>
+        </p>
+      ) : (
+        <p className="mt-6 text-center text-slate-400 text-sm">
+          Don&apos;t have an account?{' '}
+          <Link href="/register" className="text-blue-400 hover:text-blue-300">
+            Sign up
+          </Link>
+        </p>
+      )}
     </div>
   )
 }
