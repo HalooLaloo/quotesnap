@@ -186,15 +186,12 @@ function LoginForm() {
       {isNativeApp ? (
         <p className="mt-6 text-center text-slate-400 text-sm">
           Don&apos;t have an account?{' '}
-          <button
-            onClick={async () => {
-              const { Browser } = await import('@capacitor/browser')
-              await Browser.open({ url: 'https://brickquote.app/register' })
-            }}
+          <a
+            href="intent://brickquote.app/register#Intent;scheme=https;action=android.intent.action.VIEW;end"
             className="text-blue-400 hover:text-blue-300"
           >
             Sign up
-          </button>
+          </a>
         </p>
       ) : (
         <p className="mt-6 text-center text-slate-400 text-sm">
