@@ -15,7 +15,6 @@ function LoginForm() {
   const [resetLoading, setResetLoading] = useState(false)
   const searchParams = useSearchParams()
   const supabase = createClient()
-  const [copied, setCopied] = useState(false)
   const isNativeApp = useMemo(() => typeof navigator !== 'undefined' && navigator.userAgent.includes('BrickQuoteApp'), [])
 
   useEffect(() => {
@@ -185,28 +184,18 @@ function LoginForm() {
       </form>
 
       {isNativeApp ? (
-        <div className="mt-6 text-center text-slate-400 text-sm">
-          <p>Don&apos;t have an account?</p>
-          <p className="mt-1">Open your browser and go to:</p>
+        <p className="mt-6 text-center text-slate-400 text-sm">
+          Don&apos;t have an account?{' '}
           <button
-            onClick={() => {
-              navigator.clipboard.writeText('https://brickquote.app/register')
-              setCopied(true)
-              setTimeout(() => setCopied(false), 2000)
+            onClick={async () => {
+              const { Browser } = await import('@capacitor/browser')
+              await Browser.open({ url: 'https://brickquote.app/register' })
             }}
-            className="mt-2 inline-flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-blue-400 font-medium px-4 py-2 rounded-lg transition"
+            className="text-blue-400 hover:text-blue-300"
           >
-            brickquote.app/register
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              {copied ? (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              ) : (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-              )}
-            </svg>
+            Sign up
           </button>
-          {copied && <p className="text-green-400 text-xs mt-1">Copied!</p>}
-        </div>
+        </p>
       ) : (
         <p className="mt-6 text-center text-slate-400 text-sm">
           Don&apos;t have an account?{' '}
