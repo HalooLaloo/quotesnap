@@ -11,11 +11,17 @@ workflows:
         XCODE_WORKSPACE: "ios/App/App.xcworkspace"
         XCODE_SCHEME: "App"
       node: 20
+      xcode: latest
     scripts:
       - name: Install dependencies
         script: npm ci
       - name: Capacitor sync
         script: npx cap sync ios
+      - name: Increment build number
+        script: |
+          cd ios/App
+          LATEST=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_APP_ID" 2>/dev/null || echo "0")
+          agvtool new-version -all $(($LATEST + 1))
       - name: Build iOS
         script: |
           xcode-project build-ipa \
@@ -23,9 +29,13 @@ workflows:
             --scheme "$XCODE_SCHEME"
     artifacts:
       - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
     publishing:
       app_store_connect:
         auth: integration
+        submit_to_testflight: true
+        beta_groups:
+          - Internal Testing
 
   android-release:
     name: Android Release
