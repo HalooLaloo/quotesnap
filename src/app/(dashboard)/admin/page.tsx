@@ -35,6 +35,16 @@ interface PageView {
   views: number
 }
 
+interface ReferrerData {
+  referrer: string
+  views: number
+}
+
+interface UtmSourceData {
+  source: string
+  views: number
+}
+
 interface AnalyticsData {
   overview: OverviewData & { totalViews: number; uniqueVisitors: number }
   signupsBySource: SourceData[]
@@ -42,6 +52,8 @@ interface AnalyticsData {
   recentSignups: RecentSignup[]
   pageViews: PageView[]
   dailyViews: { date: string; views: number }[]
+  topReferrers: ReferrerData[]
+  topUtmSources: UtmSourceData[]
 }
 
 export default function AdminPage() {
@@ -122,6 +134,63 @@ export default function AdminPage() {
           </div>
         )}
       </div>
+
+      {/* Traffic Sources - side by side */}
+      {(data.topReferrers.length > 0 || data.topUtmSources.length > 0) && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Top Referrers */}
+          {data.topReferrers.length > 0 && (
+            <div className="card">
+              <h2 className="text-lg font-semibold text-white mb-4">Top Referrers</h2>
+              <div className="space-y-2">
+                {data.topReferrers.map(r => {
+                  const maxRef = data.topReferrers[0]?.views || 1
+                  return (
+                    <div key={r.referrer} className="flex items-center gap-3">
+                      <span className="text-slate-300 text-sm w-36 truncate shrink-0" title={r.referrer}>
+                        {r.referrer || 'direct'}
+                      </span>
+                      <div className="flex-1 bg-slate-800 rounded-full h-4 relative">
+                        <div
+                          className="bg-emerald-500/40 rounded-full h-4"
+                          style={{ width: `${(r.views / maxRef) * 100}%` }}
+                        />
+                      </div>
+                      <span className="text-slate-400 text-sm w-12 text-right shrink-0">{r.views}</span>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* UTM Sources (campaign traffic) */}
+          {data.topUtmSources.length > 0 && (
+            <div className="card">
+              <h2 className="text-lg font-semibold text-white mb-4">Campaign Traffic (UTM)</h2>
+              <div className="space-y-2">
+                {data.topUtmSources.map(u => {
+                  const maxUtm = data.topUtmSources[0]?.views || 1
+                  return (
+                    <div key={u.source} className="flex items-center gap-3">
+                      <span className="text-slate-300 text-sm w-36 truncate shrink-0" title={u.source}>
+                        {u.source}
+                      </span>
+                      <div className="flex-1 bg-slate-800 rounded-full h-4 relative">
+                        <div
+                          className="bg-orange-500/40 rounded-full h-4"
+                          style={{ width: `${(u.views / maxUtm) * 100}%` }}
+                        />
+                      </div>
+                      <span className="text-slate-400 text-sm w-12 text-right shrink-0">{u.views}</span>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Timeline (last 30 days) */}
       <div className="card">

@@ -106,6 +106,8 @@ export async function GET() {
   let totalViews = 0
   let uniqueVisitors = 0
   let dailyViews: { date: string; views: number }[] = []
+  let topReferrers: { referrer: string; views: number }[] = []
+  let topUtmSources: { source: string; views: number }[] = []
 
   const posthogKey = process.env.POSTHOG_PERSONAL_API_KEY
   const posthogProjectId = process.env.POSTHOG_PROJECT_ID
@@ -137,6 +139,54 @@ export async function GET() {
 
         totalViews = results.reduce((sum: number, r: any) =>
           sum + (r.data || []).reduce((s: number, v: number) => s + v, 0), 0)
+      }
+    } catch {}
+
+    // Top referrers
+    try {
+      const refRes = await fetch(`${phHost}/api/projects/${posthogProjectId}/insights/trend/?` + new URLSearchParams({
+        events: JSON.stringify([{ id: '$pageview', math: 'total' }]),
+        date_from: dateFrom,
+        breakdown: '$referring_domain',
+        breakdown_type: 'event',
+      }), {
+        headers: { Authorization: `Bearer ${posthogKey}` },
+      })
+
+      if (refRes.ok) {
+        const refData = await refRes.json()
+        topReferrers = (refData.result || [])
+          .map((r: any) => ({
+            referrer: r.breakdown_value || 'direct',
+            views: (r.data || []).reduce((sum: number, v: number) => sum + v, 0),
+          }))
+          .filter((r: any) => r.views > 0)
+          .sort((a: any, b: any) => b.views - a.views)
+          .slice(0, 10)
+      }
+    } catch {}
+
+    // Top UTM sources (traffic)
+    try {
+      const utmRes = await fetch(`${phHost}/api/projects/${posthogProjectId}/insights/trend/?` + new URLSearchParams({
+        events: JSON.stringify([{ id: '$pageview', math: 'total' }]),
+        date_from: dateFrom,
+        breakdown: '$utm_source',
+        breakdown_type: 'event',
+      }), {
+        headers: { Authorization: `Bearer ${posthogKey}` },
+      })
+
+      if (utmRes.ok) {
+        const utmData = await utmRes.json()
+        topUtmSources = (utmData.result || [])
+          .map((r: any) => ({
+            source: r.breakdown_value || 'none',
+            views: (r.data || []).reduce((sum: number, v: number) => sum + v, 0),
+          }))
+          .filter((r: any) => r.views > 0 && r.source !== 'none')
+          .sort((a: any, b: any) => b.views - a.views)
+          .slice(0, 10)
       }
     } catch {}
 
@@ -178,5 +228,7 @@ export async function GET() {
     recentSignups,
     pageViews,
     dailyViews,
+    topReferrers,
+    topUtmSources,
   })
 }
