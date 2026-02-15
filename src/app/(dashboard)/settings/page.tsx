@@ -288,6 +288,25 @@ export default function SettingsPage() {
 
   return (
     <div className="p-4 md:p-8 max-w-3xl mx-auto pb-28">
+      {/* DEBUG: Sign out test - remove after fixing */}
+      <div className="mb-4 p-4 border-2 border-yellow-500 rounded-lg bg-yellow-500/10 space-y-3">
+        <p className="text-yellow-400 font-bold text-sm">DEBUG: Sign Out Tests</p>
+        <div className="flex flex-wrap gap-2">
+          <a href="/api/auth/signout" style={{padding:'10px 20px',background:'red',color:'white',borderRadius:'8px',display:'inline-block',textDecoration:'none',fontWeight:'bold'}}>
+            Test 1: Link
+          </a>
+          <button onClick={() => { window.location.href = '/api/auth/signout' }} style={{padding:'10px 20px',background:'blue',color:'white',borderRadius:'8px',fontWeight:'bold',border:'none'}}>
+            Test 2: JS redirect
+          </button>
+          <button onClick={() => { setSignOutDebug(['Click works! JS is running.']) }} style={{padding:'10px 20px',background:'green',color:'white',borderRadius:'8px',fontWeight:'bold',border:'none'}}>
+            Test 3: JS only
+          </button>
+        </div>
+        {signOutDebug.length > 0 && (
+          <div className="p-2 bg-black rounded text-xs font-mono text-green-400">{signOutDebug.join('\n')}</div>
+        )}
+      </div>
+
       <div className="mb-8">
         <h1 className="text-2xl md:text-3xl font-bold text-white">Settings</h1>
         <p className="text-slate-400 text-sm mt-1">Manage your profile and business details</p>
