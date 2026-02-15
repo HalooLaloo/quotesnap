@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 
-const ADMIN_EMAILS = ['pawel@brickquote.app', 'pawelszczesniak97@gmail.com']
+const ADMIN_EMAILS = ['pawellewandowsky@gmail.com']
 
 export async function GET() {
   // Auth check
