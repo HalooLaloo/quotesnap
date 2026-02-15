@@ -235,17 +235,6 @@ export default function SettingsPage() {
     }
   }
 
-  const handleSignOut = () => {
-    // Clear Supabase auth cookies manually so middleware sees unauthenticated state
-    document.cookie.split(';').forEach(c => {
-      const name = c.split('=')[0].trim()
-      if (name.startsWith('sb-')) {
-        document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`
-      }
-    })
-    supabase.auth.signOut().catch(() => {})
-    window.location.href = '/login'
-  }
 
   const handleManageSubscription = async () => {
     setManagingSubscription(true)
@@ -590,15 +579,17 @@ export default function SettingsPage() {
               )}
             </button>
 
-            <button
-              onClick={handleSignOut}
-              className="btn-secondary flex items-center gap-2 text-sm text-red-400 hover:text-red-300"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
-              Sign Out
-            </button>
+            <form action="/api/auth/signout" method="POST">
+              <button
+                type="submit"
+                className="btn-secondary flex items-center gap-2 text-sm text-red-400 hover:text-red-300"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                Sign Out
+              </button>
+            </form>
           </div>
         </div>
       </div>
