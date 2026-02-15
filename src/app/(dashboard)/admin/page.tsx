@@ -30,11 +30,18 @@ interface RecentSignup {
   created_at: string
 }
 
+interface PageView {
+  path: string
+  views: number
+}
+
 interface AnalyticsData {
-  overview: OverviewData
+  overview: OverviewData & { totalViews: number; uniqueVisitors: number }
   signupsBySource: SourceData[]
   timeline: TimelinePoint[]
   recentSignups: RecentSignup[]
+  pageViews: PageView[]
+  dailyViews: { date: string; views: number }[]
 }
 
 export default function AdminPage() {
@@ -64,12 +71,14 @@ export default function AdminPage() {
       <h1 className="text-2xl font-bold text-white">Analytics</h1>
 
       {/* Overview Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard label="Total Users" value={data.overview.totalUsers} />
         <StatCard label="Active Subs" value={data.overview.activeSubscriptions} color="green" />
         <StatCard label="Trials" value={data.overview.trials} color="blue" />
-        <StatCard label="Last 7 Days" value={data.overview.last7Days} color="orange" />
-        <StatCard label="Last 30 Days" value={data.overview.last30Days} color="orange" />
+        <StatCard label="Signups 7d" value={data.overview.last7Days} color="orange" />
+        <StatCard label="Signups 30d" value={data.overview.last30Days} color="orange" />
+        <StatCard label="Page Views 30d" value={data.overview.totalViews} color="purple" />
+        <StatCard label="Unique Visitors" value={data.overview.uniqueVisitors} color="purple" />
       </div>
 
       {/* Signups by Source */}
@@ -138,6 +147,52 @@ export default function AdminPage() {
         )}
       </div>
 
+      {/* Daily Visitors (PostHog) */}
+      {data.dailyViews.length > 0 && (
+        <div className="card">
+          <h2 className="text-lg font-semibold text-white mb-4">Daily Visitors - Last 30 Days</h2>
+          <div className="flex items-end gap-1 h-40">
+            {data.dailyViews.map(t => {
+              const maxDV = Math.max(...data.dailyViews.map(d => d.views), 1)
+              return (
+                <div key={t.date} className="flex-1 flex flex-col items-center gap-1">
+                  {t.views > 0 && <span className="text-xs text-slate-500">{t.views}</span>}
+                  <div
+                    className="w-full bg-purple-500 rounded-t min-h-[2px]"
+                    style={{ height: `${(t.views / maxDV) * 120}px` }}
+                    title={`${t.date}: ${t.views} visitors`}
+                  />
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Top Pages (PostHog) */}
+      {data.pageViews.length > 0 && (
+        <div className="card">
+          <h2 className="text-lg font-semibold text-white mb-4">Top Pages - Last 30 Days</h2>
+          <div className="space-y-2">
+            {data.pageViews.map(p => {
+              const maxPV = data.pageViews[0]?.views || 1
+              return (
+                <div key={p.path} className="flex items-center gap-3">
+                  <span className="text-slate-300 text-sm w-48 truncate shrink-0" title={p.path}>{p.path}</span>
+                  <div className="flex-1 bg-slate-800 rounded-full h-5 relative">
+                    <div
+                      className="bg-purple-500/40 rounded-full h-5"
+                      style={{ width: `${(p.views / maxPV) * 100}%` }}
+                    />
+                  </div>
+                  <span className="text-slate-400 text-sm w-16 text-right shrink-0">{p.views}</span>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Recent Signups */}
       <div className="card">
         <h2 className="text-lg font-semibold text-white mb-4">Recent Signups</h2>
@@ -189,6 +244,7 @@ function StatCard({ label, value, color }: { label: string; value: number; color
     green: 'text-green-400',
     blue: 'text-blue-400',
     orange: 'text-orange-400',
+    purple: 'text-purple-400',
   }[color || ''] || 'text-white'
 
   return (

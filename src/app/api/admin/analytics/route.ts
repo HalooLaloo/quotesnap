@@ -101,6 +101,68 @@ export async function GET() {
       created_at: u.created_at,
     }))
 
+  // PostHog page views (last 30 days)
+  let pageViews: { path: string; views: number }[] = []
+  let totalViews = 0
+  let uniqueVisitors = 0
+  let dailyViews: { date: string; views: number }[] = []
+
+  const posthogKey = process.env.POSTHOG_PERSONAL_API_KEY
+  const posthogProjectId = process.env.POSTHOG_PROJECT_ID
+  if (posthogKey && posthogProjectId) {
+    const phHost = 'https://us.posthog.com'
+    const dateFrom = thirtyDaysAgo.toISOString().split('T')[0]
+
+    // Top pages
+    try {
+      const pagesRes = await fetch(`${phHost}/api/projects/${posthogProjectId}/insights/trend/?` + new URLSearchParams({
+        events: JSON.stringify([{ id: '$pageview', math: 'total' }]),
+        date_from: dateFrom,
+        breakdown: '$pathname',
+        breakdown_type: 'event',
+      }), {
+        headers: { Authorization: `Bearer ${posthogKey}` },
+      })
+
+      if (pagesRes.ok) {
+        const pagesData = await pagesRes.json()
+        const results = pagesData.result || []
+        pageViews = results
+          .map((r: any) => ({
+            path: r.breakdown_value || r.label || 'unknown',
+            views: (r.data || []).reduce((sum: number, v: number) => sum + v, 0),
+          }))
+          .sort((a: any, b: any) => b.views - a.views)
+          .slice(0, 15)
+
+        totalViews = results.reduce((sum: number, r: any) =>
+          sum + (r.data || []).reduce((s: number, v: number) => s + v, 0), 0)
+      }
+    } catch {}
+
+    // Unique visitors
+    try {
+      const visitorsRes = await fetch(`${phHost}/api/projects/${posthogProjectId}/insights/trend/?` + new URLSearchParams({
+        events: JSON.stringify([{ id: '$pageview', math: 'dau' }]),
+        date_from: dateFrom,
+      }), {
+        headers: { Authorization: `Bearer ${posthogKey}` },
+      })
+
+      if (visitorsRes.ok) {
+        const visitorsData = await visitorsRes.json()
+        const result = visitorsData.result?.[0]
+        if (result) {
+          uniqueVisitors = (result.data || []).reduce((sum: number, v: number) => sum + v, 0)
+          dailyViews = (result.labels || []).map((label: string, i: number) => ({
+            date: label,
+            views: result.data?.[i] || 0,
+          }))
+        }
+      }
+    } catch {}
+  }
+
   return NextResponse.json({
     overview: {
       totalUsers: users.length,
@@ -108,9 +170,13 @@ export async function GET() {
       trials: trialingUsers.length,
       last7Days: enrichedUsers.filter(u => new Date(u.created_at) >= sevenDaysAgo).length,
       last30Days: enrichedUsers.filter(u => new Date(u.created_at) >= thirtyDaysAgo).length,
+      totalViews,
+      uniqueVisitors,
     },
     signupsBySource,
     timeline,
     recentSignups,
+    pageViews,
+    dailyViews,
   })
 }
