@@ -44,6 +44,7 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [signOutDebug, setSignOutDebug] = useState<string[]>([])
   const [success, setSuccess] = useState('')
 
   // Delete account
@@ -579,15 +580,57 @@ export default function SettingsPage() {
               )}
             </button>
 
-            <a
-              href="/api/auth/signout"
+            <button
+              onClick={async () => {
+                const logs: string[] = []
+                try {
+                  logs.push('1. Click detected')
+                  setSignOutDebug([...logs])
+
+                  logs.push('2. Calling signOut()...')
+                  setSignOutDebug([...logs])
+                  const { error: signOutError } = await supabase.auth.signOut()
+                  logs.push(signOutError ? `3. signOut error: ${signOutError.message}` : '3. signOut OK')
+                  setSignOutDebug([...logs])
+
+                  logs.push('4. Clearing cookies...')
+                  setSignOutDebug([...logs])
+                  document.cookie.split(';').forEach(c => {
+                    const name = c.split('=')[0].trim()
+                    if (name.startsWith('sb-')) {
+                      document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`
+                      logs.push(`   Cleared: ${name}`)
+                    }
+                  })
+                  setSignOutDebug([...logs])
+
+                  logs.push('5. Fetching /api/auth/signout...')
+                  setSignOutDebug([...logs])
+                  const res = await fetch('/api/auth/signout', { redirect: 'manual' })
+                  logs.push(`6. Response: ${res.status} ${res.type}`)
+                  logs.push(`   Location: ${res.headers.get('location') || 'none'}`)
+                  setSignOutDebug([...logs])
+
+                  logs.push('7. Redirecting with window.location...')
+                  setSignOutDebug([...logs])
+                  window.location.href = '/login'
+                } catch (err) {
+                  logs.push(`ERROR: ${err instanceof Error ? err.message : String(err)}`)
+                  setSignOutDebug([...logs])
+                }
+              }}
               className="btn-secondary flex items-center gap-2 text-sm text-red-400 hover:text-red-300"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
               </svg>
               Sign Out
-            </a>
+            </button>
+            {signOutDebug.length > 0 && (
+              <div className="mt-3 p-3 bg-slate-900 border border-slate-700 rounded-lg text-xs font-mono text-green-400 whitespace-pre-wrap">
+                {signOutDebug.join('\n')}
+              </div>
+            )}
           </div>
         </div>
       </div>
