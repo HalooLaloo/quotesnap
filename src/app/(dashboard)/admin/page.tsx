@@ -52,7 +52,7 @@ interface CountryData {
 }
 
 interface AnalyticsData {
-  overview: OverviewData & { totalViews: number; uniqueVisitors: number }
+  overview: OverviewData & { mrr: number; totalViews: number; uniqueVisitors: number }
   signupsBySource: SourceData[]
   timeline: TimelinePoint[]
   recentSignups: RecentSignup[]
@@ -88,6 +88,17 @@ export default function AdminPage() {
   return (
     <div className="p-4 lg:p-8 max-w-6xl mx-auto space-y-8">
       <h1 className="text-2xl font-bold text-white">Analytics</h1>
+
+      {/* MRR Hero Card */}
+      <div className="card !p-6 border border-green-500/30 bg-green-500/5">
+        <p className="text-slate-400 text-xs uppercase tracking-wide">Monthly Recurring Revenue</p>
+        <p className="text-4xl font-bold mt-2 text-green-400">
+          ${data.overview.mrr.toFixed(2)}
+        </p>
+        <p className="text-slate-500 text-xs mt-1">
+          {data.overview.activeSubscriptions} active &middot; {data.overview.trials} trialing
+        </p>
+      </div>
 
       {/* Overview Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

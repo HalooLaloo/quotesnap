@@ -76,6 +76,19 @@ export async function GET() {
   )
   const trialingUsers = enrichedUsers.filter(u => u.subscription_status === 'trialing')
 
+  // MRR calculation: $29/mo for monthly, $249/12 = $20.75/mo for yearly
+  const monthlyPriceId = process.env.STRIPE_MONTHLY_PRICE_ID
+  const yearlyPriceId = process.env.STRIPE_YEARLY_PRICE_ID
+  let mrr = 0
+  for (const u of enrichedUsers) {
+    if (u.subscription_status !== 'active') continue
+    if (u.stripe_price_id === yearlyPriceId) {
+      mrr += 249 / 12
+    } else if (u.stripe_price_id === monthlyPriceId) {
+      mrr += 29
+    }
+  }
+
   // Signups over time (last 30 days, grouped by day)
   const dailySignups: Record<string, number> = {}
   for (const u of enrichedUsers) {
@@ -164,6 +177,7 @@ export async function GET() {
       trials: trialingUsers.length,
       last7Days: enrichedUsers.filter(u => new Date(u.created_at) >= sevenDaysAgo).length,
       last30Days: enrichedUsers.filter(u => new Date(u.created_at) >= thirtyDaysAgo).length,
+      mrr: Math.round(mrr * 100) / 100,
       totalViews,
       uniqueVisitors,
     },
