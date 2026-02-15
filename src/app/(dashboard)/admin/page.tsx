@@ -45,6 +45,12 @@ interface UtmSourceData {
   views: number
 }
 
+interface CountryData {
+  country: string
+  code: string
+  visitors: number
+}
+
 interface AnalyticsData {
   overview: OverviewData & { totalViews: number; uniqueVisitors: number }
   signupsBySource: SourceData[]
@@ -54,6 +60,7 @@ interface AnalyticsData {
   dailyViews: { date: string; views: number }[]
   topReferrers: ReferrerData[]
   topUtmSources: UtmSourceData[]
+  topCountries: CountryData[]
 }
 
 export default function AdminPage() {
@@ -192,6 +199,33 @@ export default function AdminPage() {
         </div>
       )}
 
+      {/* Visitors by Country */}
+      {data.topCountries?.length > 0 && (
+        <div className="card">
+          <h2 className="text-lg font-semibold text-white mb-4">Visitors by Country - Last 30 Days</h2>
+          <div className="space-y-2">
+            {data.topCountries.map(c => {
+              const maxC = data.topCountries[0]?.visitors || 1
+              return (
+                <div key={c.code} className="flex items-center gap-3">
+                  <span className="text-lg w-7 shrink-0">{countryFlag(c.code)}</span>
+                  <span className="text-slate-300 text-sm w-32 truncate shrink-0" title={c.country}>
+                    {c.country}
+                  </span>
+                  <div className="flex-1 bg-slate-800 rounded-full h-4 relative">
+                    <div
+                      className="bg-cyan-500/40 rounded-full h-4"
+                      style={{ width: `${(c.visitors / maxC) * 100}%` }}
+                    />
+                  </div>
+                  <span className="text-slate-400 text-sm w-12 text-right shrink-0">{c.visitors}</span>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Timeline (last 30 days) */}
       <div className="card">
         <h2 className="text-lg font-semibold text-white mb-4">Signups - Last 30 Days</h2>
@@ -305,6 +339,13 @@ export default function AdminPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+function countryFlag(code: string) {
+  if (!code || code.length !== 2) return '🌍'
+  return String.fromCodePoint(
+    ...code.toUpperCase().split('').map(c => 0x1F1E6 + c.charCodeAt(0) - 65)
   )
 }
 

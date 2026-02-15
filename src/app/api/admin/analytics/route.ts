@@ -108,6 +108,7 @@ export async function GET() {
   let dailyViews: { date: string; views: number }[] = []
   let topReferrers: { referrer: string; views: number }[] = []
   let topUtmSources: { source: string; views: number }[] = []
+  let topCountries: { country: string; code: string; visitors: number }[] = []
 
   const posthogKey = process.env.POSTHOG_PERSONAL_API_KEY
   const posthogProjectId = process.env.POSTHOG_PROJECT_ID
@@ -130,7 +131,7 @@ export async function GET() {
     }
 
     // All queries in parallel
-    const [pagesRows, totalRow, visitorsRow, dailyRows, referrerRows, utmRows] = await Promise.all([
+    const [pagesRows, totalRow, visitorsRow, dailyRows, referrerRows, utmRows, countryRows] = await Promise.all([
       // Top pages
       hogql("SELECT properties['$pathname'] as path, count() as views FROM events WHERE event = '$pageview' AND timestamp > now() - interval 30 day GROUP BY path ORDER BY views DESC LIMIT 15"),
       // Total views
@@ -143,6 +144,8 @@ export async function GET() {
       hogql("SELECT properties['$referring_domain'] as referrer, count() as views FROM events WHERE event = '$pageview' AND timestamp > now() - interval 30 day AND referrer != '' GROUP BY referrer ORDER BY views DESC LIMIT 10"),
       // UTM sources
       hogql("SELECT properties['utm_source'] as source, count() as views FROM events WHERE event = '$pageview' AND timestamp > now() - interval 30 day AND source != '' GROUP BY source ORDER BY views DESC LIMIT 10"),
+      // Visitors by country
+      hogql("SELECT properties['$geoip_country_name'] as country, properties['$geoip_country_code'] as code, count(DISTINCT distinct_id) as visitors FROM events WHERE event = '$pageview' AND timestamp > now() - interval 30 day AND country != '' GROUP BY country, code ORDER BY visitors DESC LIMIT 20"),
     ])
 
     pageViews = pagesRows.map((r: any[]) => ({ path: r[0] || '/', views: r[1] }))
@@ -151,6 +154,7 @@ export async function GET() {
     dailyViews = dailyRows.map((r: any[]) => ({ date: r[0], views: r[1] }))
     topReferrers = referrerRows.map((r: any[]) => ({ referrer: r[0] || 'direct', views: r[1] }))
     topUtmSources = utmRows.map((r: any[]) => ({ source: r[0], views: r[1] }))
+    topCountries = countryRows.map((r: any[]) => ({ country: r[0], code: r[1], visitors: r[2] }))
   }
 
   return NextResponse.json({
@@ -170,5 +174,6 @@ export async function GET() {
     dailyViews,
     topReferrers,
     topUtmSources,
+    topCountries,
   })
 }
