@@ -126,6 +126,10 @@ function LoginForm() {
 
   return (
     <div className="card">
+      <div className="bg-orange-500/10 border border-orange-500/30 text-orange-400 px-4 py-3 rounded-lg text-sm text-center mb-4">
+        We&apos;re launching March 1st! Login will be available then.
+      </div>
+
       <h1 className="text-2xl font-bold text-white mb-6 text-center">
         Welcome back
       </h1>
