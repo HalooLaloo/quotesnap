@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <!-- Subtle brick gradient — top lighter, bottom deeper -->
+    <linearGradient id="brickGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f97316"/>
+      <stop offset="100%" stop-color="#ea580c"/>
+    </linearGradient>
+    <!-- Subtle background gradient for app icon depth -->
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#162240"/>
+      <stop offset="100%" stop-color="#0c1425"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Rounded square background -->
+  <rect width="1024" height="1024" rx="192" fill="url(#bgGrad)"/>
+
+  <!-- Brick pattern — centered: 650w x 352h, canvas 1024x1024 -->
+  <g transform="translate(187, 336)">
+    <!-- Row 1: two wide bricks -->
+    <rect x="0" y="0" width="310" height="160" rx="20" fill="url(#brickGrad)"/>
+    <rect x="340" y="0" width="310" height="160" rx="20" fill="url(#brickGrad)"/>
+    <!-- Row 2: offset pattern -->
+    <rect x="0" y="192" width="115" height="160" rx="20" fill="url(#brickGrad)"/>
+    <rect x="147" y="192" width="310" height="160" rx="20" fill="url(#brickGrad)"/>
+    <rect x="489" y="192" width="161" height="160" rx="20" fill="url(#brickGrad)"/>
+  </g>
+</svg>
