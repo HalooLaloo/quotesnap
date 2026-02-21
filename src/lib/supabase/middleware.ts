@@ -12,6 +12,14 @@ const trackingRedirects: Record<string, string> = {
 }
 
 export async function updateSession(request: NextRequest) {
+  // Catch token_hash from Supabase email confirmation and redirect to callback handler
+  const tokenHash = request.nextUrl.searchParams.get('token_hash')
+  if (tokenHash && !request.nextUrl.pathname.startsWith('/auth/callback')) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/auth/callback'
+    return NextResponse.redirect(url)
+  }
+
   const utmSource = trackingRedirects[request.nextUrl.pathname]
   if (utmSource) {
     const url = request.nextUrl.clone()
