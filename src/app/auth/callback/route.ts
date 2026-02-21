@@ -68,10 +68,11 @@ export async function GET(request: Request) {
     }
 
     // token_hash verification failed (expired/invalid)
+    console.error('verifyOtp failed:', verifyError.message, verifyError)
     if (type === 'recovery') {
       return NextResponse.redirect(`${origin}/reset-password?error=expired`)
     }
-    return NextResponse.redirect(`${origin}/login?error=verification_expired`)
+    return NextResponse.redirect(`${origin}/login?error=verification_expired&reason=${encodeURIComponent(verifyError.message)}`)
   }
 
   if (code) {
