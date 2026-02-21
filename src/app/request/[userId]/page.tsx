@@ -17,12 +17,29 @@ export default function ClientRequestPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      role: 'assistant',
-      content: 'Hi! 👋 I\'m an assistant who will help you describe the scope of work.\n\n📸 You can send photos - I\'ll analyze them and help determine the scope of work more accurately for a better quote.\n\nTell me, what would you like to do? For example: paint a room, renovate a bathroom, install tiles...',
-    },
-  ])
+  const [contractorName, setContractorName] = useState<string>('')
+  const [messages, setMessages] = useState<Message[]>([])
+  const [initialLoading, setInitialLoading] = useState(true)
+
+  // Fetch contractor name and set initial message
+  useEffect(() => {
+    async function init() {
+      const { data } = await supabase
+        .from('profiles')
+        .select('company_name, full_name')
+        .eq('id', contractorId)
+        .single()
+      const name = data?.company_name || data?.full_name || 'your contractor'
+      setContractorName(name)
+      setMessages([{
+        role: 'assistant',
+        content: `Hi! I'll help **${name}** prepare an accurate quote for you. Takes about 2 minutes.\n\n📸 **Tip: Send a photo of the space** — I'll analyze it and extract most details automatically, so you won't need to answer as many questions.\n\nWhat would you like done?`,
+      }])
+      setInitialLoading(false)
+    }
+    init()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [contractorId])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [summary, setSummary] = useState<string | null>(null)
@@ -349,6 +366,14 @@ export default function ClientRequestPage() {
     }
 
     setSubmitting(false)
+  }
+
+  if (initialLoading) {
+    return (
+      <div className="h-[100dvh] flex items-center justify-center">
+        <div className="animate-spin w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full" />
+      </div>
+    )
   }
 
   if (submitted) {
