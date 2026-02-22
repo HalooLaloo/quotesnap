@@ -36,7 +36,9 @@ workflows:
 
       - name: Build IPA
         script: |
-          # Use Xcode automatic signing with App Store Connect API key
+          # Write API key to file for Xcode
+          echo "$APP_STORE_CONNECT_PRIVATE_KEY" > /tmp/AuthKey.p8
+
           xcodebuild archive \
             -project "$CM_BUILD_DIR/$XCODE_PROJECT" \
             -scheme "$XCODE_SCHEME" \
@@ -44,7 +46,7 @@ workflows:
             -configuration Release \
             -archivePath "$CM_BUILD_DIR/build/ios/xcarchive/App.xcarchive" \
             -allowProvisioningUpdates \
-            -authenticationKeyPath "$APP_STORE_CONNECT_PRIVATE_KEY" \
+            -authenticationKeyPath /tmp/AuthKey.p8 \
             -authenticationKeyID "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
             -authenticationKeyIssuerID "$APP_STORE_CONNECT_ISSUER_ID" \
             DEVELOPMENT_TEAM="$TEAM_ID" \
