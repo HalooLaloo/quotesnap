@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe'
 import { createClient } from '@supabase/supabase-js'
+import { Resend } from 'resend'
+import { emailLayout } from '@/lib/emailTemplate'
 import Stripe from 'stripe'
 
 // Use service role for webhook (no auth context)
@@ -113,6 +115,52 @@ export async function POST(request: NextRequest) {
               .from('profiles')
               .update({ subscription_status: 'past_due' })
               .eq('id', userId)
+
+            // Send payment failed email
+            if (process.env.RESEND_API_KEY) {
+              const { data: profile } = await supabase
+                .from('profiles')
+                .select('email')
+                .eq('id', userId)
+                .single()
+
+              let userEmail = profile?.email
+              if (!userEmail) {
+                const { data: userData } = await supabase.auth.admin.getUserById(userId)
+                userEmail = userData?.user?.email
+              }
+
+              if (userEmail) {
+                const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://brickquote.app'
+                const resend = new Resend(process.env.RESEND_API_KEY)
+                await resend.emails.send({
+                  from: 'BrickQuote <contact@brickquote.app>',
+                  to: userEmail,
+                  subject: 'Payment failed — update your card to keep access',
+                  html: emailLayout({
+                    accentColor: '#ef4444',
+                    title: 'Payment Failed',
+                    content: `
+                      <p style="color: #374151; font-size: 16px; margin: 0 0 16px 0;">
+                        We couldn&rsquo;t process your latest payment. Your account access has been paused until the payment is resolved.
+                      </p>
+                      <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 16px; margin-bottom: 24px;">
+                        <p style="color: #991b1b; font-size: 14px; margin: 0;">
+                          <strong>Your data is safe.</strong> Update your payment method and your access will be restored instantly.
+                        </p>
+                      </div>
+                      <a href="${appUrl}/subscribe" style="display: block; background: #2563eb; color: white; padding: 14px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; text-align: center;">
+                        Update Payment Method
+                      </a>
+                      <p style="color: #9ca3af; font-size: 13px; text-align: center; margin: 16px 0 0 0;">
+                        We&rsquo;ll also retry the charge automatically in a few days.
+                      </p>`,
+                  }),
+                }).catch(() => {
+                  // Non-critical — don't fail the webhook
+                })
+              }
+            }
           }
         }
         break
