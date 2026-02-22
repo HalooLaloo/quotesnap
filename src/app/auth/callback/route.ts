@@ -53,7 +53,7 @@ export async function GET(request: Request) {
       if (user) {
         const { data: profile } = await supabase
           .from('profiles')
-          .select('subscription_status, trial_ends_at')
+          .select('subscription_status')
           .eq('id', user.id)
           .single()
 
@@ -61,29 +61,7 @@ export async function GET(request: Request) {
           profile?.subscription_status === 'active' ||
           profile?.subscription_status === 'trialing'
 
-        // New signup — start free 3-day trial (no Stripe, no plan choice yet)
-        if (!hasActiveSubscription && !profile?.trial_ends_at) {
-          const trialEnd = new Date()
-          trialEnd.setDate(trialEnd.getDate() + 3)
-
-          await supabase
-            .from('profiles')
-            .update({
-              subscription_status: 'trialing',
-              trial_ends_at: trialEnd.toISOString(),
-            })
-            .eq('id', user.id)
-
-          return NextResponse.redirect(`${origin}/requests`)
-        }
-
-        // Existing user with active sub or valid trial
-        if (hasActiveSubscription) {
-          return NextResponse.redirect(`${origin}${next}`)
-        }
-
-        // Trial expired or inactive — go to subscribe
-        return NextResponse.redirect(`${origin}/subscribe`)
+        return NextResponse.redirect(`${origin}${hasActiveSubscription ? next : '/subscribe'}`)
       }
       return NextResponse.redirect(`${origin}${next}`)
     }
@@ -132,7 +110,7 @@ export async function GET(request: Request) {
       if (user) {
         const { data: profile } = await supabase
           .from('profiles')
-          .select('subscription_status, trial_ends_at')
+          .select('subscription_status')
           .eq('id', user.id)
           .single()
 
@@ -140,27 +118,7 @@ export async function GET(request: Request) {
           profile?.subscription_status === 'active' ||
           profile?.subscription_status === 'trialing'
 
-        // New signup — start free 3-day trial
-        if (!hasActiveSubscription && !profile?.trial_ends_at) {
-          const trialEnd = new Date()
-          trialEnd.setDate(trialEnd.getDate() + 3)
-
-          await supabase
-            .from('profiles')
-            .update({
-              subscription_status: 'trialing',
-              trial_ends_at: trialEnd.toISOString(),
-            })
-            .eq('id', user.id)
-
-          return NextResponse.redirect(`${origin}/requests`)
-        }
-
-        if (hasActiveSubscription) {
-          return NextResponse.redirect(`${origin}${next}`)
-        }
-
-        return NextResponse.redirect(`${origin}/subscribe`)
+        return NextResponse.redirect(`${origin}${hasActiveSubscription ? next : '/subscribe'}`)
       }
 
       return NextResponse.redirect(`${origin}${next}`)

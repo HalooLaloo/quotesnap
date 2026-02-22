@@ -8,9 +8,6 @@ import Link from 'next/link'
 export default function SubscribePage() {
   const [loading, setLoading] = useState<'monthly' | 'yearly' | null>(null)
   const [error, setError] = useState('')
-  const [trialExpired, setTrialExpired] = useState(false)
-  const [trialDaysLeft, setTrialDaysLeft] = useState<number | null>(null)
-  const [pageReady, setPageReady] = useState(false)
   const router = useRouter()
   const supabase = useMemo(() => createClient(), [])
 
@@ -22,31 +19,16 @@ export default function SubscribePage() {
         return
       }
 
+      // Already has active subscription
       const { data: profile } = await supabase
         .from('profiles')
-        .select('subscription_status, trial_ends_at')
+        .select('subscription_status')
         .eq('id', user.id)
         .single()
 
-      // Already has active paid subscription
-      if (profile?.subscription_status === 'active') {
+      if (profile?.subscription_status === 'active' || profile?.subscription_status === 'trialing') {
         router.push('/requests')
-        return
       }
-
-      // Check trial status
-      if (profile?.trial_ends_at) {
-        const trialEnd = new Date(profile.trial_ends_at)
-        const now = new Date()
-        if (trialEnd < now) {
-          setTrialExpired(true)
-        } else {
-          const daysLeft = Math.ceil((trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
-          setTrialDaysLeft(daysLeft)
-        }
-      }
-
-      setPageReady(true)
     }
 
     checkUser()
@@ -78,14 +60,6 @@ export default function SubscribePage() {
     }
   }
 
-  if (!pageReady) {
-    return (
-      <div className="min-h-screen bg-[#0a1628] flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
-      </div>
-    )
-  }
-
   return (
     <div className="min-h-screen bg-[#0a1628] flex items-center justify-center px-4 py-12">
       <div className="max-w-2xl w-full">
@@ -107,35 +81,12 @@ export default function SubscribePage() {
 
         {/* Content */}
         <div className="text-center mb-8">
-          {trialExpired ? (
-            <>
-              <h1 className="text-3xl font-bold text-white mb-4">
-                Your free trial has ended
-              </h1>
-              <p className="text-slate-400 text-lg">
-                Choose a plan to continue using BrickQuote.
-              </p>
-            </>
-          ) : trialDaysLeft !== null ? (
-            <>
-              <h1 className="text-3xl font-bold text-white mb-4">
-                Choose your plan
-              </h1>
-              <p className="text-slate-400 text-lg">
-                You have <span className="text-blue-400 font-medium">{trialDaysLeft} day{trialDaysLeft !== 1 ? 's' : ''}</span> left on your free trial.
-                Subscribe now to avoid any interruption.
-              </p>
-            </>
-          ) : (
-            <>
-              <h1 className="text-3xl font-bold text-white mb-4">
-                Choose your plan
-              </h1>
-              <p className="text-slate-400 text-lg">
-                Start using BrickQuote to send professional quotes in minutes.
-              </p>
-            </>
-          )}
+          <h1 className="text-3xl font-bold text-white mb-4">
+            Start your 3-day free trial
+          </h1>
+          <p className="text-slate-400 text-lg">
+            Pick a plan. Try it free for 3 days — you won&apos;t be charged until the trial ends.
+          </p>
         </div>
 
         {error && (
@@ -145,7 +96,7 @@ export default function SubscribePage() {
         )}
 
         {/* Plan options */}
-        <div className="grid md:grid-cols-2 gap-4 mb-8">
+        <div className="grid md:grid-cols-2 gap-4 mb-6">
           {/* Monthly */}
           <button
             onClick={() => handleSubscribe('monthly')}
@@ -163,7 +114,7 @@ export default function SubscribePage() {
               </div>
             </div>
             <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg px-3 py-2 text-blue-400 text-sm text-center font-medium">
-              {loading === 'monthly' ? 'Redirecting to checkout...' : 'Get Started'}
+              {loading === 'monthly' ? 'Redirecting to checkout...' : 'Start Free Trial'}
             </div>
           </button>
 
@@ -189,9 +140,34 @@ export default function SubscribePage() {
               </div>
             </div>
             <div className="bg-green-500/10 border border-green-500/30 rounded-lg px-3 py-2 text-green-400 text-sm text-center font-medium">
-              {loading === 'yearly' ? 'Redirecting to checkout...' : 'Get Started — Save $99'}
+              {loading === 'yearly' ? 'Redirecting to checkout...' : 'Start Free Trial — Save $99'}
             </div>
           </button>
+        </div>
+
+        {/* How it works */}
+        <div className="bg-[#132039] border border-[#1e3a5f] rounded-xl p-5 mb-8">
+          <p className="text-white text-sm font-medium mb-3">How the trial works:</p>
+          <div className="space-y-2.5">
+            <div className="flex items-start gap-3 text-sm">
+              <div className="w-5 h-5 bg-blue-500/20 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+                <span className="text-blue-400 text-xs font-bold">1</span>
+              </div>
+              <p className="text-slate-300">Pick your plan and enter your card — <span className="text-white font-medium">you won&apos;t be charged today</span></p>
+            </div>
+            <div className="flex items-start gap-3 text-sm">
+              <div className="w-5 h-5 bg-blue-500/20 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+                <span className="text-blue-400 text-xs font-bold">2</span>
+              </div>
+              <p className="text-slate-300">Get <span className="text-white font-medium">full access for 3 days</span> — create quotes, use AI, send to clients</p>
+            </div>
+            <div className="flex items-start gap-3 text-sm">
+              <div className="w-5 h-5 bg-blue-500/20 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+                <span className="text-blue-400 text-xs font-bold">3</span>
+              </div>
+              <p className="text-slate-300">After 3 days, your plan starts. <span className="text-white font-medium">Cancel anytime</span> before — no charge</p>
+            </div>
+          </div>
         </div>
 
         {/* Trust badges */}
@@ -228,15 +204,6 @@ export default function SubscribePage() {
             <span className="bg-[#132039] px-3 py-1 rounded-full">Email notifications</span>
           </div>
         </div>
-
-        {/* Back to app link (during active trial) */}
-        {trialDaysLeft !== null && (
-          <div className="mt-8 text-center">
-            <Link href="/requests" className="text-slate-500 hover:text-slate-300 text-sm transition-colors">
-              Continue with free trial
-            </Link>
-          </div>
-        )}
       </div>
     </div>
   )
