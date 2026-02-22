@@ -98,6 +98,15 @@ function setupNativeBridge() {
           { name: 'open', rtype: 'promise' },
         ],
       },
+      {
+        name: 'Browser',
+        methods: [
+          { name: 'open', rtype: 'promise' },
+          { name: 'close', rtype: 'promise' },
+          { name: 'addListener' },
+          { name: 'removeAllListeners', rtype: 'promise' },
+        ],
+      },
     ]
   }
 }

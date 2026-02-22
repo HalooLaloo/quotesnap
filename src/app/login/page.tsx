@@ -187,21 +187,23 @@ function LoginForm() {
       </form>
 
       {isNativeApp ? (
-        <div className="mt-6 text-center">
-          <p className="text-slate-400 text-sm mb-2">Don&apos;t have an account? Sign up at:</p>
+        <p className="mt-6 text-center text-slate-400 text-sm">
+          Don&apos;t have an account?{' '}
           <button
-            onClick={() => {
-              navigator.clipboard.writeText('https://brickquote.app/register')
-              const btn = document.getElementById('copy-url-btn')
-              if (btn) { btn.textContent = 'Copied!'; setTimeout(() => { btn.textContent = 'brickquote.app/register  — tap to copy' }, 2000) }
+            onClick={async () => {
+              try {
+                const { Browser } = await import('@capacitor/browser')
+                await Browser.open({ url: 'https://brickquote.app/register' })
+              } catch {
+                navigator.clipboard.writeText('https://brickquote.app/register')
+                alert('Link copied! Paste it in your browser.')
+              }
             }}
-            id="copy-url-btn"
-            className="bg-[#1e3a5f]/50 border border-[#1e3a5f] rounded-lg px-4 py-2.5 text-blue-400 text-sm font-medium"
+            className="text-blue-400 hover:text-blue-300"
           >
-            brickquote.app/register  — tap to copy
+            Sign up
           </button>
-          <p className="text-slate-500 text-xs mt-2">Paste in your browser to create an account</p>
-        </div>
+        </p>
       ) : (
         <p className="mt-6 text-center text-slate-400 text-sm">
           Don&apos;t have an account?{' '}
