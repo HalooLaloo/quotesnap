@@ -92,7 +92,12 @@ export async function updateSession(request: NextRequest) {
     }
 
     // Subscription enforcement — dashboard pages require active subscription
-    if (!isPublicPath && request.nextUrl.pathname !== '/') {
+    const noSubRequired = ['/subscribe', '/settings']
+    const needsSubscription = !isPublicPath
+      && request.nextUrl.pathname !== '/'
+      && !noSubRequired.some(p => request.nextUrl.pathname.startsWith(p))
+
+    if (needsSubscription) {
       const { data: profile } = await supabase
         .from('profiles')
         .select('subscription_status')
@@ -103,7 +108,7 @@ export async function updateSession(request: NextRequest) {
         profile?.subscription_status === 'active' ||
         profile?.subscription_status === 'trialing'
 
-      if (!hasAccess && request.nextUrl.pathname !== '/subscribe') {
+      if (!hasAccess) {
         const url = request.nextUrl.clone()
         url.pathname = '/subscribe'
         return NextResponse.redirect(url)

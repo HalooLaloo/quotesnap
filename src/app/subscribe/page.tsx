@@ -19,15 +19,26 @@ export default function SubscribePage() {
         return
       }
 
-      // Already has active subscription
+      // Check local status first
       const { data: profile } = await supabase
         .from('profiles')
-        .select('subscription_status')
+        .select('subscription_status, stripe_customer_id')
         .eq('id', user.id)
         .single()
 
       if (profile?.subscription_status === 'active' || profile?.subscription_status === 'trialing') {
         router.push('/requests')
+        return
+      }
+
+      // If user has a Stripe customer (went through checkout) but status not updated yet,
+      // verify directly with Stripe (handles webhook race condition)
+      if (profile?.stripe_customer_id) {
+        const res = await fetch('/api/stripe/verify', { method: 'POST' })
+        const data = await res.json()
+        if (data.status === 'active' || data.status === 'trialing') {
+          router.push('/requests')
+        }
       }
     }
 
