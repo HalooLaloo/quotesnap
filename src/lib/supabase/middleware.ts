@@ -67,20 +67,35 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname.startsWith(path)
   )
 
+  // Helper: create redirect that preserves refreshed auth cookies
+  const redirectWithCookies = (pathname: string) => {
+    const url = request.nextUrl.clone()
+    url.pathname = pathname
+    const redirectResponse = NextResponse.redirect(url)
+    // Copy any refreshed auth cookies from supabaseResponse to redirect
+    supabaseResponse.cookies.getAll().forEach(cookie => {
+      redirectResponse.cookies.set(cookie.name, cookie.value)
+    })
+    return redirectResponse
+  }
+
   // Redirect unauthenticated users to login
   if (!user && !isPublicPath && request.nextUrl.pathname !== '/') {
-    const url = request.nextUrl.clone()
-    url.pathname = '/login'
-    return NextResponse.redirect(url)
+    console.error(`[middleware] No user for ${request.nextUrl.pathname} (native=${isNativeApp})`)
+    return redirectWithCookies('/login')
   }
 
   if (user) {
     // Check subscription status first — needed for all redirects below
-    const { data: profile } = await supabase
+    const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('subscription_status')
       .eq('id', user.id)
       .single()
+
+    if (profileError) {
+      console.error(`[middleware] Profile query error for ${user.id}:`, profileError.message)
+    }
 
     const hasAccess =
       profile?.subscription_status === 'active' ||
@@ -90,9 +105,7 @@ export async function updateSession(request: NextRequest) {
     if (isNativeApp) {
       const blockedInApp = ['/register', '/subscribe', '/pricing']
       if (blockedInApp.some(path => request.nextUrl.pathname.startsWith(path))) {
-        const url = request.nextUrl.clone()
-        url.pathname = user ? (hasAccess ? '/requests' : '/login') : '/login'
-        return NextResponse.redirect(url)
+        return redirectWithCookies(hasAccess ? '/requests' : '/login')
       }
     }
 
@@ -102,9 +115,7 @@ export async function updateSession(request: NextRequest) {
       if (isNativeApp && !hasAccess) {
         return supabaseResponse
       }
-      const url = request.nextUrl.clone()
-      url.pathname = hasAccess ? '/requests' : '/subscribe'
-      return NextResponse.redirect(url)
+      return redirectWithCookies(hasAccess ? '/requests' : '/subscribe')
     }
 
     // Subscription enforcement — dashboard pages require active subscription
@@ -116,9 +127,8 @@ export async function updateSession(request: NextRequest) {
       && !noSubRequired.some(p => request.nextUrl.pathname.startsWith(p))
 
     if (needsSubscription && !hasAccess) {
-      const url = request.nextUrl.clone()
-      url.pathname = isNativeApp ? '/login' : '/subscribe'
-      return NextResponse.redirect(url)
+      console.error(`[middleware] No subscription for ${request.nextUrl.pathname} user=${user.id} status=${profile?.subscription_status} native=${isNativeApp}`)
+      return redirectWithCookies(isNativeApp ? '/login' : '/subscribe')
     }
   }
 
