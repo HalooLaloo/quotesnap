@@ -62,9 +62,11 @@ export async function updateSession(request: NextRequest) {
   const isNativeApp = request.headers.get('user-agent')?.includes('BrickQuoteApp')
 
   // Public paths - no login required
+  // Use exact match OR path prefix with '/' to avoid false matches
+  // e.g. '/request' should match '/request/123' but NOT '/requests'
   const publicPaths = ['/login', '/register', '/reset-password', '/request', '/quote', '/invoice', '/pricing', '/api', '/privacy', '/terms', '/contact', '/subscribe', '/unsubscribe', '/auth', '/checkout-complete']
   const isPublicPath = publicPaths.some(path =>
-    request.nextUrl.pathname.startsWith(path)
+    request.nextUrl.pathname === path || request.nextUrl.pathname.startsWith(path + '/')
   )
 
   // Helper: create redirect that preserves refreshed auth cookies
@@ -127,6 +129,11 @@ export async function updateSession(request: NextRequest) {
       && !noSubRequired.some(p => request.nextUrl.pathname.startsWith(p))
 
     if (needsSubscription && !hasAccess) {
+      // If the profile query failed (e.g. parallel request race condition),
+      // don't block — let the page through, dashboard layout has its own auth check
+      if (profileError) {
+        return supabaseResponse
+      }
       console.error(`[middleware] No subscription for ${request.nextUrl.pathname} user=${user.id} status=${profile?.subscription_status} native=${isNativeApp}`)
       return redirectWithCookies(isNativeApp ? '/login' : '/subscribe')
     }
