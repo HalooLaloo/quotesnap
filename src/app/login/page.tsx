@@ -192,8 +192,8 @@ function LoginForm() {
           <button
             onClick={async () => {
               try {
-                const { Browser } = await import('@capacitor/browser')
-                await Browser.open({ url: 'https://brickquote.app/register' })
+                const { ExternalBrowser } = await import('@/lib/capacitor')
+                await ExternalBrowser.open({ url: 'https://brickquote.app/register' })
               } catch {
                 navigator.clipboard.writeText('https://brickquote.app/register')
                 alert('Link copied! Paste it in your browser.')
