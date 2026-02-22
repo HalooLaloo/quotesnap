@@ -63,6 +63,7 @@ export default function SettingsPage() {
   const [cancelingSubscription, setCancelingSubscription] = useState(false)
   const [showCancelConfirm, setShowCancelConfirm] = useState(false)
   const [resumingSubscription, setResumingSubscription] = useState(false)
+  const [switchingPlan, setSwitchingPlan] = useState(false)
 
   // Profile fields
   const [fullName, setFullName] = useState('')
@@ -292,6 +293,35 @@ export default function SettingsPage() {
       setError('Failed to resume subscription')
     } finally {
       setResumingSubscription(false)
+    }
+  }
+
+  const handleSwitchPlan = async (plan: 'monthly' | 'yearly') => {
+    setSwitchingPlan(true)
+    setError('')
+    try {
+      const response = await fetch('/api/stripe/switch-plan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan }),
+      })
+      const data = await response.json()
+      if (response.ok) {
+        const newPriceId = plan === 'yearly'
+          ? process.env.NEXT_PUBLIC_STRIPE_YEARLY_PRICE_ID
+          : process.env.NEXT_PUBLIC_STRIPE_MONTHLY_PRICE_ID
+        setStripePriceId(newPriceId || null)
+        setSuccess(plan === 'yearly'
+          ? 'Switched to Yearly — you\'ll save $99/year!'
+          : 'Switched to Monthly plan.')
+        setTimeout(() => setSuccess(''), 5000)
+      } else {
+        setError(data.error || 'Failed to switch plan')
+      }
+    } catch {
+      setError('Failed to switch plan')
+    } finally {
+      setSwitchingPlan(false)
     }
   }
 
@@ -609,6 +639,41 @@ export default function SettingsPage() {
                 </span>
               </div>
             </div>
+
+            {/* Switch plan */}
+            {isActive && !isCanceled && (
+              <div className="mt-3 p-3 bg-[#1e3a5f]/40 rounded-lg">
+                {isYearlyPlan ? (
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-slate-300 text-sm">Want more flexibility?</p>
+                      <p className="text-slate-500 text-xs">Switch to monthly billing at $29/month</p>
+                    </div>
+                    <button
+                      onClick={() => handleSwitchPlan('monthly')}
+                      disabled={switchingPlan}
+                      className="btn-secondary text-sm px-4 py-2 shrink-0"
+                    >
+                      {switchingPlan ? 'Switching...' : 'Switch to Monthly'}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-green-400 text-sm font-medium">Save $99/year with annual billing</p>
+                      <p className="text-slate-500 text-xs">$249/year ($20.75/month) instead of $29/month</p>
+                    </div>
+                    <button
+                      onClick={() => handleSwitchPlan('yearly')}
+                      disabled={switchingPlan}
+                      className="px-4 py-2 bg-green-600/20 hover:bg-green-600/30 text-green-400 border border-green-500/30 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 shrink-0"
+                    >
+                      {switchingPlan ? 'Switching...' : 'Switch to Yearly — Save $99'}
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Canceled notice */}
             {isCanceled && periodEnd && (
