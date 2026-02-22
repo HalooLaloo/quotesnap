@@ -3,7 +3,7 @@ import { Resend } from 'resend'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { escapeHtml } from '@/lib/escapeHtml'
-import { emailUnsubscribeFooter } from '@/lib/emailFooter'
+
 import { emailLayout } from '@/lib/emailTemplate'
 
 export async function POST(request: NextRequest) {
@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
 
       const { data: workerProfile } = await serviceClient
         .from('profiles')
-        .select('email, email_notifications')
+        .select('email')
         .eq('id', user.id)
         .single()
 
@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
 
       const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://brickquote.app'
 
-      if (workerEmail && workerProfile?.email_notifications !== false) {
+      if (workerEmail) {
         await resend.emails.send({
           from: 'BrickQuote <contact@brickquote.app>',
           to: workerEmail,
@@ -103,7 +103,6 @@ export async function POST(request: NextRequest) {
                   <a href="${appUrl}/invoices/${invoice.id}" style="display: block; background: #22c55e; color: white; padding: 14px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; text-align: center;">
                     View Invoice
                   </a>`,
-            unsubscribeHtml: emailUnsubscribeFooter(user.id, appUrl),
           }),
         })
       }

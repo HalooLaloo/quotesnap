@@ -3,7 +3,7 @@ import { Resend } from 'resend'
 import { createClient } from '@supabase/supabase-js'
 import { COUNTRIES } from '@/lib/countries'
 import { escapeHtml } from '@/lib/escapeHtml'
-import { emailUnsubscribeFooter } from '@/lib/emailFooter'
+
 import { emailLayout } from '@/lib/emailTemplate'
 import { sendPushNotification } from '@/lib/pushNotification'
 import { rateLimiter, getClientIP } from '@/lib/ratelimit'
@@ -111,10 +111,9 @@ export async function POST(request: NextRequest) {
       .update({ status: newStatus })
       .eq('id', quote.request_id)
 
-    // Check if contractor has email notifications enabled
     const { data: contractorProfile } = await supabase
       .from('profiles')
-      .select('email, email_notifications')
+      .select('email')
       .eq('id', quote.user_id)
       .single()
 
@@ -132,7 +131,7 @@ export async function POST(request: NextRequest) {
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://brickquote.app'
 
     // Send notification email to contractor
-    if (process.env.RESEND_API_KEY && contractorEmail && contractorProfile?.email_notifications !== false) {
+    if (process.env.RESEND_API_KEY && contractorEmail) {
       const clientName = escapeHtml(quote.qs_quote_requests?.client_name || 'Client')
       const statusText = action === 'accept' ? 'accepted' : 'rejected'
       const statusColor = action === 'accept' ? '#22c55e' : '#ef4444'
@@ -161,7 +160,6 @@ export async function POST(request: NextRequest) {
                     The client has declined this quote. Consider reaching out to discuss their concerns.
                   </p>
                 `}`,
-          unsubscribeHtml: emailUnsubscribeFooter(quote.user_id, appUrl),
         }),
       })
     }

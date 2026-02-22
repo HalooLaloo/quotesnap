@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { createClient } from '@supabase/supabase-js'
 import { escapeHtml } from '@/lib/escapeHtml'
-import { emailUnsubscribeFooter } from '@/lib/emailFooter'
+
 import { emailLayout } from '@/lib/emailTemplate'
 import { sendPushNotification } from '@/lib/pushNotification'
 import { rateLimiter, getClientIP } from '@/lib/ratelimit'
@@ -45,16 +45,11 @@ export async function POST(request: NextRequest) {
 
     const resend = new Resend(process.env.RESEND_API_KEY)
 
-    // Check if contractor has email notifications enabled
     const { data: contractorProfile } = await supabase
       .from('profiles')
-      .select('id, email, email_notifications')
+      .select('id, email')
       .eq('id', contractorId)
       .single()
-
-    if (contractorProfile?.email_notifications === false) {
-      return NextResponse.json({ success: true, skipped: true, reason: 'unsubscribed' })
-    }
 
     // Get contractor email
     let contractorEmail: string | undefined = contractorProfile?.email
@@ -108,7 +103,6 @@ export async function POST(request: NextRequest) {
               <a href="${appUrl}/requests" style="display: block; background: #ea580c; color: white; padding: 14px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; text-align: center;">
                 View Request
               </a>`,
-        unsubscribeHtml: emailUnsubscribeFooter(contractorId, appUrl),
       }),
     })
 

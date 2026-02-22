@@ -19,8 +19,6 @@ interface EmailLayoutOptions {
   content: string
   /** Optional footer text (defaults to 'Powered by BrickQuote') */
   footerText?: string
-  /** Optional unsubscribe HTML from emailUnsubscribeFooter() */
-  unsubscribeHtml?: string
 }
 
 /** Generate a complete email HTML document with BrickQuote branding */
@@ -31,7 +29,6 @@ export function emailLayout(options: EmailLayoutOptions): string {
     subtitle,
     content,
     footerText,
-    unsubscribeHtml,
   } = options
 
   return `<!DOCTYPE html>
@@ -70,7 +67,6 @@ export function emailLayout(options: EmailLayoutOptions): string {
       <p style="color: #94a3b8; font-size: 13px; margin: 0;">
         ${footerText || 'Powered by'} <a href="https://brickquote.app" style="color: #f97316; text-decoration: none; font-weight: 600;">BrickQuote</a>
       </p>
-      ${unsubscribeHtml || ''}
     </div>
   </div>
 </body>

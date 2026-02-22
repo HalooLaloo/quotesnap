@@ -3,7 +3,7 @@ import { Resend } from 'resend'
 import { createClient } from '@supabase/supabase-js'
 import { COUNTRIES, formatDate } from '@/lib/countries'
 import { escapeHtml } from '@/lib/escapeHtml'
-import { emailUnsubscribeFooter } from '@/lib/emailFooter'
+
 import { emailLayout } from '@/lib/emailTemplate'
 import { sendPushNotification } from '@/lib/pushNotification'
 
@@ -64,11 +64,9 @@ export async function GET(request: NextRequest) {
 
     results.expiredQuotes = expiredQuotes?.length || 0
 
-    // Get all users (only those with email notifications enabled)
     const { data: profiles } = await supabase
       .from('profiles')
-      .select('id, email, email_notifications')
-      .neq('email_notifications', false)
+      .select('id, email')
 
     if (!profiles || profiles.length === 0) {
       return NextResponse.json({ success: true, message: 'No users found' })
@@ -126,7 +124,7 @@ export async function GET(request: NextRequest) {
                     <a href="${appUrl}/requests" style="display: block; background: #3b82f6; color: white; padding: 14px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; text-align: center;">
                       View Requests
                     </a>`,
-              unsubscribeHtml: emailUnsubscribeFooter(profile.id, appUrl),
+
             }),
           })
           results.newRequests += newRequests.length
@@ -179,7 +177,7 @@ export async function GET(request: NextRequest) {
                     <a href="${appUrl}/invoices" style="display: block; background: #ef4444; color: white; padding: 14px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; text-align: center;">
                       View Invoices
                     </a>`,
-              unsubscribeHtml: emailUnsubscribeFooter(profile.id, appUrl),
+
             }),
           })
           results.overdueInvoices += overdueInvoices.length
@@ -239,7 +237,7 @@ export async function GET(request: NextRequest) {
                     <a href="${appUrl}/quotes" style="display: block; background: #f97316; color: white; padding: 14px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; text-align: center;">
                       View Quotes
                     </a>`,
-              unsubscribeHtml: emailUnsubscribeFooter(profile.id, appUrl),
+
             }),
           })
           results.expiringQuotes += expiringQuotes.length
