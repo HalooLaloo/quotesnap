@@ -60,6 +60,9 @@ export default function SettingsPage() {
   const [stripePriceId, setStripePriceId] = useState<string | null>(null)
   const [periodEnd, setPeriodEnd] = useState<string | null>(null)
   const [managingSubscription, setManagingSubscription] = useState(false)
+  const [cancelingSubscription, setCancelingSubscription] = useState(false)
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false)
+  const [resumingSubscription, setResumingSubscription] = useState(false)
 
   // Profile fields
   const [fullName, setFullName] = useState('')
@@ -253,12 +256,61 @@ export default function SettingsPage() {
     }
   }
 
+  const handleCancelSubscription = async () => {
+    setCancelingSubscription(true)
+    try {
+      const response = await fetch('/api/stripe/cancel', { method: 'POST' })
+      const data = await response.json()
+      if (response.ok) {
+        setSubscriptionStatus('canceled')
+        setShowCancelConfirm(false)
+        setSuccess('Subscription canceled. You\'ll keep access until the end of your billing period.')
+        setTimeout(() => setSuccess(''), 5000)
+      } else {
+        setError(data.error || 'Failed to cancel subscription')
+      }
+    } catch {
+      setError('Failed to cancel subscription')
+    } finally {
+      setCancelingSubscription(false)
+    }
+  }
+
+  const handleResumeSubscription = async () => {
+    setResumingSubscription(true)
+    try {
+      const response = await fetch('/api/stripe/resume', { method: 'POST' })
+      const data = await response.json()
+      if (response.ok) {
+        setSubscriptionStatus(data.status || 'active')
+        setSuccess('Subscription reactivated!')
+        setTimeout(() => setSuccess(''), 3000)
+      } else {
+        setError(data.error || 'Failed to resume subscription')
+      }
+    } catch {
+      setError('Failed to resume subscription')
+    } finally {
+      setResumingSubscription(false)
+    }
+  }
+
   const getPlanName = () => {
     if (!stripePriceId) return 'No plan'
     if (stripePriceId === process.env.NEXT_PUBLIC_STRIPE_MONTHLY_PRICE_ID) return 'Pro Monthly'
     if (stripePriceId === process.env.NEXT_PUBLIC_STRIPE_YEARLY_PRICE_ID) return 'Pro Yearly'
     return 'Pro'
   }
+
+  const getPlanPrice = () => {
+    if (!stripePriceId) return null
+    const isYearly = stripePriceId === process.env.NEXT_PUBLIC_STRIPE_YEARLY_PRICE_ID
+    return isYearly ? '$249/year' : '$29/month'
+  }
+
+  const isYearlyPlan = stripePriceId === process.env.NEXT_PUBLIC_STRIPE_YEARLY_PRICE_ID
+  const isActive = subscriptionStatus === 'active' || subscriptionStatus === 'trialing'
+  const isCanceled = subscriptionStatus === 'canceled'
 
   const getStatusBadge = () => {
     switch (subscriptionStatus) {
@@ -510,29 +562,215 @@ export default function SettingsPage() {
       <div className="card mb-6">
         <h2 className="text-lg font-semibold text-white mb-4">Subscription</h2>
         <div className="space-y-4">
-          <div className="flex items-center justify-between p-4 bg-[#1e3a5f]/30 rounded-lg">
-            <div>
+          {/* Plan overview */}
+          <div className="p-4 bg-[#1e3a5f]/30 rounded-lg">
+            <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-3">
-                <span className="text-white font-medium">{getPlanName()}</span>
-                {getStatusBadge()}
+                <div className="w-10 h-10 bg-blue-600/20 rounded-lg flex items-center justify-center shrink-0">
+                  <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                  </svg>
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-white font-semibold">{getPlanName()}</span>
+                    {getStatusBadge()}
+                  </div>
+                  {getPlanPrice() && (
+                    <p className="text-slate-400 text-sm">{getPlanPrice()}</p>
+                  )}
+                </div>
               </div>
-              {periodEnd && (
-                <p className="text-slate-400 text-sm mt-1">
-                  {subscriptionStatus === 'trialing' ? 'Trial ends' : 'Next billing'}: {new Date(periodEnd).toLocaleDateString()}
-                </p>
-              )}
             </div>
+
+            {/* Billing info */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
+              {periodEnd && (
+                <div className="flex items-center gap-2 text-sm">
+                  <svg className="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <span className="text-slate-400">
+                    {isCanceled
+                      ? 'Access until'
+                      : subscriptionStatus === 'trialing'
+                        ? 'Trial ends'
+                        : 'Next billing'}:{' '}
+                    <span className="text-white">{new Date(periodEnd).toLocaleDateString()}</span>
+                  </span>
+                </div>
+              )}
+              <div className="flex items-center gap-2 text-sm">
+                <svg className="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="text-slate-400">
+                  Billing cycle: <span className="text-white">{isYearlyPlan ? 'Yearly' : 'Monthly'}</span>
+                </span>
+              </div>
+            </div>
+
+            {/* Canceled notice */}
+            {isCanceled && periodEnd && (
+              <div className="mt-3 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+                <div className="flex items-start gap-2">
+                  <svg className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  <div>
+                    <p className="text-amber-300 text-sm font-medium">Subscription canceled</p>
+                    <p className="text-slate-400 text-xs mt-0.5">
+                      You&apos;ll keep full access until {new Date(periodEnd).toLocaleDateString()}.
+                      After that, you won&apos;t be able to create new quotes or invoices.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Past due notice */}
+            {subscriptionStatus === 'past_due' && (
+              <div className="mt-3 p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
+                <div className="flex items-start gap-2">
+                  <svg className="w-4 h-4 text-red-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <div>
+                    <p className="text-red-400 text-sm font-medium">Payment failed</p>
+                    <p className="text-slate-400 text-xs mt-0.5">
+                      Your last payment didn&apos;t go through. Please update your payment method to keep your subscription active.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Trial info */}
+            {subscriptionStatus === 'trialing' && periodEnd && (
+              <div className="mt-3 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+                <div className="flex items-start gap-2">
+                  <svg className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <div>
+                    <p className="text-blue-300 text-sm font-medium">Free trial active</p>
+                    <p className="text-slate-400 text-xs mt-0.5">
+                      Your trial ends on {new Date(periodEnd).toLocaleDateString()}. After that, you&apos;ll be charged {getPlanPrice()}.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Features */}
+          <div className="p-4 bg-[#1e3a5f]/20 rounded-lg">
+            <p className="text-slate-400 text-xs font-medium uppercase tracking-wider mb-2">Included in your plan</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+              {[
+                'Unlimited quotes & invoices',
+                'AI photo analysis',
+                'AI line item suggestions',
+                'AI chatbot for clients',
+                'Client request portal',
+                'Online quote acceptance',
+                'Professional PDF generation',
+                'Email notifications',
+              ].map((feature) => (
+                <div key={feature} className="flex items-center gap-2 text-sm">
+                  <svg className="w-3.5 h-3.5 text-green-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span className="text-slate-300">{feature}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Action buttons */}
+          <div className="flex flex-wrap gap-3">
+            {/* Update payment method */}
             <button
               onClick={handleManageSubscription}
               disabled={managingSubscription}
-              className="btn-secondary"
+              className="btn-secondary flex items-center gap-2 text-sm"
             >
-              {managingSubscription ? 'Loading...' : 'Manage'}
+              {managingSubscription ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Loading...
+                </>
+              ) : (
+                <>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                  </svg>
+                  Update Payment Method
+                </>
+              )}
             </button>
+
+            {/* Resume subscription (if canceled) */}
+            {isCanceled && (
+              <button
+                onClick={handleResumeSubscription}
+                disabled={resumingSubscription}
+                className="btn-primary flex items-center gap-2 text-sm"
+              >
+                {resumingSubscription ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Resuming...
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    Reactivate Subscription
+                  </>
+                )}
+              </button>
+            )}
+
+            {/* Cancel subscription */}
+            {isActive && !showCancelConfirm && (
+              <button
+                onClick={() => setShowCancelConfirm(true)}
+                className="text-sm text-slate-500 hover:text-red-400 transition-colors px-3 py-2"
+              >
+                Cancel Subscription
+              </button>
+            )}
           </div>
-          <p className="text-slate-500 text-sm">
-            Manage your subscription, update payment method, or cancel anytime.
-          </p>
+
+          {/* Cancel confirmation */}
+          {showCancelConfirm && (
+            <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
+              <p className="text-red-400 text-sm font-medium mb-2">Are you sure you want to cancel?</p>
+              <p className="text-slate-400 text-sm mb-4">
+                You&apos;ll keep access until the end of your current billing period
+                {periodEnd && ` (${new Date(periodEnd).toLocaleDateString()})`}.
+                After that, you won&apos;t be able to create new quotes or invoices.
+                Your existing data will be preserved.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowCancelConfirm(false)}
+                  className="btn-secondary text-sm"
+                >
+                  Keep Subscription
+                </button>
+                <button
+                  onClick={handleCancelSubscription}
+                  disabled={cancelingSubscription}
+                  className="px-4 py-2 bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-500/30 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+                >
+                  {cancelingSubscription ? 'Canceling...' : 'Yes, Cancel'}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
