@@ -3,22 +3,9 @@
  * Provides consistent branding: logo header, accent color bar, professional footer.
  */
 
-/** HTML brick logo using table cells — works in all email clients (no SVG, no images) */
+/** BrickQuote brick icon — same image as in Supabase auth emails */
 export function emailLogo(): string {
-  return `
-    <table cellpadding="0" cellspacing="0" border="0" style="display:inline-block;vertical-align:middle;margin-right:10px;">
-      <tr>
-        <td style="width:14px;height:8px;background:#f97316;border-radius:1px;font-size:0;line-height:0;">&nbsp;</td>
-        <td style="width:2px;font-size:0;line-height:0;">&nbsp;</td>
-        <td style="width:14px;height:8px;background:#f97316;border-radius:1px;font-size:0;line-height:0;">&nbsp;</td>
-      </tr>
-      <tr><td colspan="3" style="height:2px;font-size:0;line-height:0;">&nbsp;</td></tr>
-      <tr>
-        <td style="width:8px;height:8px;background:#f97316;border-radius:1px;font-size:0;line-height:0;">&nbsp;</td>
-        <td style="width:2px;font-size:0;line-height:0;">&nbsp;</td>
-        <td style="width:20px;height:8px;background:#f97316;border-radius:1px;font-size:0;line-height:0;">&nbsp;</td>
-      </tr>
-    </table>`
+  return `<img src="https://www.brickquote.app/brick-icon.png" width="32" height="32" alt="BrickQuote" style="display:inline-block;vertical-align:middle;margin-right:10px;border-radius:6px;">`
 }
 
 interface EmailLayoutOptions {
@@ -58,12 +45,9 @@ export function emailLayout(options: EmailLayoutOptions): string {
 
     <!-- Logo Header -->
     <div style="background: #0f172a; padding: 16px 24px;">
-      <div style="font-size: 0;">
-        <!--[if mso]><table cellpadding="0" cellspacing="0"><tr><td valign="middle"><![endif]-->
+      <div>
         ${emailLogo()}
-        <!--[if mso]></td><td valign="middle"><![endif]-->
         <span style="display:inline-block;vertical-align:middle;color:white;font-size:20px;font-weight:700;letter-spacing:-0.3px;">BrickQuote</span>
-        <!--[if mso]></td></tr></table><![endif]-->
       </div>
     </div>
 
