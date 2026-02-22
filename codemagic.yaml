@@ -34,18 +34,45 @@ workflows:
           echo "Latest TestFlight build: $LATEST"
           agvtool new-version -all $(($LATEST + 1))
 
-      - name: Set up signing
-        script: |
-          app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create
-          keychain initialize
-          keychain add-certificates
-          xcode-project use-profiles
-
       - name: Build IPA
         script: |
-          xcode-project build-ipa \
-            --project "$CM_BUILD_DIR/$XCODE_PROJECT" \
-            --scheme "$XCODE_SCHEME"
+          # Write API key properly using Python (handles newlines correctly)
+          python3 -c "
+          import os
+          key = os.environ.get('APP_STORE_CONNECT_PRIVATE_KEY', '')
+          with open('/tmp/AuthKey.p8', 'w') as f:
+              f.write(key)
+          "
+          echo "=== Key file size: $(wc -c < /tmp/AuthKey.p8) bytes ==="
+
+          # Archive
+          xcodebuild archive \
+            -project "$CM_BUILD_DIR/$XCODE_PROJECT" \
+            -scheme "$XCODE_SCHEME" \
+            -sdk iphoneos \
+            -configuration Release \
+            -archivePath "$CM_BUILD_DIR/build/ios/xcarchive/App.xcarchive" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath /tmp/AuthKey.p8 \
+            -authenticationKeyID "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
+            -authenticationKeyIssuerID "$APP_STORE_CONNECT_ISSUER_ID" \
+            DEVELOPMENT_TEAM="$TEAM_ID" \
+            CODE_SIGN_STYLE=Automatic
+
+          # Create export options
+          /usr/libexec/PlistBuddy -c "Add :method string app-store" /tmp/exportOptions.plist
+          /usr/libexec/PlistBuddy -c "Add :signingStyle string automatic" /tmp/exportOptions.plist
+          /usr/libexec/PlistBuddy -c "Add :teamID string $TEAM_ID" /tmp/exportOptions.plist
+
+          # Export IPA
+          xcodebuild -exportArchive \
+            -archivePath "$CM_BUILD_DIR/build/ios/xcarchive/App.xcarchive" \
+            -exportPath "$CM_BUILD_DIR/build/ios/ipa" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath /tmp/AuthKey.p8 \
+            -authenticationKeyID "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
+            -authenticationKeyIssuerID "$APP_STORE_CONNECT_ISSUER_ID" \
+            -exportOptionsPlist /tmp/exportOptions.plist
 
     artifacts:
       - build/ios/ipa/*.ipa
