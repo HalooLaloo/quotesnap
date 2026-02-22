@@ -195,7 +195,8 @@ function LoginForm() {
                 const { ExternalBrowser } = await import('@/lib/capacitor')
                 await ExternalBrowser.open({ url: 'https://brickquote.app/register' })
               } catch {
-                window.open('https://brickquote.app/register', '_blank')
+                // Intent URL forces Android to open in external browser, not WebView
+                window.location.href = 'intent://brickquote.app/register#Intent;scheme=https;action=android.intent.action.VIEW;end'
               }
             }}
             className="text-blue-400 hover:text-blue-300"
