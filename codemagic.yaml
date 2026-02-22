@@ -34,35 +34,34 @@ workflows:
           echo "Latest TestFlight build: $LATEST"
           agvtool new-version -all $(($LATEST + 1))
 
-      - name: Sign and build IPA
+      - name: Build IPA
         script: |
-          # Fetch signing files
-          app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create --force
-          keychain initialize
-          keychain add-certificates
-
-          # Extract provisioning profile UUID
-          PROFILE_PATH=$(find ~/Library/MobileDevice/Provisioning\ Profiles -name "*.mobileprovision" | head -1)
-          echo "=== Profile path: $PROFILE_PATH ==="
-
-          PROFILE_UUID=$(/usr/libexec/PlistBuddy -c "Print UUID" /dev/stdin <<< "$(/usr/bin/security cms -D -i "$PROFILE_PATH")")
-          echo "=== Profile UUID: $PROFILE_UUID ==="
-
-          # Archive
+          # Use Xcode automatic signing with App Store Connect API key
           xcodebuild archive \
             -project "$CM_BUILD_DIR/$XCODE_PROJECT" \
             -scheme "$XCODE_SCHEME" \
             -sdk iphoneos \
             -configuration Release \
             -archivePath "$CM_BUILD_DIR/build/ios/xcarchive/App.xcarchive" \
-            CODE_SIGN_STYLE=Manual \
-            CODE_SIGN_IDENTITY="Apple Distribution" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$APP_STORE_CONNECT_PRIVATE_KEY" \
+            -authenticationKeyID "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
+            -authenticationKeyIssuerID "$APP_STORE_CONNECT_ISSUER_ID" \
             DEVELOPMENT_TEAM="$TEAM_ID" \
-            PROVISIONING_PROFILE="$PROFILE_UUID" \
-            PROVISIONING_PROFILE_SPECIFIER=
+            CODE_SIGN_STYLE=Automatic
 
-          # Export IPA
-          cat > /tmp/exportOptions.plist << EOF
+          xcodebuild -exportArchive \
+            -archivePath "$CM_BUILD_DIR/build/ios/xcarchive/App.xcarchive" \
+            -exportPath "$CM_BUILD_DIR/build/ios/ipa" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$APP_STORE_CONNECT_PRIVATE_KEY" \
+            -authenticationKeyID "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
+            -authenticationKeyIssuerID "$APP_STORE_CONNECT_ISSUER_ID" \
+            -exportOptionsPlist /tmp/exportOptions.plist
+
+          # exportOptions will be auto-generated, but create fallback
+          if [ ! -f /tmp/exportOptions.plist ]; then
+            cat > /tmp/exportOptions.plist << EOF
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
           <plist version="1.0">
@@ -71,21 +70,10 @@ workflows:
             <string>app-store</string>
             <key>teamID</key>
             <string>${TEAM_ID}</string>
-            <key>signingStyle</key>
-            <string>manual</string>
-            <key>provisioningProfiles</key>
-            <dict>
-              <key>${BUNDLE_ID}</key>
-              <string>${PROFILE_UUID}</string>
-            </dict>
           </dict>
           </plist>
           EOF
-
-          xcodebuild -exportArchive \
-            -archivePath "$CM_BUILD_DIR/build/ios/xcarchive/App.xcarchive" \
-            -exportPath "$CM_BUILD_DIR/build/ios/ipa" \
-            -exportOptionsPlist /tmp/exportOptions.plist
+          fi
 
     artifacts:
       - build/ios/ipa/*.ipa
