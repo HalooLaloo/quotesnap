@@ -4,14 +4,14 @@ workflows:
     max_build_duration: 60
     instance_type: mac_mini_m2
     integrations:
-      app_store_connect: codemagic  # nazwa integracji z Codemagic Team Settings
+      app_store_connect: codemagic
     environment:
       vars:
-        # App.xcodeproj (nie xcworkspace — projekt używa SPM, nie CocoaPods)
         XCODE_PROJECT: "ios/App/App.xcodeproj"
         XCODE_SCHEME: "App"
-        # Apple ID aplikacji z App Store Connect (My Apps > App Information > Apple ID)
         APP_STORE_APP_ID: "6759532654"
+        BUNDLE_ID: "app.brickquote"
+        TEAM_ID: "7DHC233L84"
       node: "22"
       xcode: latest
     triggering:
@@ -24,31 +24,68 @@ workflows:
       - name: Install npm dependencies
         script: npm ci
 
-      - name: Build Next.js web assets
-        # Capacitor wraps brickquote.app (remote URL) — nie musimy kopiować
-        # lokalnych assetów, ale sync jest potrzebny dla pluginów i konfiguracji
+      - name: Sync Capacitor iOS
         script: npx cap sync ios
 
       - name: Set up code signing
         script: |
-          app-store-connect fetch-signing-files "app.brickquote" --type IOS_APP_STORE --create --force
+          app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create --force
           keychain initialize
           keychain add-certificates
-          xcode-project use-profiles --project "$CM_BUILD_DIR/$XCODE_PROJECT"
+
+          # Get provisioning profile UUID
+          PROFILE_PATH=$(find ~/Library/MobileDevice/Provisioning\ Profiles -name "*.mobileprovision" | head -1)
+          PROFILE_UUID=$(grep -a -A1 UUID "$PROFILE_PATH" | grep -o '[A-Fa-f0-9-]\{36\}')
+          echo "Profile UUID: $PROFILE_UUID"
+
+          # Store for build step
+          echo "PROFILE_UUID=$PROFILE_UUID" >> $CM_ENV
 
       - name: Increment build number
         script: |
           cd $CM_BUILD_DIR/ios/App
-          # Pobierz ostatni numer buildu z TestFlight lub App Store
           LATEST=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_APP_ID" 2>/dev/null || echo "0")
           echo "Latest TestFlight build: $LATEST"
           agvtool new-version -all $(($LATEST + 1))
 
       - name: Build IPA for App Store
         script: |
-          xcode-project build-ipa \
-            --project "$CM_BUILD_DIR/$XCODE_PROJECT" \
-            --scheme "$XCODE_SCHEME"
+          xcodebuild archive \
+            -project "$CM_BUILD_DIR/$XCODE_PROJECT" \
+            -scheme "$XCODE_SCHEME" \
+            -sdk iphoneos \
+            -configuration Release \
+            -archivePath "$CM_BUILD_DIR/build/ios/xcarchive/App.xcarchive" \
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_IDENTITY="Apple Distribution" \
+            DEVELOPMENT_TEAM="$TEAM_ID" \
+            PROVISIONING_PROFILE="$PROFILE_UUID"
+
+          # Create export options plist
+          cat > /tmp/exportOptions.plist <<PLIST
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key>
+            <string>app-store</string>
+            <key>teamID</key>
+            <string>$TEAM_ID</string>
+            <key>signingStyle</key>
+            <string>manual</string>
+            <key>provisioningProfiles</key>
+            <dict>
+              <key>$BUNDLE_ID</key>
+              <string>$PROFILE_UUID</string>
+            </dict>
+          </dict>
+          </plist>
+          PLIST
+
+          xcodebuild -exportArchive \
+            -archivePath "$CM_BUILD_DIR/build/ios/xcarchive/App.xcarchive" \
+            -exportPath "$CM_BUILD_DIR/build/ios/ipa" \
+            -exportOptionsPlist /tmp/exportOptions.plist
 
     artifacts:
       - build/ios/ipa/*.ipa
@@ -67,7 +104,7 @@ workflows:
         submit_to_testflight: true
         beta_groups:
           - "Internal Testing"
-        submit_to_app_store: false  # zmień na true gdy gotowy do produkcji
+        submit_to_app_store: false
 
   android-release:
     name: Android Release (Google Play)
@@ -78,7 +115,7 @@ workflows:
         - brickquote_keystore
       vars:
         PACKAGE_NAME: "app.brickquote"
-      node: "20"
+      node: "22"
       java: "17"
     scripts:
       - name: Install npm dependencies
