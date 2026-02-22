@@ -16,6 +16,7 @@ export default function ClientRequestPage() {
   const supabase = createClient()
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
 
   const [contractorName, setContractorName] = useState<string>('')
   const [messages, setMessages] = useState<Message[]>([])
@@ -67,6 +68,28 @@ export default function ClientRequestPage() {
   // Licznik pytań (ile odpowiedzi dał użytkownik)
   const userMessagesCount = messages.filter(m => m.role === 'user').length
   const estimatedTotalQuestions = 7 // Szacowana liczba pytań do zebrania pełnych informacji
+
+  // Resize container to visual viewport height (handles mobile keyboard)
+  useEffect(() => {
+    const vv = window.visualViewport
+    if (!vv) return
+
+    const update = () => {
+      if (containerRef.current) {
+        containerRef.current.style.height = `${vv.height}px`
+        // Scroll messages to bottom when keyboard changes
+        setTimeout(() => {
+          messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+        }, 50)
+      }
+    }
+
+    update()
+    vv.addEventListener('resize', update)
+    return () => {
+      vv.removeEventListener('resize', update)
+    }
+  }, [])
 
   // Auto-scroll do najnowszej wiadomości
   useEffect(() => {
@@ -370,7 +393,7 @@ export default function ClientRequestPage() {
 
   if (initialLoading) {
     return (
-      <div className="h-[var(--app-height)] flex items-center justify-center">
+      <div className="h-dvh flex items-center justify-center">
         <div className="animate-spin w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full" />
       </div>
     )
@@ -395,7 +418,7 @@ export default function ClientRequestPage() {
   }
 
   return (
-    <div className="h-[var(--app-height)] flex flex-col">
+    <div ref={containerRef} className="flex flex-col" style={{ height: '100dvh' }}>
       {/* Header */}
       <header className="shrink-0 bg-[#132039] border-b border-[#1e3a5f] px-4 py-4">
         <div className="max-w-2xl mx-auto flex items-center gap-3">
@@ -468,7 +491,7 @@ export default function ClientRequestPage() {
 
       {/* Contact form overlay */}
       {showContactForm && (
-        <div className="shrink-0 overflow-y-auto max-h-[calc(var(--app-height)*0.7)] bg-slate-800 border-t border-slate-700 px-4 py-6 pb-[env(safe-area-inset-bottom,24px)]">
+        <div className="shrink-0 overflow-y-auto max-h-[70dvh] bg-slate-800 border-t border-slate-700 px-4 py-6 pb-[env(safe-area-inset-bottom,24px)]">
           <div className="max-w-2xl mx-auto">
             <div className="card bg-green-600/10 border-green-500/30 mb-4">
               <h3 className="text-white font-semibold mb-2">✅ Scope of work established!</h3>
