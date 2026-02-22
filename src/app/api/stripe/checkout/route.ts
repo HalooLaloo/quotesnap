@@ -11,7 +11,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { plan } = await request.json() as { plan: PlanType }
+    const body = await request.json() as { plan: PlanType }
+    const plan = body?.plan
 
     if (!plan || !PLANS[plan]) {
       return NextResponse.json({ error: 'Invalid plan' }, { status: 400 })
@@ -20,11 +21,14 @@ export async function POST(request: NextRequest) {
     const selectedPlan = PLANS[plan]
 
     if (!selectedPlan.priceId) {
-      return NextResponse.json({ error: 'Price ID not configured' }, { status: 500 })
+      return NextResponse.json(
+        { error: `Price ID not configured for plan: ${plan}. Env STRIPE_MONTHLY_PRICE_ID=${process.env.STRIPE_MONTHLY_PRICE_ID ? 'set' : 'MISSING'}` },
+        { status: 500 }
+      )
     }
 
     // Get or create profile
-    let { data: profile } = await supabase
+    let { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('stripe_customer_id')
       .eq('id', user.id)
@@ -32,12 +36,24 @@ export async function POST(request: NextRequest) {
 
     // Create profile if it doesn't exist
     if (!profile) {
-      const { data: newProfile } = await supabase
+      const { data: newProfile, error: insertError } = await supabase
         .from('profiles')
         .insert({ id: user.id, email: user.email })
         .select('stripe_customer_id')
         .single()
-      profile = newProfile
+
+      if (insertError) {
+        console.error('Profile insert error:', insertError)
+        // Profile might already exist but select failed - try fetching again
+        const { data: retryProfile } = await supabase
+          .from('profiles')
+          .select('stripe_customer_id')
+          .eq('id', user.id)
+          .single()
+        profile = retryProfile
+      } else {
+        profile = newProfile
+      }
     }
 
     let customerId = profile?.stripe_customer_id
