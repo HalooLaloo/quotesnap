@@ -19,7 +19,7 @@ function buildSuggestServicesPrompt(measurementSystem: 'imperial' | 'metric') {
 Based on the contractor's description, return a list of specific services with appropriate units and suggested market prices.
 
 ## RULES:
-1. Suggest 5-15 specific services based on the description
+1. Suggest 15-25 specific services based on the description — more is better, the user can remove what they don't need
 2. Use professional but understandable service names
 3. Choose the appropriate unit:
    - ${areaUnit} = ${areaLabel} (floors, walls, tiles, painting)
@@ -130,7 +130,7 @@ export async function POST(request: NextRequest) {
         { role: 'user', content: `Contractor description:\n${description}` },
       ],
       temperature: 0.5,
-      max_tokens: 1500,
+      max_tokens: 3000,
       response_format: { type: 'json_object' },
     })
 
@@ -179,7 +179,7 @@ export async function POST(request: NextRequest) {
         typeof s.price === 'number' &&
         s.price >= 0
       )
-      .slice(0, 20) // Max 20 services
+      .slice(0, 30) // Max 30 services
 
     if (services.length === 0) {
       console.error('No valid services extracted. Raw parsed:', JSON.stringify(parsed))
