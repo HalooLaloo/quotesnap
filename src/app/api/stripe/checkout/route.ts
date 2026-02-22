@@ -56,13 +56,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Create checkout session with 3-day trial
+    const origin = request.headers.get('origin') || 'https://www.brickquote.app'
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       mode: 'subscription',
       payment_method_types: ['card'],
       line_items: [{ price: selectedPlan.priceId, quantity: 1 }],
-      success_url: `${request.headers.get('origin')}/requests?checkout=success`,
-      cancel_url: `${request.headers.get('origin')}/subscribe`,
+      success_url: `${origin}/requests?checkout=success`,
+      cancel_url: `${origin}/subscribe`,
       metadata: { userId: user.id },
       subscription_data: {
         metadata: { userId: user.id },
