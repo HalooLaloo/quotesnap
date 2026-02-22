@@ -62,11 +62,9 @@ export async function updateSession(request: NextRequest) {
   const isNativeApp = request.headers.get('user-agent')?.includes('BrickQuoteApp')
 
   // Public paths - no login required
-  // Use exact match OR path prefix with '/' to avoid false matches
-  // e.g. '/request' should match '/request/123' but NOT '/requests'
   const publicPaths = ['/login', '/register', '/reset-password', '/request', '/quote', '/invoice', '/pricing', '/api', '/privacy', '/terms', '/contact', '/subscribe', '/unsubscribe', '/auth', '/checkout-complete']
   const isPublicPath = publicPaths.some(path =>
-    request.nextUrl.pathname === path || request.nextUrl.pathname.startsWith(path + '/')
+    request.nextUrl.pathname.startsWith(path)
   )
 
   // Helper: create redirect that preserves refreshed auth cookies
