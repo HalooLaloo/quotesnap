@@ -195,8 +195,7 @@ function LoginForm() {
                 const { ExternalBrowser } = await import('@/lib/capacitor')
                 await ExternalBrowser.open({ url: 'https://brickquote.app/register' })
               } catch {
-                navigator.clipboard.writeText('https://brickquote.app/register')
-                alert('Link copied! Paste it in your browser.')
+                window.open('https://brickquote.app/register', '_blank')
               }
             }}
             className="text-blue-400 hover:text-blue-300"
