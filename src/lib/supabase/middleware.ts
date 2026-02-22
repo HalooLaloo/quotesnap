@@ -90,6 +90,25 @@ export async function updateSession(request: NextRequest) {
       url.pathname = '/requests'
       return NextResponse.redirect(url)
     }
+
+    // Subscription enforcement — dashboard pages require active subscription
+    if (!isPublicPath && request.nextUrl.pathname !== '/') {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('subscription_status')
+        .eq('id', user.id)
+        .single()
+
+      const hasAccess =
+        profile?.subscription_status === 'active' ||
+        profile?.subscription_status === 'trialing'
+
+      if (!hasAccess && request.nextUrl.pathname !== '/subscribe') {
+        const url = request.nextUrl.clone()
+        url.pathname = '/subscribe'
+        return NextResponse.redirect(url)
+      }
+    }
   }
 
   return supabaseResponse
