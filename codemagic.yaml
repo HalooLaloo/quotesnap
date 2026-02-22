@@ -38,54 +38,21 @@ workflows:
 
       - name: Build IPA
         script: |
-          # Write API key — try multiple methods until one produces valid PEM
-          echo "=== Method 1: printf %b ==="
-          printf '%b' "$ASC_KEY_CONTENT" > /tmp/AuthKey_v1.p8
-          echo "Size: $(wc -c < /tmp/AuthKey_v1.p8) bytes, Lines: $(wc -l < /tmp/AuthKey_v1.p8)"
+          # Write API key — add PEM headers if missing
+          KEY_BODY=$(printf '%b' "$ASC_KEY_CONTENT" | tr -d '\r')
 
-          echo "=== Method 2: echo with sed ==="
-          echo "$ASC_KEY_CONTENT" | sed 's/\\n/\'$'\n''/g' | tr -d '\r' > /tmp/AuthKey_v2.p8
-          echo "Size: $(wc -c < /tmp/AuthKey_v2.p8) bytes, Lines: $(wc -l < /tmp/AuthKey_v2.p8)"
-
-          echo "=== Method 3: python3 ==="
-          python3 -c "
-          import os, sys
-          content = os.environ.get('ASC_KEY_CONTENT', '')
-          # Handle literal backslash-n
-          content = content.replace('\\\\n', '\n')
-          # Remove carriage returns
-          content = content.replace('\r', '')
-          # Ensure trailing newline
-          if not content.endswith('\n'):
-              content += '\n'
-          with open('/tmp/AuthKey_v3.p8', 'w') as f:
-              f.write(content)
-          print(f'Size: {len(content)} bytes, Lines: {content.count(chr(10))}')
-          "
-
-          # Pick the first one that openssl validates
-          VALID_KEY=""
-          for v in v1 v2 v3; do
-            echo "=== Validating $v ==="
-            cat -A /tmp/AuthKey_${v}.p8
-            if openssl pkey -in /tmp/AuthKey_${v}.p8 -noout 2>/dev/null; then
-              echo ">>> $v is VALID <<<"
-              cp /tmp/AuthKey_${v}.p8 /tmp/AuthKey.p8
-              VALID_KEY="$v"
-              break
-            else
-              echo ">>> $v is INVALID <<<"
-              openssl pkey -in /tmp/AuthKey_${v}.p8 -noout 2>&1 || true
-            fi
-          done
-
-          if [ -z "$VALID_KEY" ]; then
-            echo "ERROR: No valid key found. Raw env var length: ${#ASC_KEY_CONTENT}"
-            echo "First 80 chars: ${ASC_KEY_CONTENT:0:80}"
-            exit 1
+          if echo "$KEY_BODY" | head -1 | grep -q "BEGIN"; then
+            echo "$KEY_BODY" > /tmp/AuthKey.p8
+          else
+            printf '%s\n%s\n%s\n' "-----BEGIN PRIVATE KEY-----" "$KEY_BODY" "-----END PRIVATE KEY-----" > /tmp/AuthKey.p8
           fi
 
-          echo "=== Using key: $VALID_KEY ==="
+          echo "=== Key file ==="
+          echo "Size: $(wc -c < /tmp/AuthKey.p8) bytes"
+          echo "Lines: $(wc -l < /tmp/AuthKey.p8)"
+          head -1 /tmp/AuthKey.p8
+          tail -1 /tmp/AuthKey.p8
+          openssl pkey -in /tmp/AuthKey.p8 -noout && echo "Key is VALID" || echo "Key is INVALID"
 
           # Archive
           xcodebuild archive \
