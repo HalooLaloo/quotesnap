@@ -62,9 +62,9 @@ export default function SubscribePage() {
 
   return (
     <div className="min-h-screen bg-[#0a1628] flex items-center justify-center px-4 py-12">
-      <div className="max-w-lg w-full">
+      <div className="max-w-md w-full">
         {/* Logo */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-6">
           <Link href="/" className="inline-flex items-center gap-2">
             <div className="w-10 h-10 rounded-lg bg-[#132039] flex items-center justify-center">
               <svg className="w-6 h-6 text-orange-500" viewBox="0 0 24 24" fill="currentColor">
@@ -79,93 +79,88 @@ export default function SubscribePage() {
           </Link>
         </div>
 
-        {/* Content */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-white mb-4">
-            Try BrickQuote free for 3 days
+        {/* Headline */}
+        <div className="text-center mb-6">
+          <h1 className="text-3xl font-bold text-white mb-2">
+            Your account is ready
           </h1>
           <p className="text-slate-400 text-lg">
-            Full access to everything. No charge until the trial ends.
+            Activate your <span className="text-white font-medium">free 3-day access</span> to start quoting
           </p>
         </div>
 
         {error && (
-          <div className="bg-red-500/10 border border-red-500/50 text-red-400 px-4 py-3 rounded-lg text-sm mb-6 text-center">
+          <div className="bg-red-500/10 border border-red-500/50 text-red-400 px-4 py-3 rounded-lg text-sm mb-5 text-center">
             {error}
           </div>
         )}
 
-        {/* Single CTA */}
+        {/* Early adopter pricing */}
+        <div className="bg-[#132039] border border-[#1e3a5f] rounded-xl p-4 mb-5">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="bg-orange-500/20 text-orange-400 text-xs font-semibold px-2 py-0.5 rounded-full">Early Adopter</span>
+          </div>
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-3xl font-bold text-white">$0</span>
+            <span className="text-slate-400 text-sm">for 3 days</span>
+          </div>
+          <p className="text-slate-400 text-sm mt-1">
+            Then <span className="text-white font-medium">$29/month</span> — locked in as an early adopter.
+            <span className="text-orange-400"> Price may increase</span> for future users.
+          </p>
+          <p className="text-slate-500 text-xs mt-1.5">
+            Switch to yearly anytime and save $99/year.
+          </p>
+        </div>
+
+        {/* CTA */}
         <button
           onClick={handleSubscribe}
           disabled={loading}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-6 rounded-xl text-lg transition disabled:opacity-50 disabled:cursor-not-allowed mb-4"
+          className="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-4 px-6 rounded-xl text-lg transition disabled:opacity-50 disabled:cursor-not-allowed mb-3"
         >
-          {loading ? 'Redirecting to checkout...' : 'Start Free Trial'}
+          {loading ? 'Redirecting...' : 'Get Instant Access — Free'}
         </button>
 
-        <p className="text-center text-slate-500 text-sm mb-8">
-          Then $29/month after trial. Switch to yearly ($249/year) anytime in Settings and save $99.
-        </p>
-
-        {/* How it works */}
-        <div className="bg-[#132039] border border-[#1e3a5f] rounded-xl p-5 mb-8">
-          <p className="text-white text-sm font-medium mb-3">How it works:</p>
-          <div className="space-y-2.5">
-            <div className="flex items-start gap-3 text-sm">
-              <div className="w-5 h-5 bg-blue-500/20 rounded-full flex items-center justify-center shrink-0 mt-0.5">
-                <span className="text-blue-400 text-xs font-bold">1</span>
-              </div>
-              <p className="text-slate-300">Enter your card — <span className="text-white font-medium">you won&apos;t be charged today</span></p>
-            </div>
-            <div className="flex items-start gap-3 text-sm">
-              <div className="w-5 h-5 bg-blue-500/20 rounded-full flex items-center justify-center shrink-0 mt-0.5">
-                <span className="text-blue-400 text-xs font-bold">2</span>
-              </div>
-              <p className="text-slate-300">Get <span className="text-white font-medium">full access for 3 days</span> — create quotes, use AI, send to clients</p>
-            </div>
-            <div className="flex items-start gap-3 text-sm">
-              <div className="w-5 h-5 bg-blue-500/20 rounded-full flex items-center justify-center shrink-0 mt-0.5">
-                <span className="text-blue-400 text-xs font-bold">3</span>
-              </div>
-              <p className="text-slate-300">After 3 days, $29/month starts. <span className="text-white font-medium">Cancel anytime</span> — no charge</p>
-            </div>
-          </div>
+        {/* Cancel reassurance — prominent */}
+        <div className="flex items-center justify-center gap-2 mb-6">
+          <svg className="w-4 h-4 text-green-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+          </svg>
+          <span className="text-slate-400 text-sm">
+            Cancel in one click, anytime. <span className="text-white">No charge if you cancel within 3 days.</span>
+          </span>
         </div>
 
-        {/* Trust badges */}
-        <div className="flex flex-wrap items-center justify-center gap-6 text-slate-500 text-sm">
-          <div className="flex items-center gap-2">
-            <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
-            <span>Cancel anytime</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
-            <span>30-day money-back guarantee</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
-            <span>Secure payment via Stripe</span>
-          </div>
+        {/* What you get — compact */}
+        <div className="grid grid-cols-2 gap-2 mb-6">
+          {[
+            'Unlimited quotes',
+            'AI photo analysis',
+            'AI chatbot',
+            'PDF generation',
+            'Client portal',
+            'Email notifications',
+          ].map((feature) => (
+            <div key={feature} className="flex items-center gap-2 text-sm">
+              <svg className="w-3.5 h-3.5 text-blue-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+              </svg>
+              <span className="text-slate-400">{feature}</span>
+            </div>
+          ))}
         </div>
 
-        {/* Features */}
-        <div className="mt-10 text-center">
-          <p className="text-slate-400 text-sm mb-4">Everything included:</p>
-          <div className="flex flex-wrap justify-center gap-3 text-xs text-slate-500">
-            <span className="bg-[#132039] px-3 py-1 rounded-full">Unlimited quotes</span>
-            <span className="bg-[#132039] px-3 py-1 rounded-full">AI photo analysis</span>
-            <span className="bg-[#132039] px-3 py-1 rounded-full">AI chatbot</span>
-            <span className="bg-[#132039] px-3 py-1 rounded-full">PDF generation</span>
-            <span className="bg-[#132039] px-3 py-1 rounded-full">Client portal</span>
-            <span className="bg-[#132039] px-3 py-1 rounded-full">Email notifications</span>
+        {/* Trust footer */}
+        <div className="flex items-center justify-center gap-4 text-slate-600 text-xs">
+          <div className="flex items-center gap-1.5">
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+            <span>Secure via Stripe</span>
           </div>
+          <span>|</span>
+          <span>30-day money-back guarantee</span>
         </div>
       </div>
     </div>
