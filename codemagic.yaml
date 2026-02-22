@@ -34,18 +34,44 @@ workflows:
           echo "Latest TestFlight build: $LATEST"
           agvtool new-version -all $(($LATEST + 1))
 
-      - name: Set up signing
+      - name: Set up keychain
         script: |
           app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create --force
           keychain initialize
           keychain add-certificates
-          xcode-project use-profiles
 
       - name: Build IPA
         script: |
-          xcode-project build-ipa \
-            --project "$CM_BUILD_DIR/$XCODE_PROJECT" \
-            --scheme "$XCODE_SCHEME"
+          # Archive with automatic signing
+          xcodebuild archive \
+            -project "$CM_BUILD_DIR/$XCODE_PROJECT" \
+            -scheme "$XCODE_SCHEME" \
+            -sdk iphoneos \
+            -configuration Release \
+            -archivePath "$CM_BUILD_DIR/build/ios/xcarchive/App.xcarchive" \
+            DEVELOPMENT_TEAM="$TEAM_ID" \
+            CODE_SIGN_STYLE=Automatic
+
+          # Export IPA
+          cat > /tmp/exportOptions.plist << EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>method</key>
+  <string>app-store</string>
+  <key>signingStyle</key>
+  <string>automatic</string>
+  <key>teamID</key>
+  <string>7DHC233L84</string>
+</dict>
+</plist>
+EOF
+
+          xcodebuild -exportArchive \
+            -archivePath "$CM_BUILD_DIR/build/ios/xcarchive/App.xcarchive" \
+            -exportPath "$CM_BUILD_DIR/build/ios/ipa" \
+            -exportOptionsPlist /tmp/exportOptions.plist
 
     artifacts:
       - build/ios/ipa/*.ipa
