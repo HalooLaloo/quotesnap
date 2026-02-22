@@ -62,7 +62,7 @@ export async function updateSession(request: NextRequest) {
   const isNativeApp = request.headers.get('user-agent')?.includes('BrickQuoteApp')
 
   // Public paths - no login required
-  const publicPaths = ['/login', '/register', '/reset-password', '/request', '/quote', '/invoice', '/pricing', '/api', '/privacy', '/terms', '/contact', '/subscribe', '/unsubscribe', '/auth', '/checkout-complete']
+  const publicPaths = ['/login', '/register', '/reset-password', '/request', '/quote', '/invoice', '/service', '/pricing', '/api', '/privacy', '/terms', '/contact', '/subscribe', '/unsubscribe', '/auth', '/checkout-complete']
   const isPublicPath = publicPaths.some(path =>
     request.nextUrl.pathname.startsWith(path)
   )
