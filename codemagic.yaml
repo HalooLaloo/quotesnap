@@ -6,6 +6,8 @@ workflows:
     integrations:
       app_store_connect: codemagic
     environment:
+      groups:
+        - ios
       vars:
         XCODE_PROJECT: "ios/App/App.xcodeproj"
         XCODE_SCHEME: "App"
@@ -36,13 +38,8 @@ workflows:
 
       - name: Build IPA
         script: |
-          # Write API key properly using Python (handles newlines correctly)
-          python3 -c "
-          import os
-          key = os.environ.get('APP_STORE_CONNECT_PRIVATE_KEY', '')
-          with open('/tmp/AuthKey.p8', 'w') as f:
-              f.write(key)
-          "
+          # Write API key from manual env var
+          echo "$ASC_KEY_CONTENT" > /tmp/AuthKey.p8
           echo "=== Key file size: $(wc -c < /tmp/AuthKey.p8) bytes ==="
 
           # Archive
