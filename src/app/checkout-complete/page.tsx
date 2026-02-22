@@ -5,32 +5,12 @@ import Link from 'next/link'
 
 export default function CheckoutCompletePage() {
   const [synced, setSynced] = useState(false)
-  const [appOpened, setAppOpened] = useState(false)
 
   useEffect(() => {
     // Sync subscription status with Stripe
     fetch('/api/stripe/verify', { method: 'POST' })
       .then(() => setSynced(true))
-      .catch(() => setSynced(true)) // Continue even if sync fails
-
-    // Try to open the Android app
-    const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent)
-    if (isMobile && /Android/i.test(navigator.userAgent)) {
-      // Small delay to let verify start, then try to open app
-      const timer = setTimeout(() => {
-        window.location.href = 'intent://www.brickquote.app/requests#Intent;scheme=https;package=app.brickquote;end'
-        setAppOpened(true)
-      }, 1000)
-      return () => clearTimeout(timer)
-    }
-
-    // Desktop: redirect to dashboard after sync
-    if (!isMobile) {
-      const timer = setTimeout(() => {
-        window.location.href = '/requests?checkout=success'
-      }, 1500)
-      return () => clearTimeout(timer)
-    }
+      .catch(() => setSynced(true))
   }, [])
 
   return (
@@ -50,24 +30,16 @@ export default function CheckoutCompletePage() {
           Your free trial is now active. Start creating quotes right away.
         </p>
 
-        {/* Open in app button (mobile) */}
-        <a
-          href="intent://www.brickquote.app/requests#Intent;scheme=https;package=app.brickquote;end"
-          className="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-4 px-6 rounded-xl text-lg transition inline-block mb-3"
-        >
-          Open in App
-        </a>
-
-        {/* Fallback web link */}
+        {/* Primary: go to dashboard in browser */}
         <Link
           href="/requests"
-          className="block text-slate-400 hover:text-white text-sm transition"
+          className="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-4 px-6 rounded-xl text-lg transition inline-block mb-4"
         >
-          Continue in browser
+          {synced ? 'Go to Dashboard' : 'Activating...'}
         </Link>
 
         {!synced && (
-          <p className="text-slate-600 text-xs mt-6">Activating your account...</p>
+          <p className="text-slate-600 text-xs">Activating your account...</p>
         )}
       </div>
     </div>
