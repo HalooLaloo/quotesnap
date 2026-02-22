@@ -50,8 +50,14 @@ workflows:
           # Override integration key with our working one
           export APP_STORE_CONNECT_PRIVATE_KEY="$(cat /tmp/AuthKey.p8)"
 
-          # Fetch App Store distribution certificate + provisioning profile
-          app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create
+          # Generate fresh RSA key for new distribution certificate
+          openssl genrsa -out /tmp/cert_key.pem 2048 2>/dev/null
+
+          # Fetch/create App Store distribution certificate + provisioning profile
+          app-store-connect fetch-signing-files "$BUNDLE_ID" \
+            --type IOS_APP_STORE \
+            --create \
+            --certificate-key /tmp/cert_key.pem
 
           # Set up keychain and apply profiles to Xcode project
           keychain initialize
