@@ -54,19 +54,21 @@ workflows:
           tail -1 /tmp/AuthKey.p8
           openssl pkey -in /tmp/AuthKey.p8 -noout && echo "Key is VALID" || echo "Key is INVALID"
 
-          # Archive
+          # Archive (distribution signing — no registered devices needed)
           xcodebuild archive \
             -project "$CM_BUILD_DIR/$XCODE_PROJECT" \
             -scheme "$XCODE_SCHEME" \
             -sdk iphoneos \
             -configuration Release \
+            -destination 'generic/platform=iOS' \
             -archivePath "$CM_BUILD_DIR/build/ios/xcarchive/App.xcarchive" \
             -allowProvisioningUpdates \
             -authenticationKeyPath /tmp/AuthKey.p8 \
             -authenticationKeyID "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
             -authenticationKeyIssuerID "$APP_STORE_CONNECT_ISSUER_ID" \
             DEVELOPMENT_TEAM="$TEAM_ID" \
-            CODE_SIGN_STYLE=Automatic
+            CODE_SIGN_STYLE=Automatic \
+            CODE_SIGN_IDENTITY="Apple Distribution"
 
           # Create export options
           /usr/libexec/PlistBuddy -c "Add :method string app-store" /tmp/exportOptions.plist
