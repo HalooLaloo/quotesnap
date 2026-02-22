@@ -7,36 +7,43 @@ export function CapacitorInit() {
   useEffect(() => {
     initCapacitor()
 
-    // When the virtual keyboard opens on mobile, scroll the focused input into view.
-    // Uses both focusin (with delay for keyboard animation) and visualViewport resize.
-    const scrollFocusedInput = () => {
-      const el = document.activeElement
-      if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA')) {
-        el.scrollIntoView({ block: 'center', behavior: 'smooth' })
-      }
+    const vv = window.visualViewport
+    if (!vv) return
+
+    // Set --app-height CSS variable based on visualViewport
+    // This accounts for the virtual keyboard on mobile
+    const updateHeight = () => {
+      const height = vv.height
+      document.documentElement.style.setProperty('--app-height', `${height}px`)
     }
 
-    // On focus, wait for keyboard animation then scroll
+    // Initial set
+    updateHeight()
+
+    // Update on viewport resize (keyboard open/close)
+    vv.addEventListener('resize', updateHeight)
+    vv.addEventListener('scroll', updateHeight)
+
+    // When an input/textarea is focused, scroll it into view after keyboard animation
     const onFocusIn = (e: FocusEvent) => {
       const el = e.target as HTMLElement
-      if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
-        setTimeout(scrollFocusedInput, 300)
-        setTimeout(scrollFocusedInput, 600)
+      if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT') {
+        // Wait for keyboard to fully open, then scroll
+        setTimeout(() => {
+          el.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+        }, 300)
+        setTimeout(() => {
+          el.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+        }, 600)
       }
-    }
-
-    // Also scroll on viewport resize (keyboard open/close)
-    const vv = window.visualViewport
-    const onResize = () => {
-      requestAnimationFrame(scrollFocusedInput)
     }
 
     document.addEventListener('focusin', onFocusIn)
-    vv?.addEventListener('resize', onResize)
 
     return () => {
+      vv.removeEventListener('resize', updateHeight)
+      vv.removeEventListener('scroll', updateHeight)
       document.removeEventListener('focusin', onFocusIn)
-      vv?.removeEventListener('resize', onResize)
     }
   }, [])
 

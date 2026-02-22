@@ -370,7 +370,7 @@ export default function ClientRequestPage() {
 
   if (initialLoading) {
     return (
-      <div className="h-[100dvh] flex items-center justify-center">
+      <div className="h-[var(--app-height)] flex items-center justify-center">
         <div className="animate-spin w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full" />
       </div>
     )
@@ -395,7 +395,7 @@ export default function ClientRequestPage() {
   }
 
   return (
-    <div className="h-[100dvh] flex flex-col">
+    <div className="h-[var(--app-height)] flex flex-col">
       {/* Header */}
       <header className="shrink-0 bg-[#132039] border-b border-[#1e3a5f] px-4 py-4">
         <div className="max-w-2xl mx-auto flex items-center gap-3">
@@ -468,7 +468,7 @@ export default function ClientRequestPage() {
 
       {/* Contact form overlay */}
       {showContactForm && (
-        <div className="shrink-0 overflow-y-auto max-h-[70dvh] bg-slate-800 border-t border-slate-700 px-4 py-6 pb-[env(safe-area-inset-bottom,24px)]">
+        <div className="shrink-0 overflow-y-auto max-h-[calc(var(--app-height)*0.7)] bg-slate-800 border-t border-slate-700 px-4 py-6 pb-[env(safe-area-inset-bottom,24px)]">
           <div className="max-w-2xl mx-auto">
             <div className="card bg-green-600/10 border-green-500/30 mb-4">
               <h3 className="text-white font-semibold mb-2">✅ Scope of work established!</h3>
