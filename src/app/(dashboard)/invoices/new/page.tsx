@@ -416,56 +416,54 @@ function InvoiceForm() {
       {/* Pricing */}
       <div className="card mb-6">
         <h2 className="text-lg font-semibold text-white mb-4">Pricing</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-4">
-            <div>
-              <label className="label">Discount (%)</label>
-              <input
-                type="number"
-                value={discountPercent || ''}
-                onChange={(e) => setDiscountPercent(e.target.value === '' ? 0 : parseFloat(e.target.value))}
-                className="input w-32"
-                min="0"
-                max="100"
-              />
-            </div>
-            <div>
-              <label className="label">{taxLabel} (%)</label>
-              <input
-                type="number"
-                value={vatPercent || ''}
-                onChange={(e) => setVatPercent(e.target.value === '' ? 0 : parseFloat(e.target.value))}
-                className="input w-32"
-                min="0"
-              />
-            </div>
+        <div className="flex flex-wrap gap-4 mb-6">
+          <div>
+            <label className="label">Discount (%)</label>
+            <input
+              type="number"
+              value={discountPercent || ''}
+              onChange={(e) => setDiscountPercent(e.target.value === '' ? 0 : parseFloat(e.target.value))}
+              className="input w-32"
+              min="0"
+              max="100"
+            />
           </div>
+          <div>
+            <label className="label">{taxLabel} (%)</label>
+            <input
+              type="number"
+              value={vatPercent || ''}
+              onChange={(e) => setVatPercent(e.target.value === '' ? 0 : parseFloat(e.target.value))}
+              className="input w-32"
+              min="0"
+            />
+          </div>
+        </div>
 
-          <div className="bg-slate-700/50 rounded-lg p-4 space-y-2">
+        <div className="ml-auto w-full max-w-sm bg-slate-700/50 rounded-lg p-4 space-y-2">
+          <div className="flex justify-between text-slate-300">
+            <span>Subtotal</span>
+            <span>{currencySymbol}{subtotal.toFixed(2)}</span>
+          </div>
+          {discountPercent > 0 && (
             <div className="flex justify-between text-slate-300">
-              <span>Subtotal</span>
-              <span>{currencySymbol}{subtotal.toFixed(2)}</span>
+              <span>Discount ({discountPercent}%)</span>
+              <span className="text-red-400">-{currencySymbol}{discountAmount.toFixed(2)}</span>
             </div>
-            {discountPercent > 0 && (
-              <div className="flex justify-between text-slate-300">
-                <span>Discount ({discountPercent}%)</span>
-                <span className="text-red-400">-{currencySymbol}{discountAmount.toFixed(2)}</span>
-              </div>
-            )}
+          )}
+          <div className="flex justify-between text-slate-300">
+            <span>Net</span>
+            <span>{currencySymbol}{totalNet.toFixed(2)}</span>
+          </div>
+          {vatPercent > 0 && (
             <div className="flex justify-between text-slate-300">
-              <span>Net</span>
-              <span>{currencySymbol}{totalNet.toFixed(2)}</span>
+              <span>{taxLabel} ({vatPercent}%)</span>
+              <span>{currencySymbol}{vatAmount.toFixed(2)}</span>
             </div>
-            {vatPercent > 0 && (
-              <div className="flex justify-between text-slate-300">
-                <span>{taxLabel} ({vatPercent}%)</span>
-                <span>{currencySymbol}{vatAmount.toFixed(2)}</span>
-              </div>
-            )}
-            <div className="flex justify-between text-xl font-bold text-white pt-2 border-t border-slate-600">
-              <span>Total</span>
-              <span>{currencySymbol}{totalGross.toFixed(2)}</span>
-            </div>
+          )}
+          <div className="flex justify-between text-xl font-bold text-white pt-2 border-t border-slate-600">
+            <span>Total</span>
+            <span>{currencySymbol}{totalGross.toFixed(2)}</span>
           </div>
         </div>
       </div>
