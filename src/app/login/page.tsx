@@ -189,20 +189,15 @@ function LoginForm() {
       {isNativeApp ? (
         <p className="mt-6 text-center text-slate-400 text-sm">
           Don&apos;t have an account?{' '}
-          <button
-            onClick={async () => {
-              try {
-                const { ExternalBrowser } = await import('@/lib/capacitor')
-                await ExternalBrowser.open({ url: 'https://brickquote.app/register' })
-              } catch {
-                // Intent URL forces Android to open in external browser, not WebView
-                window.location.href = 'intent://brickquote.app/register#Intent;scheme=https;action=android.intent.action.VIEW;end'
-              }
-            }}
-            className="text-blue-400 hover:text-blue-300"
+          Sign up at{' '}
+          <a
+            href="https://www.brickquote.app/register"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-400 hover:text-blue-300 underline"
           >
-            Sign up
-          </button>
+            brickquote.app
+          </a>
         </p>
       ) : (
         <p className="mt-6 text-center text-slate-400 text-sm">
