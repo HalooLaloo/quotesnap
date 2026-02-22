@@ -50,16 +50,10 @@ function RegisterForm() {
       setError(error.message)
       setLoading(false)
     } else {
-      // Check if user is immediately logged in (no email confirmation required)
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) {
-        // User is logged in, redirect to subscribe
-        window.location.href = '/subscribe'
-      } else {
-        // Email confirmation required, show success message
-        setSuccess(true)
-        setLoading(false)
-      }
+      // Always sign out after registration — user must confirm email first
+      await supabase.auth.signOut()
+      setSuccess(true)
+      setLoading(false)
     }
   }
 
