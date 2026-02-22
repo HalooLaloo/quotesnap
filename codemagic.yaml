@@ -36,54 +36,32 @@ workflows:
           echo "Latest TestFlight build: $LATEST"
           agvtool new-version -all $(($LATEST + 1))
 
-      - name: Build IPA
+      - name: Set up signing and build IPA
         script: |
           # Write API key — add PEM headers if missing
           KEY_BODY=$(printf '%b' "$ASC_KEY_CONTENT" | tr -d '\r')
-
           if echo "$KEY_BODY" | head -1 | grep -q "BEGIN"; then
             echo "$KEY_BODY" > /tmp/AuthKey.p8
           else
             printf '%s\n%s\n%s\n' "-----BEGIN PRIVATE KEY-----" "$KEY_BODY" "-----END PRIVATE KEY-----" > /tmp/AuthKey.p8
           fi
+          openssl pkey -in /tmp/AuthKey.p8 -noout && echo "Key is VALID" || { echo "Key is INVALID"; exit 1; }
 
-          echo "=== Key file ==="
-          echo "Size: $(wc -c < /tmp/AuthKey.p8) bytes"
-          echo "Lines: $(wc -l < /tmp/AuthKey.p8)"
-          head -1 /tmp/AuthKey.p8
-          tail -1 /tmp/AuthKey.p8
-          openssl pkey -in /tmp/AuthKey.p8 -noout && echo "Key is VALID" || echo "Key is INVALID"
+          # Override integration key with our working one
+          export APP_STORE_CONNECT_PRIVATE_KEY="$(cat /tmp/AuthKey.p8)"
 
-          # Archive (distribution signing — no registered devices needed)
-          xcodebuild archive \
-            -project "$CM_BUILD_DIR/$XCODE_PROJECT" \
-            -scheme "$XCODE_SCHEME" \
-            -sdk iphoneos \
-            -configuration Release \
-            -destination 'generic/platform=iOS' \
-            -archivePath "$CM_BUILD_DIR/build/ios/xcarchive/App.xcarchive" \
-            -allowProvisioningUpdates \
-            -authenticationKeyPath /tmp/AuthKey.p8 \
-            -authenticationKeyID "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
-            -authenticationKeyIssuerID "$APP_STORE_CONNECT_ISSUER_ID" \
-            DEVELOPMENT_TEAM="$TEAM_ID" \
-            CODE_SIGN_STYLE=Automatic \
-            CODE_SIGN_IDENTITY="Apple Distribution"
+          # Fetch App Store distribution certificate + provisioning profile
+          app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create
 
-          # Create export options
-          /usr/libexec/PlistBuddy -c "Add :method string app-store" /tmp/exportOptions.plist
-          /usr/libexec/PlistBuddy -c "Add :signingStyle string automatic" /tmp/exportOptions.plist
-          /usr/libexec/PlistBuddy -c "Add :teamID string $TEAM_ID" /tmp/exportOptions.plist
+          # Set up keychain and apply profiles to Xcode project
+          keychain initialize
+          keychain add-certificates
+          xcode-project use-profiles
 
-          # Export IPA
-          xcodebuild -exportArchive \
-            -archivePath "$CM_BUILD_DIR/build/ios/xcarchive/App.xcarchive" \
-            -exportPath "$CM_BUILD_DIR/build/ios/ipa" \
-            -allowProvisioningUpdates \
-            -authenticationKeyPath /tmp/AuthKey.p8 \
-            -authenticationKeyID "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
-            -authenticationKeyIssuerID "$APP_STORE_CONNECT_ISSUER_ID" \
-            -exportOptionsPlist /tmp/exportOptions.plist
+          # Build IPA (manual signing with fetched profiles)
+          xcode-project build-ipa \
+            --project "$CM_BUILD_DIR/$XCODE_PROJECT" \
+            --scheme "$XCODE_SCHEME"
 
     artifacts:
       - build/ios/ipa/*.ipa
