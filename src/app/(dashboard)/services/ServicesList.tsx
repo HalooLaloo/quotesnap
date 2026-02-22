@@ -3,14 +3,15 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { Service, UNITS } from '@/lib/types'
+import { Service, UNITS, getUnitEntries } from '@/lib/types'
 
 interface ServicesListProps {
   services: Service[]
   currencySymbol: string
+  measurementSystem: 'imperial' | 'metric'
 }
 
-export function ServicesList({ services, currencySymbol }: ServicesListProps) {
+export function ServicesList({ services, currencySymbol, measurementSystem }: ServicesListProps) {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editName, setEditName] = useState('')
   const [editUnit, setEditUnit] = useState('')
@@ -20,7 +21,9 @@ export function ServicesList({ services, currencySymbol }: ServicesListProps) {
   // Add form state
   const [showAdd, setShowAdd] = useState(false)
   const [newName, setNewName] = useState('')
-  const [newUnit, setNewUnit] = useState<string>('m2')
+  const unitEntries = getUnitEntries(measurementSystem)
+  const defaultUnit = measurementSystem === 'imperial' ? 'sqft' : 'm2'
+  const [newUnit, setNewUnit] = useState<string>(defaultUnit)
   const [newPrice, setNewPrice] = useState('')
   const [addLoading, setAddLoading] = useState(false)
   const [addError, setAddError] = useState('')
@@ -65,7 +68,7 @@ export function ServicesList({ services, currencySymbol }: ServicesListProps) {
     } else {
       setNewName('')
       setNewPrice('')
-      setNewUnit('m2')
+      setNewUnit(defaultUnit)
       setShowAdd(false)
       router.refresh()
     }
@@ -116,7 +119,7 @@ export function ServicesList({ services, currencySymbol }: ServicesListProps) {
       const response = await fetch('/api/suggest-services', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ description: aiPrompt }),
+        body: JSON.stringify({ description: aiPrompt, measurementSystem }),
       })
       const data = await response.json()
 
@@ -226,7 +229,7 @@ export function ServicesList({ services, currencySymbol }: ServicesListProps) {
                   onChange={(e) => setNewUnit(e.target.value)}
                   className="input"
                 >
-                  {Object.entries(UNITS).map(([value, label]) => (
+                  {unitEntries.map(([value, label]) => (
                     <option key={value} value={value}>{label}</option>
                   ))}
                 </select>

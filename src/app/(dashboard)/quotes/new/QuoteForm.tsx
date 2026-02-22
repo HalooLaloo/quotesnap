@@ -18,6 +18,7 @@ interface QuoteFormProps {
   taxLabel: string
   defaultTaxPercent: number
   profileComplete: boolean
+  measurementSystem: 'imperial' | 'metric'
 }
 
 interface CustomServiceForm {
@@ -31,7 +32,7 @@ interface AiSuggestion extends QuoteItem {
   selected: boolean
 }
 
-export function QuoteForm({ request, services, userId, currency, currencySymbol, taxLabel, defaultTaxPercent, profileComplete }: QuoteFormProps) {
+export function QuoteForm({ request, services, userId, currency, currencySymbol, taxLabel, defaultTaxPercent, profileComplete, measurementSystem }: QuoteFormProps) {
   const router = useRouter()
   const supabase = createClient()
 
@@ -57,11 +58,28 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
   const [success, setSuccess] = useState<'sent' | 'draft' | null>(null)
   const [requestExpanded, setRequestExpanded] = useState(false)
 
+  const areaUnit = measurementSystem === 'imperial' ? 'sq ft' : 'm²'
+  const unitOptions = measurementSystem === 'imperial'
+    ? [
+        { value: 'sq ft', label: 'sq ft' },
+        { value: 'lf', label: 'lf' },
+        { value: 'pcs', label: 'pcs' },
+        { value: 'hr', label: 'hr' },
+        { value: 'flat', label: 'flat' },
+      ]
+    : [
+        { value: 'm²', label: 'm²' },
+        { value: 'lf', label: 'lf' },
+        { value: 'pcs', label: 'pcs' },
+        { value: 'hr', label: 'hr' },
+        { value: 'flat', label: 'flat' },
+      ]
+
   // Custom service form state
   const [customService, setCustomService] = useState<CustomServiceForm>({
     name: '',
     quantity: 1,
-    unit: 'm²',
+    unit: areaUnit,
     unit_price: 0,
   })
 
@@ -92,6 +110,7 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
             price: s.price,
             unit: UNITS[s.unit as keyof typeof UNITS],
           })),
+          measurementSystem,
         }),
       })
 
@@ -498,11 +517,9 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
                         disabled={!suggestion.selected}
                         className="input w-20 text-sm text-slate-400 py-1"
                       >
-                        <option value="m²">m²</option>
-                        <option value="mb">mb</option>
-                        <option value="pcs">pcs</option>
-                        <option value="hr">hr</option>
-                        <option value="flat">flat</option>
+                        {unitOptions.map(u => (
+                          <option key={u.value} value={u.value}>{u.label}</option>
+                        ))}
                       </select>
                       <span className="text-slate-500 text-sm">×</span>
                       <input
@@ -595,11 +612,9 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
                       onChange={(e) => updateManualUnit(index, e.target.value)}
                       className="input w-20 text-sm text-slate-400 py-1"
                     >
-                      <option value="m²">m²</option>
-                      <option value="mb">mb</option>
-                      <option value="pcs">pcs</option>
-                      <option value="hr">hr</option>
-                      <option value="flat">flat</option>
+                      {unitOptions.map(u => (
+                        <option key={u.value} value={u.value}>{u.label}</option>
+                      ))}
                     </select>
                     <span className="text-slate-500 text-sm">×</span>
                     <input
@@ -702,11 +717,9 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
                   onChange={(e) => setCustomService({ ...customService, unit: e.target.value })}
                   className="input"
                 >
-                  <option value="m²">m²</option>
-                  <option value="mb">mb</option>
-                  <option value="pcs">pcs</option>
-                  <option value="hr">hr</option>
-                  <option value="flat">flat</option>
+                  {unitOptions.map(u => (
+                    <option key={u.value} value={u.value}>{u.label}</option>
+                  ))}
                 </select>
               </div>
               <div>

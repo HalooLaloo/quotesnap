@@ -33,6 +33,7 @@ export default async function ServicesPage() {
       <ServicesList
         services={services || []}
         currencySymbol={country.currencySymbol}
+        measurementSystem={country.measurementSystem}
       />
     </div>
   )

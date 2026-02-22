@@ -65,6 +65,7 @@ export default async function NewQuotePage({
         taxLabel={country.taxLabel}
         defaultTaxPercent={country.defaultTaxPercent}
         profileComplete={!!(profile?.full_name && profile?.company_name && profile?.phone)}
+        measurementSystem={country.measurementSystem}
       />
     </div>
   )

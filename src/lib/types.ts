@@ -4,7 +4,7 @@ export interface Service {
   id: string
   user_id: string
   name: string
-  unit: 'm2' | 'mb' | 'pcs' | 'hr' | 'flat'
+  unit: 'm2' | 'mb' | 'pcs' | 'hr' | 'flat' | 'sqft' | 'lft'
   price: number
   created_at: string
 }
@@ -66,10 +66,32 @@ export interface Quote {
 // Units with labels
 export const UNITS: Record<Service['unit'], string> = {
   m2: 'm²',
+  sqft: 'sq ft',
   mb: 'lf',
+  lft: 'lf',
   pcs: 'pcs',
   hr: 'hr',
   flat: 'flat',
+}
+
+// Get unit options filtered by measurement system
+export function getUnitEntries(measurementSystem: 'imperial' | 'metric'): [string, string][] {
+  if (measurementSystem === 'imperial') {
+    return [
+      ['sqft', 'sq ft'],
+      ['lft', 'lf'],
+      ['pcs', 'pcs'],
+      ['hr', 'hr'],
+      ['flat', 'flat'],
+    ]
+  }
+  return [
+    ['m2', 'm²'],
+    ['mb', 'lf'],
+    ['pcs', 'pcs'],
+    ['hr', 'hr'],
+    ['flat', 'flat'],
+  ]
 }
 
 // Invoice types

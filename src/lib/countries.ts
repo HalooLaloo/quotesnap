@@ -21,6 +21,8 @@ export interface CountryConfig {
   /** Label for sort code / routing number field */
   bankRoutingLabel: string
   bankRoutingPlaceholder: string
+  /** Measurement system: imperial (sq ft) for US, metric (m²) for rest */
+  measurementSystem: 'imperial' | 'metric'
 }
 
 export const COUNTRIES: Record<string, CountryConfig> = {
@@ -39,6 +41,7 @@ export const COUNTRIES: Record<string, CountryConfig> = {
     showCompanyRegNumber: false,
     bankRoutingLabel: 'Routing Number',
     bankRoutingPlaceholder: '021000021',
+    measurementSystem: 'imperial',
   },
   GB: {
     code: 'GB',
@@ -57,6 +60,7 @@ export const COUNTRIES: Record<string, CountryConfig> = {
     companyRegPlaceholder: '12345678',
     bankRoutingLabel: 'Sort Code',
     bankRoutingPlaceholder: '12-34-56',
+    measurementSystem: 'metric',
   },
   AU: {
     code: 'AU',
@@ -73,6 +77,7 @@ export const COUNTRIES: Record<string, CountryConfig> = {
     showCompanyRegNumber: false,
     bankRoutingLabel: 'BSB Number',
     bankRoutingPlaceholder: '062-000',
+    measurementSystem: 'metric',
   },
   CA: {
     code: 'CA',
@@ -89,6 +94,7 @@ export const COUNTRIES: Record<string, CountryConfig> = {
     showCompanyRegNumber: false,
     bankRoutingLabel: 'Transit Number',
     bankRoutingPlaceholder: '12345-001',
+    measurementSystem: 'imperial',
   },
   IE: {
     code: 'IE',
@@ -105,6 +111,7 @@ export const COUNTRIES: Record<string, CountryConfig> = {
     showCompanyRegNumber: false,
     bankRoutingLabel: 'BIC / SWIFT',
     bankRoutingPlaceholder: 'AIBKIE2D',
+    measurementSystem: 'metric',
   },
   NZ: {
     code: 'NZ',
@@ -121,6 +128,7 @@ export const COUNTRIES: Record<string, CountryConfig> = {
     showCompanyRegNumber: false,
     bankRoutingLabel: 'BIC / SWIFT',
     bankRoutingPlaceholder: 'ANZBNZ22',
+    measurementSystem: 'metric',
   },
 }
 

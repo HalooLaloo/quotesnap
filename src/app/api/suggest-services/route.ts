@@ -7,7 +7,14 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 })
 
-const SYSTEM_PROMPT = `You are an expert in renovation and construction services. Your task is to analyze the contractor's description and suggest a list of services they provide.
+function buildSuggestServicesPrompt(measurementSystem: 'imperial' | 'metric') {
+  const isImperial = measurementSystem === 'imperial'
+  const areaUnit = isImperial ? 'sqft' : 'm2'
+  const areaLabel = isImperial ? 'sq ft' : 'm²'
+  const linearUnit = isImperial ? 'lft' : 'mb'
+  const linearLabel = isImperial ? 'lf (linear foot)' : 'lf (linear meter)'
+
+  return `You are an expert in renovation and construction services. Your task is to analyze the contractor's description and suggest a list of services they provide.
 
 Based on the contractor's description, return a list of specific services with appropriate units and suggested market prices.
 
@@ -15,30 +22,30 @@ Based on the contractor's description, return a list of specific services with a
 1. Suggest 5-15 specific services based on the description
 2. Use professional but understandable service names
 3. Choose the appropriate unit:
-   - m2 = square meter (floors, walls, tiles, painting)
-   - mb = linear meter (trim, pipes, cables, baseboards)
+   - ${areaUnit} = ${areaLabel} (floors, walls, tiles, painting)
+   - ${linearUnit} = ${linearLabel} (trim, pipes, cables, baseboards)
    - pcs = piece (doors, windows, outlets, lamps, points)
    - hr = hour (specialized work, consultations)
    - flat = flat rate (comprehensive services, transport)
-4. Market prices - realistic, average rates
+4. Market prices - realistic, average rates${isImperial ? ' in USD (per sq ft)' : ''}
 5. Be SPECIFIC - not "finishing work" but "Wall painting", "Panel flooring installation"
 6. If contractor mentions a specialization - add more services from that field
 
 ## EXAMPLE SERVICES by trade:
 
 PAINTER:
-- Wall painting (m2) - $3-5
-- Ceiling painting (m2) - $4-6
-- Wall priming (m2) - $2-3
-- Skim coating (m2) - $8-12
-- Wallpapering (m2) - $7-12
+- Wall painting (${areaUnit}) - ${isImperial ? '$1-2' : '$3-5'}
+- Ceiling painting (${areaUnit}) - ${isImperial ? '$1.5-2.5' : '$4-6'}
+- Wall priming (${areaUnit}) - ${isImperial ? '$0.50-1' : '$2-3'}
+- Skim coating (${areaUnit}) - ${isImperial ? '$2-4' : '$8-12'}
+- Wallpapering (${areaUnit}) - ${isImperial ? '$2-4' : '$7-12'}
 
 TILER:
-- Wall tile installation (m2) - $18-28
-- Floor tile installation (m2) - $16-24
-- Tile grouting (m2) - $3-6
-- Waterproofing (m2) - $7-12
-- Old tile removal (m2) - $7-12
+- Wall tile installation (${areaUnit}) - ${isImperial ? '$5-10' : '$18-28'}
+- Floor tile installation (${areaUnit}) - ${isImperial ? '$4-8' : '$16-24'}
+- Tile grouting (${areaUnit}) - ${isImperial ? '$1-2' : '$3-6'}
+- Waterproofing (${areaUnit}) - ${isImperial ? '$2-4' : '$7-12'}
+- Old tile removal (${areaUnit}) - ${isImperial ? '$2-4' : '$7-12'}
 
 CARPENTER:
 - Custom furniture (flat) - from $500
@@ -51,14 +58,14 @@ PLUMBER:
 - Faucet installation (pcs) - $25-50
 - Toilet installation (pcs) - $50-100
 - Sink installation (pcs) - $35-60
-- Pipe replacement (mb) - $20-35
+- Pipe replacement (${linearUnit}) - ${isImperial ? '$6-12' : '$20-35'}
 - Washer/dishwasher connection (pcs) - $25-35
 
 ELECTRICIAN:
 - Outlet installation (pcs) - $12-20
 - Switch installation (pcs) - $10-17
 - Light fixture installation (pcs) - $15-25
-- Wire routing (mb) - $7-12
+- Wire routing (${linearUnit}) - ${isImperial ? '$2-4' : '$7-12'}
 - Panel installation (pcs) - $100-200
 
 ## RESPONSE FORMAT (JSON ONLY):
@@ -66,8 +73,8 @@ ELECTRICIAN:
   "services": [
     {
       "name": "Wall painting",
-      "unit": "m2",
-      "price": 4
+      "unit": "${areaUnit}",
+      "price": ${isImperial ? '1.5' : '4'}
     },
     {
       "name": "Interior door installation",
@@ -78,6 +85,7 @@ ELECTRICIAN:
 }
 
 REMEMBER: Return ONLY JSON, without any additional text or markdown.`
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -99,7 +107,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const { description } = await request.json()
+    const { description, measurementSystem = 'imperial' } = await request.json()
 
     if (!process.env.OPENAI_API_KEY) {
       return NextResponse.json(
@@ -118,7 +126,7 @@ export async function POST(request: NextRequest) {
     const response = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'system', content: buildSuggestServicesPrompt(measurementSystem) },
         { role: 'user', content: `Contractor description:\n${description}` },
       ],
       temperature: 0.5,
@@ -162,7 +170,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate services
-    const validUnits = ['m2', 'mb', 'pcs', 'hr', 'flat']
+    const validUnits = ['m2', 'mb', 'pcs', 'hr', 'flat', 'sqft', 'lft']
     const services = (parsed.services || [])
       .filter((s: { name?: string; unit?: string; price?: number }) =>
         s.name &&
