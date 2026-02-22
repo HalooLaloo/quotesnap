@@ -98,6 +98,10 @@ export async function updateSession(request: NextRequest) {
 
     // Redirect logged-in users away from login/register
     if (request.nextUrl.pathname === '/login' || request.nextUrl.pathname === '/register') {
+      // Native app user without subscription — let them stay on /login (avoids redirect loop)
+      if (isNativeApp && !hasAccess) {
+        return supabaseResponse
+      }
       const url = request.nextUrl.clone()
       url.pathname = hasAccess ? '/requests' : '/subscribe'
       return NextResponse.redirect(url)

@@ -133,6 +133,19 @@ export function initCapacitor() {
     }
   })
 
+  // Handle deep links — navigate WebView to the opened URL
+  App.addListener('appUrlOpen', (event: { url: string }) => {
+    try {
+      const url = new URL(event.url)
+      // Only navigate for our own domain
+      if (url.hostname.includes('brickquote.app')) {
+        window.location.href = url.pathname + url.search
+      }
+    } catch {
+      // Invalid URL — ignore
+    }
+  })
+
   // Initialize push notifications
   initPushNotifications()
 }
