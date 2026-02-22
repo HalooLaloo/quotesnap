@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /auth/
+Disallow: /requests
+Disallow: /quotes
+Disallow: /invoices
+Disallow: /services
+Disallow: /settings
+Disallow: /subscribe
+Disallow: /ix
+
+Sitemap: https://www.brickquote.app/sitemap.xml

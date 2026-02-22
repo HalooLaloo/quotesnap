@@ -62,6 +62,8 @@ export default function SettingsPage() {
   const [managingSubscription, setManagingSubscription] = useState(false)
   const [cancelingSubscription, setCancelingSubscription] = useState(false)
   const [showCancelConfirm, setShowCancelConfirm] = useState(false)
+  const [cancelReason, setCancelReason] = useState('')
+  const [cancelDetails, setCancelDetails] = useState('')
   const [resumingSubscription, setResumingSubscription] = useState(false)
   const [switchingPlan, setSwitchingPlan] = useState(false)
 
@@ -258,13 +260,24 @@ export default function SettingsPage() {
   }
 
   const handleCancelSubscription = async () => {
+    if (!cancelReason) {
+      setError('Please select a reason for canceling')
+      setTimeout(() => setError(''), 3000)
+      return
+    }
     setCancelingSubscription(true)
     try {
-      const response = await fetch('/api/stripe/cancel', { method: 'POST' })
+      const response = await fetch('/api/stripe/cancel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: cancelReason, details: cancelDetails }),
+      })
       const data = await response.json()
       if (response.ok) {
         setSubscriptionStatus('canceled')
         setShowCancelConfirm(false)
+        setCancelReason('')
+        setCancelDetails('')
         setSuccess('Subscription canceled. You\'ll keep access until the end of your billing period.')
         setTimeout(() => setSuccess(''), 5000)
       } else {
@@ -809,29 +822,58 @@ export default function SettingsPage() {
             )}
           </div>
 
-          {/* Cancel confirmation */}
+          {/* Cancel confirmation with feedback */}
           {showCancelConfirm && (
             <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
-              <p className="text-red-400 text-sm font-medium mb-2">Are you sure you want to cancel?</p>
+              <p className="text-red-400 text-sm font-medium mb-1">Are you sure you want to cancel?</p>
               <p className="text-slate-400 text-sm mb-4">
-                You&apos;ll keep access until the end of your current billing period
-                {periodEnd && ` (${new Date(periodEnd).toLocaleDateString()})`}.
-                After that, you won&apos;t be able to create new quotes or invoices.
-                Your existing data will be preserved.
+                You&apos;ll keep access until {periodEnd ? new Date(periodEnd).toLocaleDateString() : 'the end of your billing period'}.
+                Your data will be preserved.
               </p>
+
+              <p className="text-slate-300 text-sm font-medium mb-2">What&apos;s the main reason?</p>
+              <div className="space-y-2 mb-4">
+                {[
+                  { value: 'too_expensive', label: 'Too expensive' },
+                  { value: 'not_using', label: 'Not using it enough' },
+                  { value: 'missing_features', label: 'Missing features I need' },
+                  { value: 'too_complicated', label: 'Too complicated' },
+                  { value: 'found_alternative', label: 'Found a better alternative' },
+                  { value: 'other', label: 'Other reason' },
+                ].map((opt) => (
+                  <label key={opt.value} className="flex items-center gap-2.5 cursor-pointer group">
+                    <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
+                      cancelReason === opt.value ? 'border-red-400 bg-red-400' : 'border-slate-600 group-hover:border-slate-400'
+                    }`}>
+                      {cancelReason === opt.value && (
+                        <div className="w-1.5 h-1.5 bg-white rounded-full" />
+                      )}
+                    </div>
+                    <span className="text-slate-300 text-sm">{opt.label}</span>
+                  </label>
+                ))}
+              </div>
+
+              <textarea
+                value={cancelDetails}
+                onChange={(e) => setCancelDetails(e.target.value)}
+                className="input text-sm mb-4 min-h-[60px]"
+                placeholder="Anything else you'd like us to know? (optional)"
+              />
+
               <div className="flex gap-3">
                 <button
-                  onClick={() => setShowCancelConfirm(false)}
+                  onClick={() => { setShowCancelConfirm(false); setCancelReason(''); setCancelDetails('') }}
                   className="btn-secondary text-sm"
                 >
                   Keep Subscription
                 </button>
                 <button
                   onClick={handleCancelSubscription}
-                  disabled={cancelingSubscription}
+                  disabled={cancelingSubscription || !cancelReason}
                   className="px-4 py-2 bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-500/30 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
                 >
-                  {cancelingSubscription ? 'Canceling...' : 'Yes, Cancel'}
+                  {cancelingSubscription ? 'Canceling...' : 'Cancel Subscription'}
                 </button>
               </div>
             </div>

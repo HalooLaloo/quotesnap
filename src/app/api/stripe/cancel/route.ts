@@ -1,14 +1,17 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { stripe } from '@/lib/stripe'
 
-export async function POST() {
+export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+
+    const body = await request.json().catch(() => ({}))
+    const { reason, details } = body as { reason?: string; details?: string }
 
     const { data: profile } = await supabase
       .from('profiles')
@@ -23,7 +26,14 @@ export async function POST() {
     // Cancel at period end (user keeps access until end of billing cycle)
     const subscription = await stripe.subscriptions.update(
       profile.stripe_subscription_id,
-      { cancel_at_period_end: true }
+      {
+        cancel_at_period_end: true,
+        metadata: {
+          cancel_reason: reason || '',
+          cancel_details: details || '',
+          canceled_at: new Date().toISOString(),
+        },
+      }
     )
 
     // Update local status
