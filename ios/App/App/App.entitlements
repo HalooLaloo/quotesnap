@@ -7,5 +7,7 @@
 		<string>applinks:brickquote.app</string>
 		<string>applinks:www.brickquote.app</string>
 	</array>
+	<key>aps-environment</key>
+	<string>production</string>
 </dict>
 </plist>
