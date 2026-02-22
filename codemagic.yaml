@@ -12,7 +12,7 @@ workflows:
         XCODE_SCHEME: "App"
         # Apple ID aplikacji z App Store Connect (My Apps > App Information > Apple ID)
         APP_STORE_APP_ID: "6759532654"
-      node: "20"
+      node: "22"
       xcode: latest
     triggering:
       events:
