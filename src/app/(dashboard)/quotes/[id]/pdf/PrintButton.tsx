@@ -10,7 +10,7 @@ export function PrintButton({ clientName, quoteId }: { clientName: string; quote
   const handleDownload = async () => {
     const fileName = `quote-${clientName.toLowerCase().replace(/\s+/g, '-')}.pdf`
 
-    // Native Android: use DownloadManager via native plugin
+    // Native app: use FileDownloader plugin
     if (Capacitor.isNativePlatform()) {
       try {
         const fullUrl = `${window.location.origin}/api/export-pdf?id=${quoteId}`

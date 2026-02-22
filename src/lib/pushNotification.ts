@@ -85,6 +85,14 @@ export async function sendPushNotification(options: PushOptions): Promise<void> 
           color: '#f97316',
         },
       },
+      apns: {
+        payload: {
+          aps: {
+            sound: 'default',
+            badge: 1,
+          },
+        },
+      },
     })
   } catch (error: unknown) {
     // If token is invalid, clear it from DB

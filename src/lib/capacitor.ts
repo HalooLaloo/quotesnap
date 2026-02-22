@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase/client'
  * Minimal native bridge for Capacitor remote URL mode.
  * When server.url points to a remote URL, the full bridge JS may not be injected,
  * so nativeCallback/nativePromise are unavailable. This implements direct communication
- * with the androidBridge Java interface.
+ * with the native bridge (Android: androidBridge, iOS: webkit.messageHandlers.bridge).
  */
 function setupNativeBridge() {
   if (typeof window === 'undefined') return
@@ -16,6 +16,20 @@ function setupNativeBridge() {
 
   // If nativePromise already exists, bridge JS was injected — no need for polyfill
   if (typeof cap.nativePromise === 'function') return
+
+  // Detect platform bridge
+  const androidBridge = (window as any).androidBridge
+  const iosBridge = (window as any).webkit?.messageHandlers?.bridge
+
+  if (!androidBridge && !iosBridge) return
+
+  function postToNative(msg: string) {
+    if (androidBridge?.postMessage) {
+      androidBridge.postMessage(msg)
+    } else if (iosBridge?.postMessage) {
+      iosBridge.postMessage(msg)
+    }
+  }
 
   let callbackCounter = 0
   const callbacks = new Map<string, { resolve: (v: any) => void; reject: (e: any) => void }>()
@@ -41,12 +55,11 @@ function setupNativeBridge() {
       const callbackId = `cb_${++callbackCounter}`
       callbacks.set(callbackId, { resolve, reject })
       const msg = JSON.stringify({ callbackId, pluginId, methodName, options: options || {} })
-      const bridge = (window as any).androidBridge
-      if (bridge?.postMessage) {
-        bridge.postMessage(msg)
-      } else {
+      try {
+        postToNative(msg)
+      } catch {
         callbacks.delete(callbackId)
-        reject(new Error('androidBridge not available'))
+        reject(new Error('Native bridge not available'))
       }
     })
   }
@@ -58,9 +71,10 @@ function setupNativeBridge() {
       reject: (err: any) => callback?.(null, err),
     })
     const msg = JSON.stringify({ callbackId, pluginId, methodName, options: options || {} })
-    const bridge = (window as any).androidBridge
-    if (bridge?.postMessage) {
-      bridge.postMessage(msg)
+    try {
+      postToNative(msg)
+    } catch {
+      // Silent fail
     }
     return { callbackId, remove: () => { callbacks.delete(callbackId) } }
   }
@@ -123,7 +137,9 @@ export function initCapacitor() {
   if (!Capacitor.isNativePlatform()) return
 
   StatusBar.setStyle({ style: Style.Dark })
-  StatusBar.setBackgroundColor({ color: '#0a1628' })
+  if (Capacitor.getPlatform() === 'android') {
+    StatusBar.setBackgroundColor({ color: '#0a1628' })
+  }
 
   App.addListener('backButton', ({ canGoBack }) => {
     if (canGoBack) {

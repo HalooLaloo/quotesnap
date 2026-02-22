@@ -15,7 +15,7 @@ export function DownloadPDFButton({ url, fileName, className = 'btn-secondary fl
   const [downloading, setDownloading] = useState(false)
 
   const handleDownload = async () => {
-    // Native Android: use DownloadManager via native plugin
+    // Native app: use FileDownloader plugin
     if (Capacitor.isNativePlatform()) {
       try {
         const fullUrl = url.startsWith('http') ? url : `${window.location.origin}${url}`

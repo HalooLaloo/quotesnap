@@ -1,44 +1,75 @@
 workflows:
   ios-release:
-    name: iOS Release
-    max_build_duration: 30
+    name: iOS Release (App Store)
+    max_build_duration: 60
     instance_type: mac_mini_m2
+    integrations:
+      app_store_connect: codemagic  # nazwa integracji z Codemagic Team Settings
     environment:
       ios_signing:
         distribution_type: app_store
         bundle_identifier: app.brickquote
       vars:
-        XCODE_WORKSPACE: "ios/App/App.xcworkspace"
+        # App.xcodeproj (nie xcworkspace — projekt używa SPM, nie CocoaPods)
+        XCODE_PROJECT: "ios/App/App.xcodeproj"
         XCODE_SCHEME: "App"
-      node: 20
+        # Apple ID aplikacji z App Store Connect (My Apps > App Information > Apple ID)
+        APP_STORE_APP_ID: "REPLACE_WITH_YOUR_APP_APPLE_ID"
+      node: "20"
       xcode: latest
+    triggering:
+      events:
+        - tag
+      tag_patterns:
+        - pattern: "v*"
+          include: true
     scripts:
-      - name: Install dependencies
+      - name: Install npm dependencies
         script: npm ci
-      - name: Capacitor sync
+
+      - name: Build Next.js web assets
+        # Capacitor wraps brickquote.app (remote URL) — nie musimy kopiować
+        # lokalnych assetów, ale sync jest potrzebny dla pluginów i konfiguracji
         script: npx cap sync ios
+
+      - name: Set up code signing
+        script: xcode-project use-profiles
+
       - name: Increment build number
         script: |
-          cd ios/App
+          cd $CM_BUILD_DIR/ios/App
+          # Pobierz ostatni numer buildu z TestFlight lub App Store
           LATEST=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_APP_ID" 2>/dev/null || echo "0")
+          echo "Latest TestFlight build: $LATEST"
           agvtool new-version -all $(($LATEST + 1))
-      - name: Build iOS
+
+      - name: Build IPA for App Store
         script: |
           xcode-project build-ipa \
-            --workspace "$XCODE_WORKSPACE" \
+            --project "$CM_BUILD_DIR/$XCODE_PROJECT" \
             --scheme "$XCODE_SCHEME"
+
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
+      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.dSYM
+
     publishing:
+      email:
+        recipients:
+          - REPLACE_WITH_YOUR_EMAIL
+        notify:
+          success: true
+          failure: true
       app_store_connect:
         auth: integration
         submit_to_testflight: true
         beta_groups:
-          - Internal Testing
+          - "Internal Testing"
+        submit_to_app_store: false  # zmień na true gdy gotowy do produkcji
 
   android-release:
-    name: Android Release
+    name: Android Release (Google Play)
     max_build_duration: 30
     instance_type: linux_x2
     environment:
@@ -46,18 +77,29 @@ workflows:
         - brickquote_keystore
       vars:
         PACKAGE_NAME: "app.brickquote"
-      node: 20
-      java: 17
+      node: "20"
+      java: "17"
     scripts:
-      - name: Install dependencies
+      - name: Install npm dependencies
         script: npm ci
+
+      - name: Sync Capacitor Android
+        script: npx cap sync android
+
       - name: Build Android AAB
         script: |
-          npx cap sync android
           cd android && ./gradlew bundleRelease
+
     artifacts:
       - android/app/build/outputs/**/*.aab
+
     publishing:
+      email:
+        recipients:
+          - REPLACE_WITH_YOUR_EMAIL
+        notify:
+          success: true
+          failure: true
       google_play:
         credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
         track: internal
