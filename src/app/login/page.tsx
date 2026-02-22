@@ -186,32 +186,12 @@ function LoginForm() {
         </button>
       </form>
 
-      {isNativeApp ? (
-        <p className="mt-6 text-center text-slate-400 text-sm">
-          Don&apos;t have an account?{' '}
-          <button
-            onClick={async () => {
-              try {
-                const { ExternalBrowser } = await import('@/lib/capacitor')
-                await ExternalBrowser.open({ url: 'https://brickquote.app/register' })
-              } catch {
-                navigator.clipboard.writeText('https://brickquote.app/register')
-                alert('Link copied! Paste it in your browser.')
-              }
-            }}
-            className="text-blue-400 hover:text-blue-300"
-          >
-            Sign up
-          </button>
-        </p>
-      ) : (
-        <p className="mt-6 text-center text-slate-400 text-sm">
-          Don&apos;t have an account?{' '}
-          <Link href="/register" className="text-blue-400 hover:text-blue-300">
-            Sign up
-          </Link>
-        </p>
-      )}
+      <p className="mt-6 text-center text-slate-400 text-sm">
+        Don&apos;t have an account?{' '}
+        <Link href="/register" className="text-blue-400 hover:text-blue-300">
+          Sign up
+        </Link>
+      </p>
     </div>
   )
 }
