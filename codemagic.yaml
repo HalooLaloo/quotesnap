@@ -31,10 +31,10 @@ workflows:
 
       - name: Set up code signing
         script: |
-          app-store-connect fetch-signing-files "app.brickquote" --type IOS_APP_STORE --create
+          app-store-connect fetch-signing-files "app.brickquote" --type IOS_APP_STORE --create --force
           keychain initialize
           keychain add-certificates
-          xcode-project use-profiles
+          xcode-project use-profiles --project "$CM_BUILD_DIR/$XCODE_PROJECT"
 
       - name: Increment build number
         script: |
