@@ -93,8 +93,10 @@ export async function updateSession(request: NextRequest) {
 
     // Subscription enforcement — dashboard pages require active subscription
     const noSubRequired = ['/subscribe', '/settings']
+    const isCheckoutReturn = request.nextUrl.searchParams.get('checkout') === 'success'
     const needsSubscription = !isPublicPath
       && request.nextUrl.pathname !== '/'
+      && !isCheckoutReturn
       && !noSubRequired.some(p => request.nextUrl.pathname.startsWith(p))
 
     if (needsSubscription) {

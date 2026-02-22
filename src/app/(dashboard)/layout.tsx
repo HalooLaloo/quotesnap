@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { Sidebar } from '@/components/Sidebar'
 import { OnboardingWrapper } from '@/components/OnboardingWrapper'
+import { CheckoutSync } from '@/components/CheckoutSync'
 
 export default async function DashboardLayout({
   children,
@@ -66,6 +67,7 @@ export default async function DashboardLayout({
 
       {/* Onboarding modal for new users */}
       <OnboardingWrapper servicesCount={servicesCount || 0} userId={user.id} />
+      <CheckoutSync />
     </div>
   )
 }
