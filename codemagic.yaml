@@ -38,8 +38,8 @@ workflows:
 
       - name: Build IPA
         script: |
-          # Write API key from manual env var
-          echo "$ASC_KEY_CONTENT" > /tmp/AuthKey.p8
+          # Write API key from manual env var (printf %b converts \n to real newlines)
+          printf '%b' "$ASC_KEY_CONTENT" > /tmp/AuthKey.p8
           echo "=== Key file size: $(wc -c < /tmp/AuthKey.p8) bytes ==="
 
           # Archive
