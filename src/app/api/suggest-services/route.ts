@@ -20,16 +20,17 @@ Based on the contractor's description, return a list of specific services with a
 
 ## RULES:
 1. Suggest 15-25 specific services based on the description — more is better, the user can remove what they don't need
-2. Use professional but understandable service names
-3. Choose the appropriate unit:
+2. Group services logically (e.g. flooring first, then walls, then installations, then finishing touches)
+3. Use professional but understandable service names
+4. Choose the appropriate unit:
    - ${areaUnit} = ${areaLabel} (floors, walls, tiles, painting)
    - ${linearUnit} = ${linearLabel} (trim, pipes, cables, baseboards)
    - pcs = piece (doors, windows, outlets, lamps, points)
    - hr = hour (specialized work, consultations)
    - flat = flat rate (comprehensive services, transport)
-4. Market prices - realistic, average rates${isImperial ? ' in USD (per sq ft)' : ''}
-5. Be SPECIFIC - not "finishing work" but "Wall painting", "Panel flooring installation"
-6. If contractor mentions a specialization - add more services from that field
+5. Market prices - realistic, average rates${isImperial ? ' in USD (per sq ft)' : ''}
+6. Be SPECIFIC - not "finishing work" but "Wall painting", "Panel flooring installation"
+7. If contractor mentions a specialization - add more services from that field
 
 ## EXAMPLE SERVICES by trade:
 
