@@ -59,16 +59,7 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  // Native app: block /register and /subscribe — registration & payments via web only
   const isNativeApp = request.headers.get('user-agent')?.includes('BrickQuoteApp')
-  if (isNativeApp) {
-    const blockedInApp = ['/register', '/subscribe', '/pricing']
-    if (blockedInApp.some(path => request.nextUrl.pathname.startsWith(path))) {
-      const url = request.nextUrl.clone()
-      url.pathname = user ? '/requests' : '/login'
-      return NextResponse.redirect(url)
-    }
-  }
 
   // Public paths - no login required
   const publicPaths = ['/login', '/register', '/reset-password', '/request', '/quote', '/invoice', '/pricing', '/api', '/privacy', '/terms', '/contact', '/subscribe', '/unsubscribe', '/auth']
@@ -83,11 +74,32 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // Redirect logged-in users away from login/register
   if (user) {
+    // Check subscription status first — needed for all redirects below
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('subscription_status')
+      .eq('id', user.id)
+      .single()
+
+    const hasAccess =
+      profile?.subscription_status === 'active' ||
+      profile?.subscription_status === 'trialing'
+
+    // Native app: block /register, /subscribe, /pricing
+    if (isNativeApp) {
+      const blockedInApp = ['/register', '/subscribe', '/pricing']
+      if (blockedInApp.some(path => request.nextUrl.pathname.startsWith(path))) {
+        const url = request.nextUrl.clone()
+        url.pathname = user ? (hasAccess ? '/requests' : '/login') : '/login'
+        return NextResponse.redirect(url)
+      }
+    }
+
+    // Redirect logged-in users away from login/register
     if (request.nextUrl.pathname === '/login' || request.nextUrl.pathname === '/register') {
       const url = request.nextUrl.clone()
-      url.pathname = '/requests'
+      url.pathname = hasAccess ? '/requests' : '/subscribe'
       return NextResponse.redirect(url)
     }
 
@@ -99,22 +111,10 @@ export async function updateSession(request: NextRequest) {
       && !isCheckoutReturn
       && !noSubRequired.some(p => request.nextUrl.pathname.startsWith(p))
 
-    if (needsSubscription) {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('subscription_status')
-        .eq('id', user.id)
-        .single()
-
-      const hasAccess =
-        profile?.subscription_status === 'active' ||
-        profile?.subscription_status === 'trialing'
-
-      if (!hasAccess) {
-        const url = request.nextUrl.clone()
-        url.pathname = '/subscribe'
-        return NextResponse.redirect(url)
-      }
+    if (needsSubscription && !hasAccess) {
+      const url = request.nextUrl.clone()
+      url.pathname = isNativeApp ? '/login' : '/subscribe'
+      return NextResponse.redirect(url)
     }
   }
 
