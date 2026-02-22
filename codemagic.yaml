@@ -27,20 +27,6 @@ workflows:
       - name: Sync Capacitor iOS
         script: npx cap sync ios
 
-      - name: Set up code signing
-        script: |
-          app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create --force
-          keychain initialize
-          keychain add-certificates
-
-          # Get provisioning profile UUID
-          PROFILE_PATH=$(find ~/Library/MobileDevice/Provisioning\ Profiles -name "*.mobileprovision" | head -1)
-          PROFILE_UUID=$(grep -a -A1 UUID "$PROFILE_PATH" | grep -o '[A-Fa-f0-9-]\{36\}')
-          echo "Profile UUID: $PROFILE_UUID"
-
-          # Store for build step
-          echo "PROFILE_UUID=$PROFILE_UUID" >> $CM_ENV
-
       - name: Increment build number
         script: |
           cd $CM_BUILD_DIR/ios/App
@@ -48,8 +34,21 @@ workflows:
           echo "Latest TestFlight build: $LATEST"
           agvtool new-version -all $(($LATEST + 1))
 
-      - name: Build IPA for App Store
+      - name: Sign and build IPA
         script: |
+          # Fetch signing files
+          app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create --force
+          keychain initialize
+          keychain add-certificates
+
+          # Extract provisioning profile UUID
+          PROFILE_PATH=$(find ~/Library/MobileDevice/Provisioning\ Profiles -name "*.mobileprovision" | head -1)
+          echo "=== Profile path: $PROFILE_PATH ==="
+
+          PROFILE_UUID=$(/usr/libexec/PlistBuddy -c "Print UUID" /dev/stdin <<< "$(/usr/bin/security cms -D -i "$PROFILE_PATH")")
+          echo "=== Profile UUID: $PROFILE_UUID ==="
+
+          # Archive
           xcodebuild archive \
             -project "$CM_BUILD_DIR/$XCODE_PROJECT" \
             -scheme "$XCODE_SCHEME" \
@@ -59,10 +58,11 @@ workflows:
             CODE_SIGN_STYLE=Manual \
             CODE_SIGN_IDENTITY="Apple Distribution" \
             DEVELOPMENT_TEAM="$TEAM_ID" \
-            PROVISIONING_PROFILE="$PROFILE_UUID"
+            PROVISIONING_PROFILE="$PROFILE_UUID" \
+            PROVISIONING_PROFILE_SPECIFIER=
 
-          # Create export options plist
-          cat > /tmp/exportOptions.plist <<PLIST
+          # Export IPA
+          cat > /tmp/exportOptions.plist << EOF
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
           <plist version="1.0">
@@ -70,17 +70,17 @@ workflows:
             <key>method</key>
             <string>app-store</string>
             <key>teamID</key>
-            <string>$TEAM_ID</string>
+            <string>${TEAM_ID}</string>
             <key>signingStyle</key>
             <string>manual</string>
             <key>provisioningProfiles</key>
             <dict>
-              <key>$BUNDLE_ID</key>
-              <string>$PROFILE_UUID</string>
+              <key>${BUNDLE_ID}</key>
+              <string>${PROFILE_UUID}</string>
             </dict>
           </dict>
           </plist>
-          PLIST
+          EOF
 
           xcodebuild -exportArchive \
             -archivePath "$CM_BUILD_DIR/build/ios/xcarchive/App.xcarchive" \
