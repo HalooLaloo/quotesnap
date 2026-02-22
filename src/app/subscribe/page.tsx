@@ -96,21 +96,25 @@ export default function SubscribePage() {
         )}
 
         {/* Early adopter pricing */}
-        <div className="bg-[#132039] border border-[#1e3a5f] rounded-xl p-4 mb-5">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="bg-orange-500/20 text-orange-400 text-xs font-semibold px-2 py-0.5 rounded-full">Early Adopter</span>
+        <div className="bg-[#132039] border border-[#1e3a5f] rounded-xl overflow-hidden mb-5">
+          <div className="p-5 flex items-center justify-between">
+            <div>
+              <span className="bg-orange-500/20 text-orange-400 text-xs font-semibold px-2 py-0.5 rounded-full">Early Adopter Price</span>
+              <div className="flex items-baseline gap-1.5 mt-2">
+                <span className="text-4xl font-bold text-white">$0</span>
+                <span className="text-slate-500">for 3 days</span>
+              </div>
+            </div>
+            <div className="text-right">
+              <p className="text-slate-500 text-xs">then</p>
+              <p className="text-xl font-semibold text-white">$29<span className="text-sm text-slate-400 font-normal">/mo</span></p>
+              <p className="text-orange-400/80 text-xs">locked in for you</p>
+            </div>
           </div>
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-3xl font-bold text-white">$0</span>
-            <span className="text-slate-400 text-sm">for 3 days</span>
+          <div className="px-5 py-2.5 bg-orange-500/5 border-t border-orange-500/10 flex items-center justify-between">
+            <span className="text-slate-500 text-xs">Price may increase for future users</span>
+            <span className="text-green-400/80 text-xs font-medium">Switch to yearly &rarr; save $99</span>
           </div>
-          <p className="text-slate-400 text-sm mt-1">
-            Then <span className="text-white font-medium">$29/month</span> — locked in as an early adopter.
-            <span className="text-orange-400"> Price may increase</span> for future users.
-          </p>
-          <p className="text-slate-500 text-xs mt-1.5">
-            Switch to yearly anytime and save $99/year.
-          </p>
         </div>
 
         {/* CTA */}
