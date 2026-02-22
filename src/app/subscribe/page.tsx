@@ -8,11 +8,13 @@ import Link from 'next/link'
 export default function SubscribePage() {
   const [loading, setLoading] = useState<'monthly' | 'yearly' | null>(null)
   const [error, setError] = useState('')
+  const [trialExpired, setTrialExpired] = useState(false)
+  const [trialDaysLeft, setTrialDaysLeft] = useState<number | null>(null)
+  const [pageReady, setPageReady] = useState(false)
   const router = useRouter()
   const supabase = useMemo(() => createClient(), [])
 
   useEffect(() => {
-    // Check if user is logged in
     const checkUser = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
@@ -20,16 +22,31 @@ export default function SubscribePage() {
         return
       }
 
-      // Check if already has subscription
       const { data: profile } = await supabase
         .from('profiles')
-        .select('subscription_status')
+        .select('subscription_status, trial_ends_at')
         .eq('id', user.id)
         .single()
 
-      if (profile?.subscription_status === 'active' || profile?.subscription_status === 'trialing') {
+      // Already has active paid subscription
+      if (profile?.subscription_status === 'active') {
         router.push('/requests')
+        return
       }
+
+      // Check trial status
+      if (profile?.trial_ends_at) {
+        const trialEnd = new Date(profile.trial_ends_at)
+        const now = new Date()
+        if (trialEnd < now) {
+          setTrialExpired(true)
+        } else {
+          const daysLeft = Math.ceil((trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+          setTrialDaysLeft(daysLeft)
+        }
+      }
+
+      setPageReady(true)
     }
 
     checkUser()
@@ -61,6 +78,14 @@ export default function SubscribePage() {
     }
   }
 
+  if (!pageReady) {
+    return (
+      <div className="min-h-screen bg-[#0a1628] flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-[#0a1628] flex items-center justify-center px-4 py-12">
       <div className="max-w-2xl w-full">
@@ -82,12 +107,35 @@ export default function SubscribePage() {
 
         {/* Content */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-white mb-4">
-            Start your 3-day free trial
-          </h1>
-          <p className="text-slate-400 text-lg">
-            Choose your plan. You won&apos;t be charged during the trial period.
-          </p>
+          {trialExpired ? (
+            <>
+              <h1 className="text-3xl font-bold text-white mb-4">
+                Your free trial has ended
+              </h1>
+              <p className="text-slate-400 text-lg">
+                Choose a plan to continue using BrickQuote.
+              </p>
+            </>
+          ) : trialDaysLeft !== null ? (
+            <>
+              <h1 className="text-3xl font-bold text-white mb-4">
+                Choose your plan
+              </h1>
+              <p className="text-slate-400 text-lg">
+                You have <span className="text-blue-400 font-medium">{trialDaysLeft} day{trialDaysLeft !== 1 ? 's' : ''}</span> left on your free trial.
+                Subscribe now to avoid any interruption.
+              </p>
+            </>
+          ) : (
+            <>
+              <h1 className="text-3xl font-bold text-white mb-4">
+                Choose your plan
+              </h1>
+              <p className="text-slate-400 text-lg">
+                Start using BrickQuote to send professional quotes in minutes.
+              </p>
+            </>
+          )}
         </div>
 
         {error && (
@@ -107,15 +155,15 @@ export default function SubscribePage() {
             <div className="flex justify-between items-start mb-4">
               <div>
                 <h3 className="text-lg font-semibold text-white">Monthly</h3>
-                <p className="text-slate-400 text-sm">Flexible billing</p>
+                <p className="text-slate-400 text-sm">Flexible, cancel anytime</p>
               </div>
               <div className="text-right">
                 <p className="text-2xl font-bold text-white">$29</p>
                 <p className="text-slate-400 text-sm">/month</p>
               </div>
             </div>
-            <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg px-3 py-2 text-blue-400 text-sm text-center">
-              {loading === 'monthly' ? 'Redirecting...' : '3-day free trial'}
+            <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg px-3 py-2 text-blue-400 text-sm text-center font-medium">
+              {loading === 'monthly' ? 'Redirecting to checkout...' : 'Get Started'}
             </div>
           </button>
 
@@ -137,11 +185,11 @@ export default function SubscribePage() {
               </div>
               <div className="text-right">
                 <p className="text-2xl font-bold text-white">$249</p>
-                <p className="text-slate-400 text-sm">/year</p>
+                <p className="text-slate-400 text-sm">/year <span className="text-green-400">($20.75/mo)</span></p>
               </div>
             </div>
-            <div className="bg-green-500/10 border border-green-500/30 rounded-lg px-3 py-2 text-green-400 text-sm text-center">
-              {loading === 'yearly' ? 'Redirecting...' : '3-day free trial + Save $99'}
+            <div className="bg-green-500/10 border border-green-500/30 rounded-lg px-3 py-2 text-green-400 text-sm text-center font-medium">
+              {loading === 'yearly' ? 'Redirecting to checkout...' : 'Get Started — Save $99'}
             </div>
           </button>
         </div>
@@ -168,7 +216,7 @@ export default function SubscribePage() {
           </div>
         </div>
 
-        {/* Features reminder */}
+        {/* Features */}
         <div className="mt-12 text-center">
           <p className="text-slate-400 text-sm mb-4">Both plans include:</p>
           <div className="flex flex-wrap justify-center gap-3 text-xs text-slate-500">
@@ -177,8 +225,18 @@ export default function SubscribePage() {
             <span className="bg-[#132039] px-3 py-1 rounded-full">AI chatbot</span>
             <span className="bg-[#132039] px-3 py-1 rounded-full">PDF generation</span>
             <span className="bg-[#132039] px-3 py-1 rounded-full">Client portal</span>
+            <span className="bg-[#132039] px-3 py-1 rounded-full">Email notifications</span>
           </div>
         </div>
+
+        {/* Back to app link (during active trial) */}
+        {trialDaysLeft !== null && (
+          <div className="mt-8 text-center">
+            <Link href="/requests" className="text-slate-500 hover:text-slate-300 text-sm transition-colors">
+              Continue with free trial
+            </Link>
+          </div>
+        )}
       </div>
     </div>
   )

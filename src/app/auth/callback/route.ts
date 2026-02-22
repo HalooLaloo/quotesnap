@@ -49,12 +49,11 @@ export async function GET(request: Request) {
         return NextResponse.redirect(`${origin}/reset-password`)
       }
 
-      // For signup — check subscription
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
         const { data: profile } = await supabase
           .from('profiles')
-          .select('subscription_status')
+          .select('subscription_status, trial_ends_at')
           .eq('id', user.id)
           .single()
 
@@ -62,7 +61,29 @@ export async function GET(request: Request) {
           profile?.subscription_status === 'active' ||
           profile?.subscription_status === 'trialing'
 
-        return NextResponse.redirect(`${origin}${hasActiveSubscription ? next : '/subscribe'}`)
+        // New signup — start free 3-day trial (no Stripe, no plan choice yet)
+        if (!hasActiveSubscription && !profile?.trial_ends_at) {
+          const trialEnd = new Date()
+          trialEnd.setDate(trialEnd.getDate() + 3)
+
+          await supabase
+            .from('profiles')
+            .update({
+              subscription_status: 'trialing',
+              trial_ends_at: trialEnd.toISOString(),
+            })
+            .eq('id', user.id)
+
+          return NextResponse.redirect(`${origin}/requests`)
+        }
+
+        // Existing user with active sub or valid trial
+        if (hasActiveSubscription) {
+          return NextResponse.redirect(`${origin}${next}`)
+        }
+
+        // Trial expired or inactive — go to subscribe
+        return NextResponse.redirect(`${origin}/subscribe`)
       }
       return NextResponse.redirect(`${origin}${next}`)
     }
@@ -102,18 +123,16 @@ export async function GET(request: Request) {
     const { error } = await supabase.auth.exchangeCodeForSession(code)
 
     if (!error) {
-      // Password reset — skip subscription check, go straight to reset form
       if (next === '/reset-password') {
         return NextResponse.redirect(`${origin}/reset-password`)
       }
 
-      // Check if user has active subscription
       const { data: { user } } = await supabase.auth.getUser()
 
       if (user) {
         const { data: profile } = await supabase
           .from('profiles')
-          .select('subscription_status')
+          .select('subscription_status, trial_ends_at')
           .eq('id', user.id)
           .single()
 
@@ -121,9 +140,27 @@ export async function GET(request: Request) {
           profile?.subscription_status === 'active' ||
           profile?.subscription_status === 'trialing'
 
-        // Redirect to subscribe if no subscription, otherwise to next
-        const redirectTo = hasActiveSubscription ? next : '/subscribe'
-        return NextResponse.redirect(`${origin}${redirectTo}`)
+        // New signup — start free 3-day trial
+        if (!hasActiveSubscription && !profile?.trial_ends_at) {
+          const trialEnd = new Date()
+          trialEnd.setDate(trialEnd.getDate() + 3)
+
+          await supabase
+            .from('profiles')
+            .update({
+              subscription_status: 'trialing',
+              trial_ends_at: trialEnd.toISOString(),
+            })
+            .eq('id', user.id)
+
+          return NextResponse.redirect(`${origin}/requests`)
+        }
+
+        if (hasActiveSubscription) {
+          return NextResponse.redirect(`${origin}${next}`)
+        }
+
+        return NextResponse.redirect(`${origin}/subscribe`)
       }
 
       return NextResponse.redirect(`${origin}${next}`)

@@ -55,6 +55,15 @@ export async function POST(request: NextRequest) {
         .eq('id', user.id)
     }
 
+    // Check if user already had a local trial (no Stripe trial needed)
+    const { data: profileData } = await supabase
+      .from('profiles')
+      .select('trial_ends_at')
+      .eq('id', user.id)
+      .single()
+
+    const hadLocalTrial = !!profileData?.trial_ends_at
+
     // Create checkout session
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
@@ -62,11 +71,12 @@ export async function POST(request: NextRequest) {
       payment_method_types: ['card'],
       line_items: [{ price: selectedPlan.priceId, quantity: 1 }],
       success_url: `${request.headers.get('origin')}/requests?success=true`,
-      cancel_url: `${request.headers.get('origin')}/pricing?canceled=true`,
+      cancel_url: `${request.headers.get('origin')}/subscribe`,
       metadata: { userId: user.id },
       subscription_data: {
         metadata: { userId: user.id },
-        ...(selectedPlan.trialDays > 0 && { trial_period_days: selectedPlan.trialDays }),
+        // No trial if user already had local trial; otherwise keep Stripe trial as fallback
+        ...(!hadLocalTrial && selectedPlan.trialDays > 0 && { trial_period_days: selectedPlan.trialDays }),
       },
       allow_promotion_codes: true,
     })

@@ -90,6 +90,32 @@ export async function updateSession(request: NextRequest) {
       url.pathname = '/requests'
       return NextResponse.redirect(url)
     }
+
+    // Subscription enforcement for dashboard pages
+    const dashboardPaths = ['/requests', '/quotes', '/invoices', '/services', '/settings', '/ix']
+    const isDashboardPage = dashboardPaths.some(path => request.nextUrl.pathname.startsWith(path))
+
+    if (isDashboardPage) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('subscription_status, trial_ends_at')
+        .eq('id', user.id)
+        .single()
+
+      if (profile) {
+        const isActive = profile.subscription_status === 'active'
+        const isTrialing = profile.subscription_status === 'trialing'
+        const trialExpired = isTrialing && profile.trial_ends_at && new Date(profile.trial_ends_at) < new Date()
+
+        // Trial expired or no active subscription → redirect to /subscribe
+        // Allow /settings so user can still manage account
+        if (request.nextUrl.pathname !== '/settings' && !isActive && (!isTrialing || trialExpired)) {
+          const url = request.nextUrl.clone()
+          url.pathname = '/subscribe'
+          return NextResponse.redirect(url)
+        }
+      }
+    }
   }
 
   return supabaseResponse
