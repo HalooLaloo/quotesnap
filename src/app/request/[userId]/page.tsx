@@ -77,17 +77,24 @@ export default function ClientRequestPage() {
     const update = () => {
       if (containerRef.current) {
         containerRef.current.style.height = `${vv.height}px`
-        // Scroll messages to bottom when keyboard changes
+        containerRef.current.style.transform = `translateY(${vv.offsetTop}px)`
+        // Scroll input into view when keyboard opens
         setTimeout(() => {
-          messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-        }, 50)
+          if (document.activeElement === inputRef.current) {
+            inputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+          } else {
+            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+          }
+        }, 100)
       }
     }
 
     update()
     vv.addEventListener('resize', update)
+    vv.addEventListener('scroll', update)
     return () => {
       vv.removeEventListener('resize', update)
+      vv.removeEventListener('scroll', update)
     }
   }, [])
 
@@ -96,9 +103,18 @@ export default function ClientRequestPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  // Focus na input po załadowaniu
+  // Focus na input po załadowaniu + scroll when focused
   useEffect(() => {
     inputRef.current?.focus()
+    const input = inputRef.current
+    if (!input) return
+    const handleFocus = () => {
+      setTimeout(() => {
+        input.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+      }, 300)
+    }
+    input.addEventListener('focus', handleFocus)
+    return () => input.removeEventListener('focus', handleFocus)
   }, [])
 
   // Kompresja i konwersja obrazu do base64
