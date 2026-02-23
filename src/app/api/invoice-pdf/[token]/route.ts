@@ -182,46 +182,48 @@ export async function GET(
     // @ts-expect-error - autoTable adds lastAutoTable property
     y = (doc as { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY + 15 || y + 60
 
-    const summaryX = 120
+    // Align summary with table: table starts at margin 14, width 170 → right edge at 184
+    const summaryRight = 184
+    const summaryX = 114
     doc.setFontSize(10)
     doc.setTextColor(0, 0, 0)
 
     // Subtotal
     doc.text('Subtotal:', summaryX, y)
-    doc.text(`${currencySymbol}${invoice.subtotal?.toFixed(2)}`, 190, y, { align: 'right' })
+    doc.text(`${currencySymbol}${invoice.subtotal?.toFixed(2)}`, summaryRight, y, { align: 'right' })
 
     // Discount
     if (invoice.discount_percent > 0) {
       y += 7
       doc.text(`Discount (${invoice.discount_percent}%):`, summaryX, y)
       doc.setTextColor(220, 38, 38)
-      doc.text(`-${currencySymbol}${(invoice.subtotal * invoice.discount_percent / 100).toFixed(2)}`, 190, y, { align: 'right' })
+      doc.text(`-${currencySymbol}${(invoice.subtotal * invoice.discount_percent / 100).toFixed(2)}`, summaryRight, y, { align: 'right' })
       doc.setTextColor(0, 0, 0)
     }
 
     // Net
     y += 7
     doc.text('Net:', summaryX, y)
-    doc.text(`${currencySymbol}${invoice.total_net?.toFixed(2)}`, 190, y, { align: 'right' })
+    doc.text(`${currencySymbol}${invoice.total_net?.toFixed(2)}`, summaryRight, y, { align: 'right' })
 
     // Tax (VAT/GST/Sales Tax per country)
     if (invoice.vat_percent > 0) {
       y += 7
       doc.text(`${countryConfig.taxLabel} (${invoice.vat_percent}%):`, summaryX, y)
-      doc.text(`${currencySymbol}${(invoice.total_net * invoice.vat_percent / 100).toFixed(2)}`, 190, y, { align: 'right' })
+      doc.text(`${currencySymbol}${(invoice.total_net * invoice.vat_percent / 100).toFixed(2)}`, summaryRight, y, { align: 'right' })
     }
 
     // Total
     y += 10
     doc.setDrawColor(30, 58, 95) // #1e3a5f
     doc.setLineWidth(0.5)
-    doc.line(120, y - 3, 190, y - 3)
+    doc.line(summaryX, y - 3, summaryRight, y - 3)
 
     doc.setFontSize(11)
     doc.setFont('helvetica', 'bold')
     doc.setTextColor(30, 58, 95)
-    doc.text('AMOUNT DUE:', 120, y + 2)
-    doc.text(`${currencySymbol}${invoice.total_gross?.toFixed(2)}`, 190, y + 2, { align: 'right' })
+    doc.text('AMOUNT DUE:', summaryX, y + 2)
+    doc.text(`${currencySymbol}${invoice.total_gross?.toFixed(2)}`, summaryRight, y + 2, { align: 'right' })
     doc.setTextColor(0, 0, 0)
 
     // Use invoice-level bank details, fall back to profile for older invoices

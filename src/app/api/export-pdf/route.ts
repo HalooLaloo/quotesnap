@@ -169,38 +169,40 @@ export async function GET(request: NextRequest) {
     // @ts-expect-error - autoTable adds lastAutoTable property
     y = (doc as { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY + 15 || y + 60
 
-    const sx = 120
+    // Align summary with table right edge (table: margin 14 + width 170 = 184)
+    const summaryRight = 184
+    const sx = 114
     doc.setFontSize(10)
     doc.setTextColor(0, 0, 0)
     doc.text('Subtotal:', sx, y)
-    doc.text(`${cs}${subtotal.toFixed(2)}`, 190, y, { align: 'right' })
+    doc.text(`${cs}${subtotal.toFixed(2)}`, summaryRight, y, { align: 'right' })
 
     if (discountPercent > 0) {
       y += 7
       doc.text(`Discount (${discountPercent}%):`, sx, y)
       doc.setTextColor(220, 38, 38)
-      doc.text(`-${cs}${(subtotal * discountPercent / 100).toFixed(2)}`, 190, y, { align: 'right' })
+      doc.text(`-${cs}${(subtotal * discountPercent / 100).toFixed(2)}`, summaryRight, y, { align: 'right' })
       doc.setTextColor(0, 0, 0)
     }
 
     if (vatPercent > 0) {
       y += 7
       doc.text('Net:', sx, y)
-      doc.text(`${cs}${totalNet.toFixed(2)}`, 190, y, { align: 'right' })
+      doc.text(`${cs}${totalNet.toFixed(2)}`, summaryRight, y, { align: 'right' })
       y += 7
       doc.text(`${countryConfig.taxLabel} (${vatPercent}%):`, sx, y)
-      doc.text(`${cs}${(totalNet * vatPercent / 100).toFixed(2)}`, 190, y, { align: 'right' })
+      doc.text(`${cs}${(totalNet * vatPercent / 100).toFixed(2)}`, summaryRight, y, { align: 'right' })
     }
 
     y += 10
     doc.setDrawColor(30, 58, 95)
     doc.setLineWidth(0.5)
-    doc.line(120, y - 3, 190, y - 3)
+    doc.line(sx, y - 3, summaryRight, y - 3)
     doc.setFontSize(11)
     doc.setFont('helvetica', 'bold')
     doc.setTextColor(30, 58, 95)
-    doc.text('TOTAL:', 120, y + 2)
-    doc.text(`${cs}${totalGross.toFixed(2)}`, 190, y + 2, { align: 'right' })
+    doc.text('TOTAL:', sx, y + 2)
+    doc.text(`${cs}${totalGross.toFixed(2)}`, summaryRight, y + 2, { align: 'right' })
 
     // Footer
     const pageCount = doc.getNumberOfPages()

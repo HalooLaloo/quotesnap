@@ -2,41 +2,53 @@
 
 import { useState } from 'react'
 import { Capacitor } from '@capacitor/core'
-import { FileDownloader } from '@/lib/capacitor'
 
 export function PrintButton({ clientName, quoteId }: { clientName: string; quoteId: string }) {
   const [downloading, setDownloading] = useState(false)
 
   const handleDownload = async () => {
     const fileName = `quote-${clientName.toLowerCase().replace(/\s+/g, '-')}.pdf`
-
-    // Native app: use FileDownloader plugin
-    if (Capacitor.isNativePlatform()) {
-      try {
-        const fullUrl = `${window.location.origin}/api/export-pdf?id=${quoteId}`
-        await FileDownloader.download({ url: fullUrl, fileName })
-      } catch {
-        alert('Failed to download PDF. Please try again.')
-      }
-      return
-    }
-
-    // Desktop: fetch blob and trigger download
     setDownloading(true)
+
     try {
-      const response = await fetch(`/api/export-pdf?id=${quoteId}`)
+      const fullUrl = `${window.location.origin}/api/export-pdf?id=${quoteId}`
+
+      // Android: use native FileDownloader plugin (share sheet)
+      if (Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'android') {
+        const { FileDownloader } = await import('@/lib/capacitor')
+        await FileDownloader.download({ url: fullUrl, fileName })
+        setDownloading(false)
+        return
+      }
+
+      // iOS + Browser: fetch blob
+      const response = await fetch(fullUrl)
       if (!response.ok) throw new Error('Failed')
       const blob = await response.blob()
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = fileName
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      setTimeout(() => URL.revokeObjectURL(url), 1000)
+
+      if (Capacitor.isNativePlatform()) {
+        // iOS: use native share sheet
+        const file = new File([blob], fileName, { type: 'application/pdf' })
+        if (navigator.share && navigator.canShare?.({ files: [file] })) {
+          await navigator.share({ files: [file] })
+        } else {
+          const blobUrl = URL.createObjectURL(blob)
+          window.open(blobUrl, '_blank')
+          setTimeout(() => URL.revokeObjectURL(blobUrl), 60000)
+        }
+      } else {
+        // Desktop browser: trigger download
+        const blobUrl = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = blobUrl
+        a.download = fileName
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 1000)
+      }
     } catch {
-      alert('Failed to download PDF.')
+      alert('Failed to download PDF. Please try again.')
     }
     setDownloading(false)
   }
