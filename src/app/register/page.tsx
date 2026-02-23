@@ -34,29 +34,30 @@ function RegisterForm() {
 
     setLoading(true)
 
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: 'https://www.brickquote.app/auth/callback',
-        data: {
-          source_app: 'brickquote',
-          ...(utmSource && { utm_source: utmSource }),
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          data: {
+            source_app: 'brickquote',
+            ...(utmSource && { utm_source: utmSource }),
+          },
         },
-      },
-    })
+      })
 
-    if (error) {
-      setError(error.message)
-      setLoading(false)
-    } else if (data.user && data.user.identities?.length === 0) {
-      // Email already registered — Supabase returns fake success with empty identities
-      setError('An account with this email already exists. Try signing in or resetting your password.')
-      setLoading(false)
-    } else {
-      // Always sign out after registration — user must confirm email first
-      await supabase.auth.signOut()
-      setSuccess(true)
+      if (error) {
+        setError(error.message)
+      } else if (data.user && data.user.identities?.length === 0) {
+        setError('An account with this email already exists. Try signing in or resetting your password.')
+      } else {
+        await supabase.auth.signOut()
+        setSuccess(true)
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
+    } finally {
       setLoading(false)
     }
   }
