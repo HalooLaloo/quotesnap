@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { Capacitor } from '@capacitor/core'
-import { FileDownloader } from '@/lib/capacitor'
 
 interface DownloadPDFButtonProps {
   url: string
@@ -15,31 +14,39 @@ export function DownloadPDFButton({ url, fileName, className = 'btn-secondary fl
   const [downloading, setDownloading] = useState(false)
 
   const handleDownload = async () => {
-    // Native app: use FileDownloader plugin
-    if (Capacitor.isNativePlatform()) {
-      try {
-        const fullUrl = url.startsWith('http') ? url : `${window.location.origin}${url}`
-        await FileDownloader.download({ url: fullUrl, fileName })
-      } catch {
-        alert('Download failed. Please try again.')
-      }
-      return
-    }
-
-    // Desktop/mobile browser: fetch blob and trigger download
     setDownloading(true)
     try {
-      const response = await fetch(url)
+      const fullUrl = url.startsWith('http') ? url : `${window.location.origin}${url}`
+
+      // Android: use native FileDownloader plugin (share sheet)
+      if (Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'android') {
+        const { FileDownloader } = await import('@/lib/capacitor')
+        await FileDownloader.download({ url: fullUrl, fileName })
+        setDownloading(false)
+        return
+      }
+
+      // iOS + Browser: fetch blob
+      const response = await fetch(fullUrl)
       if (!response.ok) throw new Error('Failed')
       const blob = await response.blob()
-      const blobUrl = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = blobUrl
-      a.download = fileName
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      setTimeout(() => URL.revokeObjectURL(blobUrl), 1000)
+
+      if (Capacitor.isNativePlatform()) {
+        // iOS: open PDF in new window — triggers native PDF viewer with share button
+        const blobUrl = URL.createObjectURL(blob)
+        window.open(blobUrl, '_blank')
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 60000)
+      } else {
+        // Desktop browser: trigger download
+        const blobUrl = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = blobUrl
+        a.download = fileName
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 1000)
+      }
     } catch {
       alert('Failed to download PDF.')
     }

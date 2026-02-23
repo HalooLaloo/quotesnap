@@ -33,6 +33,7 @@ function InvoiceForm() {
   ])
   const [discountPercent, setDiscountPercent] = useState(0)
   const [vatPercent, setVatPercent] = useState(23)
+  const [invoiceDate, setInvoiceDate] = useState(new Date().toISOString().split('T')[0])
   const [dueDate, setDueDate] = useState('')
   const [paymentTerms, setPaymentTerms] = useState('Bank transfer within 7 days')
 
@@ -233,6 +234,7 @@ function InvoiceForm() {
           bank_name: bankName || null,
           bank_account: bankAccount || null,
           bank_routing: bankRouting || null,
+          ...(invoiceDate ? { created_at: new Date(invoiceDate + 'T12:00:00').toISOString() } : {}),
         })
         .select()
         .single()
@@ -471,7 +473,16 @@ function InvoiceForm() {
       {/* Payment Info */}
       <div className="card mb-6">
         <h2 className="text-lg font-semibold text-white mb-4">Payment Details</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          <div>
+            <label className="label">Invoice Date</label>
+            <input
+              type="date"
+              value={invoiceDate}
+              onChange={(e) => setInvoiceDate(e.target.value)}
+              className="input"
+            />
+          </div>
           <div>
             <label className="label">Due Date</label>
             <input
