@@ -32,10 +32,16 @@ export function DownloadPDFButton({ url, fileName, className = 'btn-secondary fl
       const blob = await response.blob()
 
       if (Capacitor.isNativePlatform()) {
-        // iOS: open PDF in new window — triggers native PDF viewer with share button
-        const blobUrl = URL.createObjectURL(blob)
-        window.open(blobUrl, '_blank')
-        setTimeout(() => URL.revokeObjectURL(blobUrl), 60000)
+        // iOS: use native share sheet
+        const file = new File([blob], fileName, { type: 'application/pdf' })
+        if (navigator.share && navigator.canShare?.({ files: [file] })) {
+          await navigator.share({ files: [file] })
+        } else {
+          // Fallback: open blob URL
+          const blobUrl = URL.createObjectURL(blob)
+          window.open(blobUrl, '_blank')
+          setTimeout(() => URL.revokeObjectURL(blobUrl), 60000)
+        }
       } else {
         // Desktop browser: trigger download
         const blobUrl = URL.createObjectURL(blob)
