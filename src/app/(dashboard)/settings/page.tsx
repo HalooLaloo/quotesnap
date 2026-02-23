@@ -724,6 +724,23 @@ export default function SettingsPage() {
               </div>
             )}
 
+            {/* Inactive notice */}
+            {!isActive && !isCanceled && subscriptionStatus !== 'past_due' && (
+              <div className="mt-3 p-3 bg-slate-500/10 border border-slate-500/30 rounded-lg">
+                <div className="flex items-start gap-2">
+                  <svg className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <div>
+                    <p className="text-slate-300 text-sm font-medium">No active subscription</p>
+                    <p className="text-slate-400 text-xs mt-0.5">
+                      Subscribe to unlock unlimited quotes, invoices, AI features, and more.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Trial info */}
             {subscriptionStatus === 'trialing' && periodEnd && (
               <div className="mt-3 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
@@ -768,7 +785,20 @@ export default function SettingsPage() {
 
           {/* Action buttons */}
           <div className="flex flex-wrap gap-3">
-            {/* Update payment method - only for users with active/trialing/past_due/canceled subscriptions */}
+            {/* Subscribe button for inactive users */}
+            {!isActive && !isCanceled && subscriptionStatus !== 'past_due' && (
+              <a
+                href="/subscribe"
+                className="btn-primary flex items-center gap-2 text-sm"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                Subscribe Now
+              </a>
+            )}
+
+            {/* Update payment method */}
             {(isActive || isCanceled || subscriptionStatus === 'past_due') && (
               <button
                 onClick={handleManageSubscription}
@@ -785,7 +815,7 @@ export default function SettingsPage() {
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                     </svg>
-                    Update Payment Method
+                    Manage Subscription
                   </>
                 )}
               </button>
