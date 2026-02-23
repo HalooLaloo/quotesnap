@@ -52,16 +52,8 @@ workflows:
           PYEOF
           cat ios/App/CapApp-SPM/Package.swift
 
-      - name: Increment build number
+      - name: Prepare API key
         script: |
-          cd $CM_BUILD_DIR/ios/App
-          LATEST=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_APP_ID" 2>/dev/null || echo "0")
-          echo "Latest TestFlight build: $LATEST"
-          agvtool new-version -all $(($LATEST + 1))
-
-      - name: Set up signing and build IPA
-        script: |
-          # Write API key — add PEM headers if missing
           KEY_BODY=$(printf '%b' "$ASC_KEY_CONTENT" | tr -d '\r')
           if echo "$KEY_BODY" | head -1 | grep -q "BEGIN"; then
             echo "$KEY_BODY" > /tmp/AuthKey.p8
@@ -70,7 +62,16 @@ workflows:
           fi
           openssl pkey -in /tmp/AuthKey.p8 -noout && echo "Key is VALID" || { echo "Key is INVALID"; exit 1; }
 
-          # Override integration key with our working one
+      - name: Increment build number
+        script: |
+          export APP_STORE_CONNECT_PRIVATE_KEY="$(cat /tmp/AuthKey.p8)"
+          cd $CM_BUILD_DIR/ios/App
+          LATEST=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_APP_ID" || echo "0")
+          echo "Latest TestFlight build: $LATEST"
+          agvtool new-version -all $(($LATEST + 1))
+
+      - name: Set up signing and build IPA
+        script: |
           export APP_STORE_CONNECT_PRIVATE_KEY="$(cat /tmp/AuthKey.p8)"
 
           # Generate fresh RSA key for new distribution certificate
