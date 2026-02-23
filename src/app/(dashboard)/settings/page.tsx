@@ -248,15 +248,8 @@ export default function SettingsPage() {
       const response = await fetch('/api/stripe/portal', { method: 'POST' })
       const data = await response.json()
       if (data.url) {
-        // Open in system browser on native apps (Stripe portal is external)
-        const { Capacitor } = await import('@capacitor/core')
-        if (Capacitor.isNativePlatform()) {
-          const { ExternalBrowser } = await import('@/lib/capacitor')
-          await ExternalBrowser.open({ url: data.url })
-          setManagingSubscription(false)
-        } else {
-          window.location.href = data.url
-        }
+        window.open(data.url, '_blank')
+        setManagingSubscription(false)
       } else {
         setError(data.error || 'Failed to open subscription management')
         setManagingSubscription(false)
