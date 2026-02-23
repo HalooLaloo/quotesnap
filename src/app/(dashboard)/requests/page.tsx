@@ -19,26 +19,7 @@ export default async function RequestsPage({
   const host = headersList.get('host') || 'localhost:3000'
   const protocol = host.includes('localhost') ? 'http' : 'https'
 
-  // Stats
-  const { count: newRequestsCount } = await supabase
-    .from('qs_quote_requests')
-    .select('*', { count: 'exact', head: true })
-    .eq('contractor_id', user?.id)
-    .eq('status', 'new')
-
-  const { count: pendingQuotesCount } = await supabase
-    .from('qs_quotes')
-    .select('*', { count: 'exact', head: true })
-    .eq('user_id', user?.id)
-    .eq('status', 'sent')
-
-  const { count: acceptedQuotesCount } = await supabase
-    .from('qs_quotes')
-    .select('*', { count: 'exact', head: true })
-    .eq('user_id', user?.id)
-    .eq('status', 'accepted')
-
-  // Build query with filters
+  // Build filtered query
   let query = supabase
     .from('qs_quote_requests')
     .select('*')
@@ -59,7 +40,18 @@ export default async function RequestsPage({
     query = query.or(`client_name.ilike.%${search}%,description.ilike.%${search}%`)
   }
 
-  const { data: requests } = await query.order('created_at', { ascending: false })
+  // Run all queries in parallel
+  const [
+    { count: newRequestsCount },
+    { count: pendingQuotesCount },
+    { count: acceptedQuotesCount },
+    { data: requests },
+  ] = await Promise.all([
+    supabase.from('qs_quote_requests').select('*', { count: 'exact', head: true }).eq('contractor_id', user?.id).eq('status', 'new'),
+    supabase.from('qs_quotes').select('*', { count: 'exact', head: true }).eq('user_id', user?.id).eq('status', 'sent'),
+    supabase.from('qs_quotes').select('*', { count: 'exact', head: true }).eq('user_id', user?.id).eq('status', 'accepted'),
+    query.order('created_at', { ascending: false }),
+  ])
 
   // Generate request form URL
   const requestFormUrl = `${protocol}://${host}/request/${user?.id}`

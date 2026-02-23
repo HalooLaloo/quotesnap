@@ -9,49 +9,13 @@ export default async function InvoicesPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const { data: invoices } = await supabase
-    .from('qs_invoices')
-    .select('*')
-    .eq('user_id', user?.id)
-    .order('created_at', { ascending: false })
+  const quotesSelect = `id, total_gross, total, status, created_at, currency, qs_quote_requests (client_name, client_email)`
 
-  // Get accepted quotes
-  const { data: acceptedQuotes } = await supabase
-    .from('qs_quotes')
-    .select(`
-      id,
-      total_gross,
-      total,
-      status,
-      created_at,
-      currency,
-      qs_quote_requests (
-        client_name,
-        client_email
-      )
-    `)
-    .eq('user_id', user?.id)
-    .eq('status', 'accepted')
-    .order('created_at', { ascending: false })
-
-  // Get sent quotes (for verbal confirmations)
-  const { data: sentQuotes } = await supabase
-    .from('qs_quotes')
-    .select(`
-      id,
-      total_gross,
-      total,
-      status,
-      created_at,
-      currency,
-      qs_quote_requests (
-        client_name,
-        client_email
-      )
-    `)
-    .eq('user_id', user?.id)
-    .eq('status', 'sent')
-    .order('created_at', { ascending: false })
+  const [{ data: invoices }, { data: acceptedQuotes }, { data: sentQuotes }] = await Promise.all([
+    supabase.from('qs_invoices').select('*').eq('user_id', user?.id).order('created_at', { ascending: false }),
+    supabase.from('qs_quotes').select(quotesSelect).eq('user_id', user?.id).eq('status', 'accepted').order('created_at', { ascending: false }),
+    supabase.from('qs_quotes').select(quotesSelect).eq('user_id', user?.id).eq('status', 'sent').order('created_at', { ascending: false }),
+  ])
 
   return (
     <div className="p-4 md:p-8">

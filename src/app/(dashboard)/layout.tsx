@@ -16,34 +16,20 @@ export default async function DashboardLayout({
     redirect('/login')
   }
 
-  // Check if user has any services (for onboarding)
-  const { count: servicesCount } = await supabase
-    .from('qs_services')
-    .select('*', { count: 'exact', head: true })
-    .eq('user_id', user.id)
-
-  // Data for Getting Started checklist
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('company_name, phone')
-    .eq('id', user.id)
-    .single()
-
-  const { count: requestsCount } = await supabase
-    .from('qs_quote_requests')
-    .select('*', { count: 'exact', head: true })
-    .eq('contractor_id', user.id)
-
-  const { count: quotesCount } = await supabase
-    .from('qs_quotes')
-    .select('*', { count: 'exact', head: true })
-    .eq('user_id', user.id)
-
-  const { count: sentQuotesCount } = await supabase
-    .from('qs_quotes')
-    .select('*', { count: 'exact', head: true })
-    .eq('user_id', user.id)
-    .in('status', ['sent', 'accepted'])
+  // Run all checklist queries in parallel
+  const [
+    { count: servicesCount },
+    { data: profile },
+    { count: requestsCount },
+    { count: quotesCount },
+    { count: sentQuotesCount },
+  ] = await Promise.all([
+    supabase.from('qs_services').select('*', { count: 'exact', head: true }).eq('user_id', user.id),
+    supabase.from('profiles').select('company_name, phone').eq('id', user.id).single(),
+    supabase.from('qs_quote_requests').select('*', { count: 'exact', head: true }).eq('contractor_id', user.id),
+    supabase.from('qs_quotes').select('*', { count: 'exact', head: true }).eq('user_id', user.id),
+    supabase.from('qs_quotes').select('*', { count: 'exact', head: true }).eq('user_id', user.id).in('status', ['sent', 'accepted']),
+  ])
 
   const checklistData = {
     userId: user.id,

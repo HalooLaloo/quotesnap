@@ -6,17 +6,10 @@ export default async function ServicesPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const { data: services } = await supabase
-    .from('qs_services')
-    .select('*')
-    .eq('user_id', user?.id)
-    .order('created_at', { ascending: false })
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('country')
-    .eq('id', user?.id)
-    .single()
+  const [{ data: services }, { data: profile }] = await Promise.all([
+    supabase.from('qs_services').select('*').eq('user_id', user?.id).order('created_at', { ascending: false }),
+    supabase.from('profiles').select('country').eq('id', user?.id).single(),
+  ])
 
   const countryCode = profile?.country || DEFAULT_COUNTRY
   const country = COUNTRIES[countryCode] || COUNTRIES[DEFAULT_COUNTRY]
