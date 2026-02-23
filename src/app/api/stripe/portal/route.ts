@@ -17,16 +17,24 @@ export async function POST(request: NextRequest) {
       .eq('id', user.id)
       .single()
 
-    if (!profile?.stripe_customer_id) {
-      return NextResponse.json(
-        { error: 'No subscription found. Please subscribe first.' },
-        { status: 400 }
-      )
+    let customerId = profile?.stripe_customer_id
+
+    // Create Stripe customer if none exists
+    if (!customerId) {
+      const customer = await stripe.customers.create({
+        email: user.email,
+        metadata: { userId: user.id },
+      })
+      customerId = customer.id
+      await supabase
+        .from('profiles')
+        .update({ stripe_customer_id: customerId })
+        .eq('id', user.id)
     }
 
     const origin = request.headers.get('origin') || 'https://brickquote.app'
     const session = await stripe.billingPortal.sessions.create({
-      customer: profile.stripe_customer_id,
+      customer: customerId,
       return_url: `${origin}/settings`,
     })
 

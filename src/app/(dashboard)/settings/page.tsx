@@ -785,74 +785,26 @@ export default function SettingsPage() {
 
           {/* Action buttons */}
           <div className="flex flex-wrap gap-3">
-            {/* Subscribe button for inactive users */}
-            {!isActive && !isCanceled && subscriptionStatus !== 'past_due' && (
-              <a
-                href="/subscribe"
-                className="btn-primary flex items-center gap-2 text-sm"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-                Subscribe Now
-              </a>
-            )}
-
-            {/* Update payment method */}
-            {(isActive || isCanceled || subscriptionStatus === 'past_due') && (
-              <button
-                onClick={handleManageSubscription}
-                disabled={managingSubscription}
-                className="btn-secondary flex items-center gap-2 text-sm"
-              >
-                {managingSubscription ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Loading...
-                  </>
-                ) : (
-                  <>
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                    </svg>
-                    Manage Subscription
-                  </>
-                )}
-              </button>
-            )}
-
-            {/* Resume subscription (if canceled) */}
-            {isCanceled && (
-              <button
-                onClick={handleResumeSubscription}
-                disabled={resumingSubscription}
-                className="btn-primary flex items-center gap-2 text-sm"
-              >
-                {resumingSubscription ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Resuming...
-                  </>
-                ) : (
-                  <>
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                    </svg>
-                    Reactivate Subscription
-                  </>
-                )}
-              </button>
-            )}
-
-            {/* Cancel subscription */}
-            {isActive && !showCancelConfirm && (
-              <button
-                onClick={() => setShowCancelConfirm(true)}
-                className="text-sm text-slate-500 hover:text-red-400 transition-colors px-3 py-2"
-              >
-                Cancel Subscription
-              </button>
-            )}
+            {/* Manage Subscription — opens Stripe portal for all states */}
+            <button
+              onClick={handleManageSubscription}
+              disabled={managingSubscription}
+              className="btn-primary flex items-center gap-2 text-sm"
+            >
+              {managingSubscription ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Loading...
+                </>
+              ) : (
+                <>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                  </svg>
+                  Manage Subscription
+                </>
+              )}
+            </button>
           </div>
 
           {/* Cancel confirmation with feedback */}
