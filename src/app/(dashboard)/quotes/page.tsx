@@ -4,7 +4,8 @@ import { PageGuideCard } from '@/components/onboarding/PageGuideCard'
 
 export default async function QuotesPage() {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: { session } } = await supabase.auth.getSession()
+  const user = session?.user
 
   const { data: quotes } = await supabase
     .from('qs_quotes')

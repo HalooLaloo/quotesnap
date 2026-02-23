@@ -7,7 +7,8 @@ import { PageGuideCard } from '@/components/onboarding/PageGuideCard'
 
 export default async function InvoicesPage() {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: { session } } = await supabase.auth.getSession()
+  const user = session?.user
 
   const quotesSelect = `id, total_gross, total, status, created_at, currency, qs_quote_requests (client_name, client_email)`
 

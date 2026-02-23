@@ -12,7 +12,8 @@ export default async function RequestDetailPage({
 }) {
   const { id } = await params
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: { session } } = await supabase.auth.getSession()
+  const user = session?.user
 
   const { data: request } = await supabase
     .from('qs_quote_requests')

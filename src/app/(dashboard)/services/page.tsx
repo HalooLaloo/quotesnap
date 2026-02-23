@@ -4,7 +4,8 @@ import { COUNTRIES, DEFAULT_COUNTRY } from '@/lib/countries'
 
 export default async function ServicesPage() {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: { session } } = await supabase.auth.getSession()
+  const user = session?.user
 
   const [{ data: services }, { data: profile }] = await Promise.all([
     supabase.from('qs_services').select('*').eq('user_id', user?.id).order('created_at', { ascending: false }),

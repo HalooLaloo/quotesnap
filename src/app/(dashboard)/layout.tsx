@@ -10,11 +10,15 @@ export default async function DashboardLayout({
   children: React.ReactNode
 }) {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  // Use getSession() instead of getUser() — middleware already verified auth with getUser(),
+  // so we just need the user ID for DB queries (no extra network call)
+  const { data: { session } } = await supabase.auth.getSession()
 
-  if (!user) {
+  if (!session?.user) {
     redirect('/login')
   }
+
+  const user = session.user
 
   // Run all checklist queries in parallel
   const [

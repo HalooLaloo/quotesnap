@@ -14,7 +14,8 @@ export default async function RequestsPage({
 }) {
   const { status, search } = await searchParams
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: { session } } = await supabase.auth.getSession()
+  const user = session?.user
   const headersList = await headers()
   const host = headersList.get('host') || 'localhost:3000'
   const protocol = host.includes('localhost') ? 'http' : 'https'

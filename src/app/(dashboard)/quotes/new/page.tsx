@@ -10,7 +10,8 @@ export default async function NewQuotePage({
 }) {
   const { request: requestId } = await searchParams
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: { session } } = await supabase.auth.getSession()
+  const user = session?.user
 
   // Get user profile for currency
   const { data: profile } = await supabase
