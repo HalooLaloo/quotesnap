@@ -65,10 +65,9 @@ export async function updateSession(request: NextRequest) {
     }
   )
 
-  // Use getSession() instead of getUser() — reads JWT from cookie locally (no network call)
-  // Real auth verification happens in dashboard layout via getUser()
-  const { data: { session } } = await supabase.auth.getSession()
-  const user = session?.user
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
   const isNativeApp = request.headers.get('user-agent')?.includes('BrickQuoteApp')
 
