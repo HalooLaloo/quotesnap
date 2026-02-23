@@ -31,12 +31,16 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     // Get invoice
     const { data: invoice, error: invoiceError } = await supabase
       .from('qs_invoices')
       .select('*')
       .eq('id', invoiceId)
-      .eq('user_id', user?.id)
+      .eq('user_id', user.id)
       .single()
 
     if (invoiceError || !invoice) {
@@ -268,7 +272,7 @@ function generateInvoiceEmailHtml(data: InvoiceEmailData): string {
         <div style="background: #eff6ff; border-left: 4px solid #3b82f6; padding: 16px; margin-bottom: 24px; border-radius: 0 8px 8px 0;">
           <p style="margin: 0; color: #1e40af; font-size: 14px;">
             <strong>Notes:</strong><br>
-            ${data.notes}
+            ${escapeHtml(data.notes)}
           </p>
         </div>
       ` : ''}

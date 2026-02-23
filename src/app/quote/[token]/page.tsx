@@ -193,7 +193,7 @@ export default async function PublicQuotePage({
                 </div>
                 <div className="flex justify-between text-slate-300">
                   <span>{countryConfig.taxLabel} ({quote.vat_percent}%)</span>
-                  <span>{currencySymbol}{(quote.total_net * quote.vat_percent / 100).toFixed(2)}</span>
+                  <span>{currencySymbol}{((quote.total_net || 0) * (quote.vat_percent || 0) / 100).toFixed(2)}</span>
                 </div>
               </>
             )}

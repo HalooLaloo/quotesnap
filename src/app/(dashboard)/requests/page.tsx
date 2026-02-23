@@ -38,7 +38,11 @@ export default async function RequestsPage({
   }
 
   if (search) {
-    query = query.or(`client_name.ilike.%${search}%,description.ilike.%${search}%`)
+    // Sanitize search input — remove PostgREST special chars to prevent filter injection
+    const sanitized = search.replace(/[,.()"'\\]/g, '')
+    if (sanitized) {
+      query = query.or(`client_name.ilike.%${sanitized}%,description.ilike.%${sanitized}%`)
+    }
   }
 
   // Run all queries in parallel

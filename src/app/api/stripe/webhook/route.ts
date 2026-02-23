@@ -5,11 +5,15 @@ import { Resend } from 'resend'
 import { emailLayout } from '@/lib/emailTemplate'
 import Stripe from 'stripe'
 
-// Use service role for webhook (no auth context)
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+function getSupabaseAdmin() {
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    throw new Error('SUPABASE_SERVICE_ROLE_KEY is required for webhook')
+  }
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY
+  )
+}
 
 // Helper to safely get subscription end date
 function getSubscriptionEndDate(sub: Stripe.Subscription): string {
@@ -36,6 +40,8 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    const supabase = getSupabaseAdmin()
+
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session

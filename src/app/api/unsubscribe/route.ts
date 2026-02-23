@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { rateLimiter, getClientIP } from '@/lib/ratelimit'
+import { verifyUnsubscribeToken } from '@/lib/emailFooter'
 
 export async function POST(request: NextRequest) {
   try {
-    // Rate limiting
     if (rateLimiter) {
       const ip = getClientIP(request)
       const { success } = await rateLimiter.limit(ip)
@@ -13,9 +13,9 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const { userId, action } = await request.json()
+    const { userId, action, token } = await request.json()
 
-    if (!userId || !action) {
+    if (!userId || !action || !token) {
       return NextResponse.json({ error: 'Missing parameters' }, { status: 400 })
     }
 
@@ -23,21 +23,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
     }
 
+    // Verify HMAC token to prevent unauthorized manipulation
+    if (!verifyUnsubscribeToken(userId, token)) {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 403 })
+    }
+
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     )
-
-    // Verify user exists
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('id', userId)
-      .single()
-
-    if (!profile) {
-      return NextResponse.json({ error: 'Not found' }, { status: 404 })
-    }
 
     const { error } = await supabase
       .from('profiles')

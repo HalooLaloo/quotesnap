@@ -29,9 +29,9 @@ function getClientName(req: unknown): string {
 
 export async function GET(request: NextRequest) {
   try {
-    // Verify cron secret (optional but recommended for security)
+    // Verify cron secret — required in production
     const authHeader = request.headers.get('authorization')
-    if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    if (!process.env.CRON_SECRET || authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -67,6 +67,7 @@ export async function GET(request: NextRequest) {
     const { data: profiles } = await supabase
       .from('profiles')
       .select('id, email')
+      .neq('email_notifications', false)
 
     if (!profiles || profiles.length === 0) {
       return NextResponse.json({ success: true, message: 'No users found' })
@@ -146,7 +147,7 @@ export async function GET(request: NextRequest) {
         .from('qs_invoices')
         .select('id, invoice_number, client_name, total_gross, due_date')
         .eq('user_id', profile.id)
-        .neq('status', 'paid')
+        .in('status', ['sent', 'overdue'])
         .lt('due_date', now.toISOString())
 
       if (overdueInvoices && overdueInvoices.length > 0) {

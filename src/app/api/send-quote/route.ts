@@ -31,6 +31,10 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     // Fetch quote with client data
     const { data: quote, error: quoteError } = await supabase
       .from('qs_quotes')
@@ -44,7 +48,7 @@ export async function POST(request: NextRequest) {
         )
       `)
       .eq('id', quoteId)
-      .eq('user_id', user?.id)
+      .eq('user_id', user.id)
       .single()
 
     if (quoteError || !quote) {

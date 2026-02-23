@@ -190,7 +190,7 @@ function InvoiceForm() {
         return
       }
 
-      // Get next invoice number
+      // Atomic invoice counter: read, increment, and verify no conflict
       const { data: profile } = await supabase
         .from('profiles')
         .select('invoice_counter')
@@ -200,11 +200,19 @@ function InvoiceForm() {
       const counter = (profile?.invoice_counter || 0) + 1
       const invoiceNumber = `INV-${String(counter).padStart(4, '0')}`
 
-      // Update counter
-      await supabase
+      // Optimistic lock: only update if counter hasn't changed since we read it
+      const { data: updated, error: counterError } = await supabase
         .from('profiles')
         .update({ invoice_counter: counter })
         .eq('id', user.id)
+        .eq('invoice_counter', profile?.invoice_counter || 0)
+        .select('invoice_counter')
+        .single()
+
+      if (counterError || !updated) {
+        setError('Invoice number conflict — please try again.')
+        return
+      }
 
       // Filter out empty items
       const validItems = items.filter(item => item.description.trim())

@@ -7,10 +7,11 @@ import Link from 'next/link'
 function UnsubscribeContent() {
   const searchParams = useSearchParams()
   const userId = searchParams.get('uid')
+  const token = searchParams.get('t')
   const [status, setStatus] = useState<'loading' | 'done' | 'error' | 'resubscribed'>('loading')
 
   useEffect(() => {
-    if (!userId) {
+    if (!userId || !token) {
       setStatus('error')
       return
     }
@@ -18,7 +19,7 @@ function UnsubscribeContent() {
     fetch('/api/unsubscribe', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId, action: 'unsubscribe' }),
+      body: JSON.stringify({ userId, action: 'unsubscribe', token }),
     })
       .then(res => {
         if (!res.ok) throw new Error()
@@ -32,7 +33,7 @@ function UnsubscribeContent() {
       const res = await fetch('/api/unsubscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, action: 'resubscribe' }),
+        body: JSON.stringify({ userId, action: 'resubscribe', token }),
       })
       if (!res.ok) throw new Error()
       setStatus('resubscribed')

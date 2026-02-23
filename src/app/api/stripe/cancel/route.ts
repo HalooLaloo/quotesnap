@@ -36,11 +36,9 @@ export async function POST(request: NextRequest) {
       }
     )
 
-    // Update local status
-    await supabase
-      .from('profiles')
-      .update({ subscription_status: 'canceled' })
-      .eq('id', user.id)
+    // Don't change subscription_status locally — user keeps full access until period end.
+    // Stripe webhook (customer.subscription.updated) will sync the status automatically.
+    // The subscription.status from Stripe remains 'active' with cancel_at_period_end=true.
 
     return NextResponse.json({
       status: subscription.status,

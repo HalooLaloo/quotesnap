@@ -149,7 +149,7 @@ export async function POST(request: NextRequest) {
                   <strong>${clientName}</strong> has ${statusText} your quote.
                 </p>
                 <p style="color: #6b7280; font-size: 14px; margin: 0 0 24px 0;">
-                  Quote total: <strong>${currencySymbol}${quote.total.toFixed(2)}</strong>
+                  Quote total: <strong>${currencySymbol}${(quote.total || 0).toFixed(2)}</strong>
                 </p>
                 ${action === 'accept' ? `
                   <p style="color: #166534; font-size: 14px; margin: 0; background: #f0fdf4; padding: 16px; border-radius: 8px;">

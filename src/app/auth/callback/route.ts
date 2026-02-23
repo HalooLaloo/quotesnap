@@ -16,7 +16,7 @@ export async function GET(request: Request) {
     if (next === '/reset-password') {
       return NextResponse.redirect(`${origin}/reset-password?error=expired`)
     }
-    return NextResponse.redirect(`${origin}/login?verified=true`)
+    return NextResponse.redirect(`${origin}/login?error=verification_failed`)
   }
 
   // token_hash flow (works cross-device, no PKCE needed)
@@ -128,7 +128,7 @@ export async function GET(request: Request) {
     if (next === '/reset-password') {
       return NextResponse.redirect(`${origin}/reset-password?error=expired`)
     }
-    return NextResponse.redirect(`${origin}/login?verified=true`)
+    return NextResponse.redirect(`${origin}/login?error=verification_failed`)
   }
 
   // No code - redirect to login
