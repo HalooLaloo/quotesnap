@@ -24,6 +24,9 @@ function LoginForm() {
     if (searchParams.get('error') === 'verification_expired') {
       setError('Verification link expired. Please register again.')
     }
+    if (searchParams.get('mode') === 'reset') {
+      setResetMode(true)
+    }
   }, [searchParams])
 
   const handleLogin = async (e: React.FormEvent) => {

@@ -34,7 +34,7 @@ function RegisterForm() {
 
     setLoading(true)
 
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -48,6 +48,10 @@ function RegisterForm() {
 
     if (error) {
       setError(error.message)
+      setLoading(false)
+    } else if (data.user && data.user.identities?.length === 0) {
+      // Email already registered — Supabase returns fake success with empty identities
+      setError('An account with this email already exists. Try signing in or resetting your password.')
       setLoading(false)
     } else {
       // Always sign out after registration — user must confirm email first
@@ -110,6 +114,16 @@ function RegisterForm() {
             {error && (
               <div className="bg-red-500/10 border border-red-500/50 text-red-400 px-4 py-3 rounded-lg text-sm">
                 {error}
+                {error.includes('already exists') && (
+                  <div className="mt-2 flex gap-3 text-xs">
+                    <Link href="/login" className="text-blue-400 hover:text-blue-300 underline">
+                      Sign in
+                    </Link>
+                    <Link href="/login?mode=reset" className="text-blue-400 hover:text-blue-300 underline">
+                      Reset password
+                    </Link>
+                  </div>
+                )}
               </div>
             )}
 
