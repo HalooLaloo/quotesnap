@@ -248,8 +248,7 @@ export default function SettingsPage() {
       const response = await fetch('/api/stripe/portal', { method: 'POST' })
       const data = await response.json()
       if (data.url) {
-        window.open(data.url, '_blank')
-        setManagingSubscription(false)
+        window.location.href = data.url
       } else {
         setError(data.error || 'Failed to open subscription management')
         setManagingSubscription(false)

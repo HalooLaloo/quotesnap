@@ -24,9 +24,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    const origin = request.headers.get('origin') || 'https://brickquote.app'
     const session = await stripe.billingPortal.sessions.create({
       customer: profile.stripe_customer_id,
-      return_url: `${request.headers.get('origin')}/requests`,
+      return_url: `${origin}/settings`,
     })
 
     return NextResponse.json({ url: session.url })

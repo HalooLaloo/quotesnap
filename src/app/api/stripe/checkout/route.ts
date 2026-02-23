@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create checkout session with 3-day trial
-    const origin = request.headers.get('origin') || 'https://www.brickquote.app'
+    const origin = request.headers.get('origin') || 'https://brickquote.app'
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       mode: 'subscription',
