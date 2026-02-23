@@ -244,17 +244,26 @@ export default function SettingsPage() {
 
   const handleManageSubscription = async () => {
     setManagingSubscription(true)
+    setError('')
     try {
       const response = await fetch('/api/stripe/portal', { method: 'POST' })
-      const data = await response.json()
+      const text = await response.text()
+      let data: { url?: string; error?: string }
+      try {
+        data = JSON.parse(text)
+      } catch {
+        setError(`Server returned non-JSON (${response.status}): ${text.slice(0, 200)}`)
+        setManagingSubscription(false)
+        return
+      }
       if (data.url) {
         window.location.href = data.url
       } else {
-        setError(data.error || 'Failed to open subscription management')
+        setError(`Portal error (${response.status}): ${data.error || JSON.stringify(data)}`)
         setManagingSubscription(false)
       }
-    } catch {
-      setError('Failed to open subscription management')
+    } catch (err) {
+      setError(`Network error: ${err instanceof Error ? err.message : String(err)}`)
       setManagingSubscription(false)
     }
   }
