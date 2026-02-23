@@ -108,7 +108,7 @@ export async function updateSession(request: NextRequest) {
       hasAccess = subscriptionStatus === 'active' || subscriptionStatus === 'trialing'
 
       // Cache in cookie for 5 minutes
-      supabaseResponse.cookies.set('bq_sub', subscriptionStatus, {
+      supabaseResponse.cookies.set('bq_sub', subscriptionStatus as string, {
         maxAge: 300,
         httpOnly: true,
         path: '/',
