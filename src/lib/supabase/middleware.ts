@@ -11,16 +11,22 @@ const trackingRedirects: Record<string, string> = {
   '/pro': 'youtube',
 }
 
+// Public paths - no login required
+const publicPaths = ['/login', '/register', '/reset-password', '/request', '/quote', '/invoice', '/service', '/pricing', '/api', '/privacy', '/terms', '/contact', '/subscribe', '/unsubscribe', '/auth', '/checkout-complete']
+
 export async function updateSession(request: NextRequest) {
+  const pathname = request.nextUrl.pathname
+
   // Catch token_hash from Supabase email confirmation and redirect to callback handler
   const tokenHash = request.nextUrl.searchParams.get('token_hash')
-  if (tokenHash && !request.nextUrl.pathname.startsWith('/auth/callback')) {
+  if (tokenHash && !pathname.startsWith('/auth/callback')) {
     const url = request.nextUrl.clone()
     url.pathname = '/auth/callback'
     return NextResponse.redirect(url)
   }
 
-  const utmSource = trackingRedirects[request.nextUrl.pathname]
+  // Handle tracking redirects
+  const utmSource = trackingRedirects[pathname]
   if (utmSource) {
     const url = request.nextUrl.clone()
     url.pathname = '/register'
@@ -28,9 +34,15 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  let supabaseResponse = NextResponse.next({
-    request,
-  })
+  const isPublicPath = publicPaths.some(path => pathname.startsWith(path))
+
+  // Fast path: public pages without auth cookies — skip all Supabase calls
+  const hasAuthCookies = request.cookies.getAll().some(c => c.name.startsWith('sb-'))
+  if (isPublicPath && !hasAuthCookies) {
+    return NextResponse.next({ request })
+  }
+
+  let supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -44,9 +56,7 @@ export async function updateSession(request: NextRequest) {
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           )
-          supabaseResponse = NextResponse.next({
-            request,
-          })
+          supabaseResponse = NextResponse.next({ request })
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options)
           )
@@ -55,24 +65,18 @@ export async function updateSession(request: NextRequest) {
     }
   )
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  // Use getSession() instead of getUser() — reads JWT from cookie locally (no network call)
+  // Real auth verification happens in dashboard layout via getUser()
+  const { data: { session } } = await supabase.auth.getSession()
+  const user = session?.user
 
   const isNativeApp = request.headers.get('user-agent')?.includes('BrickQuoteApp')
 
-  // Public paths - no login required
-  const publicPaths = ['/login', '/register', '/reset-password', '/request', '/quote', '/invoice', '/service', '/pricing', '/api', '/privacy', '/terms', '/contact', '/subscribe', '/unsubscribe', '/auth', '/checkout-complete']
-  const isPublicPath = publicPaths.some(path =>
-    request.nextUrl.pathname.startsWith(path)
-  )
-
   // Helper: create redirect that preserves refreshed auth cookies
-  const redirectWithCookies = (pathname: string) => {
+  const redirectWithCookies = (redirectPath: string) => {
     const url = request.nextUrl.clone()
-    url.pathname = pathname
+    url.pathname = redirectPath
     const redirectResponse = NextResponse.redirect(url)
-    // Copy any refreshed auth cookies from supabaseResponse to redirect
     supabaseResponse.cookies.getAll().forEach(cookie => {
       redirectResponse.cookies.set(cookie.name, cookie.value)
     })
@@ -80,38 +84,49 @@ export async function updateSession(request: NextRequest) {
   }
 
   // Redirect unauthenticated users to login
-  if (!user && !isPublicPath && request.nextUrl.pathname !== '/') {
-    console.error(`[middleware] No user for ${request.nextUrl.pathname} (native=${isNativeApp})`)
+  if (!user && !isPublicPath && pathname !== '/') {
     return redirectWithCookies('/login')
   }
 
   if (user) {
-    // Check subscription status first — needed for all redirects below
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('subscription_status')
-      .eq('id', user.id)
-      .single()
+    // Check subscription status — use cached cookie first, query DB only if missing
+    let subscriptionStatus = request.cookies.get('bq_sub')?.value
+    let hasAccess = subscriptionStatus === 'active' || subscriptionStatus === 'trialing'
 
-    if (profileError) {
-      console.error(`[middleware] Profile query error for ${user.id}:`, profileError.message)
+    if (!subscriptionStatus) {
+      // Cache miss — query DB and set cookie for 5 minutes
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('subscription_status')
+        .eq('id', user.id)
+        .single()
+
+      if (profileError) {
+        console.error(`[middleware] Profile query error for ${user.id}:`, profileError.message)
+      }
+
+      subscriptionStatus = profile?.subscription_status || 'inactive'
+      hasAccess = subscriptionStatus === 'active' || subscriptionStatus === 'trialing'
+
+      // Cache in cookie for 5 minutes
+      supabaseResponse.cookies.set('bq_sub', subscriptionStatus, {
+        maxAge: 300,
+        httpOnly: true,
+        path: '/',
+        sameSite: 'lax',
+      })
     }
-
-    const hasAccess =
-      profile?.subscription_status === 'active' ||
-      profile?.subscription_status === 'trialing'
 
     // Native app: block /register, /subscribe, /pricing
     if (isNativeApp) {
       const blockedInApp = ['/register', '/subscribe', '/pricing']
-      if (blockedInApp.some(path => request.nextUrl.pathname.startsWith(path))) {
+      if (blockedInApp.some(path => pathname.startsWith(path))) {
         return redirectWithCookies(hasAccess ? '/requests' : '/login')
       }
     }
 
     // Redirect logged-in users away from login/register
-    if (request.nextUrl.pathname === '/login' || request.nextUrl.pathname === '/register') {
-      // Native app user without subscription — let them stay on /login (avoids redirect loop)
+    if (pathname === '/login' || pathname === '/register') {
       if (isNativeApp && !hasAccess) {
         return supabaseResponse
       }
@@ -122,17 +137,11 @@ export async function updateSession(request: NextRequest) {
     const noSubRequired = ['/subscribe', '/settings']
     const isCheckoutReturn = request.nextUrl.searchParams.get('checkout') === 'success'
     const needsSubscription = !isPublicPath
-      && request.nextUrl.pathname !== '/'
+      && pathname !== '/'
       && !isCheckoutReturn
-      && !noSubRequired.some(p => request.nextUrl.pathname.startsWith(p))
+      && !noSubRequired.some(p => pathname.startsWith(p))
 
     if (needsSubscription && !hasAccess) {
-      // If the profile query failed (e.g. parallel request race condition),
-      // don't block — let the page through, dashboard layout has its own auth check
-      if (profileError) {
-        return supabaseResponse
-      }
-      console.error(`[middleware] No subscription for ${request.nextUrl.pathname} user=${user.id} status=${profile?.subscription_status} native=${isNativeApp}`)
       return redirectWithCookies(isNativeApp ? '/login' : '/subscribe')
     }
   }
