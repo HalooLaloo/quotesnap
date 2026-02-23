@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { Metadata } from 'next'
+import { BackButton } from '@/components/BackButton'
 
 export const metadata: Metadata = {
   title: 'Privacy Policy',
@@ -11,7 +12,7 @@ export default function PrivacyPolicy() {
     <div className="min-h-screen bg-[#0a1628]">
       {/* Navigation */}
       <nav className="border-b border-[#1e3a5f] bg-[#0a1628]">
-        <div className="max-w-4xl mx-auto px-4 py-4">
+        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 w-fit">
             <div className="w-8 h-8 rounded-lg bg-[#132039] flex items-center justify-center">
               <svg className="w-5 h-5 text-orange-500" viewBox="0 0 24 24" fill="currentColor">
@@ -24,6 +25,7 @@ export default function PrivacyPolicy() {
             </div>
             <span className="text-xl font-bold text-white">BrickQuote</span>
           </Link>
+          <BackButton />
         </div>
       </nav>
 

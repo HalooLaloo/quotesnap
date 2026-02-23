@@ -175,11 +175,11 @@ function RegisterForm() {
               />
               <span className="text-slate-400 text-sm">
                 I agree to the{' '}
-                <Link href="/terms" target="_blank" className="text-blue-400 hover:text-blue-300">
+                <Link href="/terms" className="text-blue-400 hover:text-blue-300">
                   Terms of Service
                 </Link>{' '}
                 and{' '}
-                <Link href="/privacy" target="_blank" className="text-blue-400 hover:text-blue-300">
+                <Link href="/privacy" className="text-blue-400 hover:text-blue-300">
                   Privacy Policy
                 </Link>
               </span>
