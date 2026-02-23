@@ -1,6 +1,6 @@
 import Stripe from 'stripe'
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!.trim(), {
   apiVersion: '2025-12-15.clover',
   typescript: true,
 })
@@ -11,7 +11,7 @@ export const PLANS = {
     name: 'Pro Monthly',
     price: 29,
     interval: 'month',
-    priceId: process.env.STRIPE_MONTHLY_PRICE_ID || '',
+    priceId: (process.env.STRIPE_MONTHLY_PRICE_ID || '').trim(),
     trialDays: 3,
     features: [
       'Unlimited quotes & invoices',
@@ -31,7 +31,7 @@ export const PLANS = {
     name: 'Pro Yearly',
     price: 249,
     interval: 'year',
-    priceId: process.env.STRIPE_YEARLY_PRICE_ID || '',
+    priceId: (process.env.STRIPE_YEARLY_PRICE_ID || '').trim(),
     trialDays: 3,
     savings: 99,
     features: [
