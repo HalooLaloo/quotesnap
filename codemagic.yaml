@@ -26,8 +26,31 @@ workflows:
       - name: Install npm dependencies
         script: npm ci
 
-      - name: Sync Capacitor iOS
-        script: npx cap sync ios
+      - name: Sync Capacitor iOS + add Firebase SDK
+        script: |
+          npx cap sync ios
+
+          # Add Firebase SDK to Package.swift (cap sync overwrites it)
+          python3 << 'PYEOF'
+          import re
+          path = 'ios/App/CapApp-SPM/Package.swift'
+          content = open(path).read()
+          # Fix Windows backslashes from cap sync
+          content = content.replace('\\\\', '/')
+          # Add Firebase package dependency
+          if 'firebase-ios-sdk' not in content:
+              content = content.replace(
+                  '.package(url: "https://github.com/ionic-team/capacitor-swift-pm.git"',
+                  '.package(url: "https://github.com/firebase/firebase-ios-sdk.git", from: "11.0.0"),\n        .package(url: "https://github.com/ionic-team/capacitor-swift-pm.git"'
+              )
+              content = content.replace(
+                  '.product(name: "Capacitor", package: "capacitor-swift-pm")',
+                  '.product(name: "FirebaseMessaging", package: "firebase-ios-sdk"),\n                .product(name: "Capacitor", package: "capacitor-swift-pm")'
+              )
+          open(path, 'w').write(content)
+          print("Firebase added to Package.swift")
+          PYEOF
+          cat ios/App/CapApp-SPM/Package.swift
 
       - name: Increment build number
         script: |

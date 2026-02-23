@@ -1,24 +1,48 @@
 import UIKit
 import Capacitor
+import FirebaseCore
+import FirebaseMessaging
 
 @UIApplicationMain
-class AppDelegate: UIResponder, UIApplicationDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate, MessagingDelegate {
 
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Register for push notifications
+        FirebaseApp.configure()
+        Messaging.messaging().delegate = self
         UNUserNotificationCenter.current().delegate = self
         return true
     }
 
-    // Push notification token received
+    // APNs token received — give to Firebase for FCM registration
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
-        NotificationCenter.default.post(name: .capacitorDidRegisterForRemoteNotifications, object: deviceToken)
+        Messaging.messaging().apnsToken = deviceToken
     }
 
     func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
         NotificationCenter.default.post(name: .capacitorDidFailToRegisterForRemoteNotifications, object: error)
+    }
+
+    // Firebase Messaging delegate — FCM token received
+    func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
+        guard let token = fcmToken else { return }
+        injectFCMToken(token)
+    }
+
+    private func injectFCMToken(_ token: String) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            guard let vc = self.window?.rootViewController as? CAPBridgeViewController,
+                  let webView = vc.webView else {
+                // WebView not ready yet, retry
+                DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                    self.injectFCMToken(token)
+                }
+                return
+            }
+            let js = "window.__fcmToken = '\(token)'; window.dispatchEvent(new CustomEvent('fcmToken', {detail: '\(token)'}));"
+            webView.evaluateJavaScript(js, completionHandler: nil)
+        }
     }
 
     func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {

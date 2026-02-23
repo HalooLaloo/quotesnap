@@ -201,8 +201,26 @@ async function initPushNotifications() {
 
     // Listen for registration token BEFORE calling register
     PushNotifications.addListener('registration', async (token: any) => {
-      await saveFcmToken(user.id, token.value)
+      // On Android this is the FCM token; on iOS we ignore this (APNs token)
+      // and use the FCM token injected by Firebase SDK via custom event instead
+      if (Capacitor.getPlatform() !== 'ios') {
+        await saveFcmToken(user.id, token.value)
+      }
     })
+
+    // iOS: Firebase SDK injects FCM token via native AppDelegate
+    if (Capacitor.getPlatform() === 'ios') {
+      // Check if token was already injected before listener was set up
+      const existingToken = (window as any).__fcmToken
+      if (existingToken) {
+        await saveFcmToken(user.id, existingToken)
+      }
+      // Listen for future token updates
+      window.addEventListener('fcmToken', async (e: Event) => {
+        const token = (e as CustomEvent).detail
+        if (token) await saveFcmToken(user.id, token)
+      })
+    }
 
     PushNotifications.addListener('registrationError', () => {
       // Registration failed — silent
