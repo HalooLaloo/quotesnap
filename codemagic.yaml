@@ -108,7 +108,7 @@ workflows:
         auth: integration
         submit_to_testflight: true
         beta_groups:
-          - "Internal Testing"
+          - "test"
         submit_to_app_store: false
 
   android-release:
