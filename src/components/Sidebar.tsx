@@ -79,7 +79,7 @@ export function Sidebar({ userEmail, checklistData }: SidebarProps) {
         className="lg:hidden fixed left-3 z-40 p-2 bg-[#132039] border border-[#1e3a5f] rounded-xl text-orange-500 hover:bg-[#1e3a5f] shadow-lg"
         style={{ top: 'calc(env(safe-area-inset-top, 0px) + 36px)' }}
       >
-        <svg className="w-9 h-9" viewBox="0 0 24 24" fill="currentColor">
+        <svg className="w-8 h-8" viewBox="0 0 24 24" fill="currentColor">
           <rect x="2" y="6" width="9" height="5" rx="0.5" />
           <rect x="13" y="6" width="9" height="5" rx="0.5" />
           <rect x="6" y="13" width="9" height="5" rx="0.5" />
