@@ -199,26 +199,28 @@ async function initPushNotifications() {
       return
     }
 
+    const platform = Capacitor.getPlatform() // 'android' | 'ios'
+
     // Listen for registration token BEFORE calling register
     PushNotifications.addListener('registration', async (token: any) => {
       // On Android this is the FCM token; on iOS we ignore this (APNs token)
       // and use the FCM token injected by Firebase SDK via custom event instead
-      if (Capacitor.getPlatform() !== 'ios') {
-        await saveFcmToken(user.id, token.value)
+      if (platform !== 'ios') {
+        await saveFcmToken(user.id, token.value, platform)
       }
     })
 
     // iOS: Firebase SDK injects FCM token via native AppDelegate
-    if (Capacitor.getPlatform() === 'ios') {
+    if (platform === 'ios') {
       // Check if token was already injected before listener was set up
       const existingToken = (window as any).__fcmToken
       if (existingToken) {
-        await saveFcmToken(user.id, existingToken)
+        await saveFcmToken(user.id, existingToken, platform)
       }
       // Listen for future token updates
       window.addEventListener('fcmToken', async (e: Event) => {
         const token = (e as CustomEvent).detail
-        if (token) await saveFcmToken(user.id, token)
+        if (token) await saveFcmToken(user.id, token, platform)
       })
     }
 
@@ -246,19 +248,43 @@ async function initPushNotifications() {
   }
 }
 
-async function saveFcmToken(userId: string, token: string) {
+interface StoredToken {
+  t: string   // token
+  p: string   // platform (android/ios)
+}
+
+function parseTokens(raw: string | null): StoredToken[] {
+  if (!raw) return []
+  try {
+    const parsed = JSON.parse(raw)
+    if (Array.isArray(parsed)) return parsed
+  } catch {
+    // Old format: plain token string — migrate it
+    if (raw.length > 10) return [{ t: raw, p: 'android' }]
+  }
+  return []
+}
+
+async function saveFcmToken(userId: string, token: string, platform: string) {
   try {
     const supabase = createClient()
-    // Clear this token from any other account first (prevents duplicate tokens)
+
+    // Read current tokens
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('fcm_token')
+      .eq('id', userId)
+      .single()
+
+    const tokens = parseTokens(profile?.fcm_token)
+
+    // Replace token for this platform, or add new
+    const updated = tokens.filter(t => t.p !== platform)
+    updated.push({ t: token, p: platform })
+
     await supabase
       .from('profiles')
-      .update({ fcm_token: null })
-      .eq('fcm_token', token)
-      .neq('id', userId)
-    // Save token to current user
-    await supabase
-      .from('profiles')
-      .update({ fcm_token: token })
+      .update({ fcm_token: JSON.stringify(updated) })
       .eq('id', userId)
   } catch {
     // Silent fail
@@ -267,10 +293,21 @@ async function saveFcmToken(userId: string, token: string) {
 
 async function clearFcmToken(userId: string) {
   try {
+    const platform = Capacitor.getPlatform()
     const supabase = createClient()
+
+    // Only remove this device's token, keep other devices
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('fcm_token')
+      .eq('id', userId)
+      .single()
+
+    const tokens = parseTokens(profile?.fcm_token).filter(t => t.p !== platform)
+
     await supabase
       .from('profiles')
-      .update({ fcm_token: null })
+      .update({ fcm_token: tokens.length > 0 ? JSON.stringify(tokens) : null })
       .eq('id', userId)
   } catch {
     // Silent fail

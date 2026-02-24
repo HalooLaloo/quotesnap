@@ -48,12 +48,28 @@ async function getFirebaseAdmin() {
   return firebaseAdmin
 }
 
+interface StoredToken {
+  t: string
+  p: string
+}
+
+function parseTokens(raw: string | null): StoredToken[] {
+  if (!raw) return []
+  try {
+    const parsed = JSON.parse(raw)
+    if (Array.isArray(parsed)) return parsed
+  } catch {
+    // Old format: plain token string — treat as android
+    if (raw.length > 10) return [{ t: raw, p: 'android' }]
+  }
+  return []
+}
+
 export async function sendPushNotification(options: PushOptions): Promise<void> {
   try {
     const admin = await getFirebaseAdmin()
     if (!admin) return
 
-    // Get FCM token from Supabase
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) return
 
     const supabase = createClient(
@@ -67,54 +83,60 @@ export async function sendPushNotification(options: PushOptions): Promise<void> 
       .eq('id', options.userId)
       .single()
 
-    const token = profile?.fcm_token
-    if (!token) return
+    const tokens = parseTokens(profile?.fcm_token)
+    if (tokens.length === 0) return
 
-    await admin.messaging().send({
-      token,
-      notification: {
-        title: options.title,
-        body: options.body,
-      },
-      data: options.data || {},
-      android: {
-        priority: 'high',
-        notification: {
-          channelId: 'default',
-          icon: 'ic_launcher',
-          color: '#f97316',
-        },
-      },
-      apns: {
-        payload: {
-          aps: {
-            sound: 'default',
-            badge: 1,
-          },
-        },
-      },
-    })
-  } catch (error: unknown) {
-    // If token is invalid, clear it from DB
-    const err = error as { code?: string }
-    if (
-      err.code === 'messaging/invalid-registration-token' ||
-      err.code === 'messaging/registration-token-not-registered'
-    ) {
-      try {
-        if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) return
-        const supabase = createClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL,
-          process.env.SUPABASE_SERVICE_ROLE_KEY
-        )
-        await supabase
-          .from('profiles')
-          .update({ fcm_token: null })
-          .eq('id', options.userId)
-      } catch {
-        // ignore cleanup errors
-      }
+    const invalidTokens: string[] = []
+
+    // Send to ALL registered devices
+    await Promise.allSettled(
+      tokens.map(async ({ t: token }) => {
+        try {
+          await admin.messaging().send({
+            token,
+            notification: {
+              title: options.title,
+              body: options.body,
+            },
+            data: options.data || {},
+            android: {
+              priority: 'high' as const,
+              notification: {
+                channelId: 'default',
+                icon: 'ic_launcher',
+                color: '#f97316',
+              },
+            },
+            apns: {
+              payload: {
+                aps: {
+                  sound: 'default',
+                  badge: 1,
+                },
+              },
+            },
+          })
+        } catch (error: unknown) {
+          const err = error as { code?: string }
+          if (
+            err.code === 'messaging/invalid-registration-token' ||
+            err.code === 'messaging/registration-token-not-registered'
+          ) {
+            invalidTokens.push(token)
+          }
+        }
+      })
+    )
+
+    // Clean up invalid tokens
+    if (invalidTokens.length > 0) {
+      const validTokens = tokens.filter(t => !invalidTokens.includes(t.t))
+      await supabase
+        .from('profiles')
+        .update({ fcm_token: validTokens.length > 0 ? JSON.stringify(validTokens) : null })
+        .eq('id', options.userId)
     }
+  } catch {
     // Don't throw — push is best-effort, never block the main flow
   }
 }
