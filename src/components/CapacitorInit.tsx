@@ -20,21 +20,17 @@ export function CapacitorInit() {
     // Initial set
     updateHeight()
 
-    // Update on viewport resize (keyboard open/close)
+    // Update on viewport resize only (keyboard open/close)
+    // Do NOT listen to 'scroll' — it causes feedback loops with scrollIntoView
     vv.addEventListener('resize', updateHeight)
-    vv.addEventListener('scroll', updateHeight)
 
     // When an input/textarea is focused, scroll it into view after keyboard animation
     const onFocusIn = (e: FocusEvent) => {
       const el = e.target as HTMLElement
       if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT') {
-        // Wait for keyboard to fully open, then scroll
         setTimeout(() => {
           el.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
         }, 300)
-        setTimeout(() => {
-          el.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
-        }, 600)
       }
     }
 
@@ -42,7 +38,6 @@ export function CapacitorInit() {
 
     return () => {
       vv.removeEventListener('resize', updateHeight)
-      vv.removeEventListener('scroll', updateHeight)
       document.removeEventListener('focusin', onFocusIn)
     }
   }, [])

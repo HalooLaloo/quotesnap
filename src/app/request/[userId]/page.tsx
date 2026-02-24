@@ -78,23 +78,23 @@ export default function ClientRequestPage() {
       if (containerRef.current) {
         containerRef.current.style.height = `${vv.height}px`
         containerRef.current.style.transform = `translateY(${vv.offsetTop}px)`
-        // Scroll input into view when keyboard opens
-        setTimeout(() => {
-          if (document.activeElement === inputRef.current) {
-            inputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
-          } else {
-            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-          }
-        }, 100)
       }
     }
 
+    // Scroll input into view only on resize (keyboard open/close), not on every scroll
+    const onResize = () => {
+      update()
+      setTimeout(() => {
+        if (document.activeElement === inputRef.current) {
+          inputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+        }
+      }, 100)
+    }
+
     update()
-    vv.addEventListener('resize', update)
-    vv.addEventListener('scroll', update)
+    vv.addEventListener('resize', onResize)
     return () => {
-      vv.removeEventListener('resize', update)
-      vv.removeEventListener('scroll', update)
+      vv.removeEventListener('resize', onResize)
     }
   }, [])
 
