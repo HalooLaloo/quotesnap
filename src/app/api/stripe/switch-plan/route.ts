@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { stripe, PLANS, PlanType } from '@/lib/stripe'
+import { getStripe, PLANS, PlanType } from '@/lib/stripe'
 
 export async function POST(request: NextRequest) {
   try {
@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get current subscription to find the item ID
-    const subscription = await stripe.subscriptions.retrieve(profile.stripe_subscription_id)
+    const subscription = await getStripe().subscriptions.retrieve(profile.stripe_subscription_id)
     const itemId = subscription.items.data[0]?.id
 
     if (!itemId) {
@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Update subscription with new price (Stripe handles proration automatically)
-    const updated = await stripe.subscriptions.update(profile.stripe_subscription_id, {
+    const updated = await getStripe().subscriptions.update(profile.stripe_subscription_id, {
       items: [{ id: itemId, price: newPlan.priceId }],
       proration_behavior: 'create_prorations',
     })

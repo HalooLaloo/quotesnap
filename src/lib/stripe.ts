@@ -1,9 +1,18 @@
 import Stripe from 'stripe'
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!.trim(), {
-  apiVersion: '2025-12-15.clover',
-  typescript: true,
-})
+let _stripe: Stripe | null = null
+
+export function getStripe(): Stripe {
+  if (!_stripe) {
+    const key = (process.env.STRIPE_SECRET_KEY || '').trim()
+    if (!key) throw new Error('STRIPE_SECRET_KEY is not configured')
+    _stripe = new Stripe(key, {
+      apiVersion: '2025-12-15.clover',
+      typescript: true,
+    })
+  }
+  return _stripe
+}
 
 // BrickQuote pricing
 export const PLANS = {

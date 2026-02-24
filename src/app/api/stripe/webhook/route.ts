@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { stripe } from '@/lib/stripe'
+import { getStripe } from '@/lib/stripe'
 import { createClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
 import { emailLayout } from '@/lib/emailTemplate'
@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
   let event: Stripe.Event
 
   try {
-    event = stripe.webhooks.constructEvent(
+    event = getStripe().webhooks.constructEvent(
       body,
       signature,
       process.env.STRIPE_WEBHOOK_SECRET!
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
         const userId = session.metadata?.userId
 
         if (userId && session.subscription) {
-          const sub = await stripe.subscriptions.retrieve(
+          const sub = await getStripe().subscriptions.retrieve(
             session.subscription as string
           )
 
@@ -88,7 +88,7 @@ export async function POST(request: NextRequest) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const invoiceSubscription = (invoice as any).subscription as string | null
         if (invoiceSubscription) {
-          const sub = await stripe.subscriptions.retrieve(
+          const sub = await getStripe().subscriptions.retrieve(
             invoiceSubscription
           )
           const userId = sub.metadata?.userId
@@ -111,7 +111,7 @@ export async function POST(request: NextRequest) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const invoiceSubscription = (invoice as any).subscription as string | null
         if (invoiceSubscription) {
-          const sub = await stripe.subscriptions.retrieve(
+          const sub = await getStripe().subscriptions.retrieve(
             invoiceSubscription
           )
           const userId = sub.metadata?.userId

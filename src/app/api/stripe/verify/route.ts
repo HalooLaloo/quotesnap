@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { stripe } from '@/lib/stripe'
+import { getStripe } from '@/lib/stripe'
 import { createClient } from '@/lib/supabase/server'
 
 export async function POST() {
@@ -26,7 +26,7 @@ export async function POST() {
     }
 
     // Check Stripe directly for active subscriptions
-    const subscriptions = await stripe.subscriptions.list({
+    const subscriptions = await getStripe().subscriptions.list({
       customer: profile.stripe_customer_id,
       status: 'all',
       limit: 1,

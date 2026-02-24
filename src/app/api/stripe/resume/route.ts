@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { stripe } from '@/lib/stripe'
+import { getStripe } from '@/lib/stripe'
 
 export async function POST() {
   try {
@@ -21,7 +21,7 @@ export async function POST() {
     }
 
     // Remove cancel_at_period_end (reactivate)
-    const subscription = await stripe.subscriptions.update(
+    const subscription = await getStripe().subscriptions.update(
       profile.stripe_subscription_id,
       { cancel_at_period_end: false }
     )
