@@ -212,16 +212,41 @@ async function initPushNotifications() {
 
     // iOS: Firebase SDK injects FCM token via native AppDelegate
     if (platform === 'ios') {
+      let iosTokenSaved = false
+
+      const saveIosToken = async (token: string) => {
+        if (iosTokenSaved) return
+        iosTokenSaved = true
+        await saveFcmToken(user.id, token, platform)
+      }
+
       // Check if token was already injected before listener was set up
       const existingToken = (window as any).__fcmToken
       if (existingToken) {
-        await saveFcmToken(user.id, existingToken, platform)
+        await saveIosToken(existingToken)
       }
-      // Listen for future token updates
+
+      // Listen for future token updates from AppDelegate
       window.addEventListener('fcmToken', async (e: Event) => {
         const token = (e as CustomEvent).detail
-        if (token) await saveFcmToken(user.id, token, platform)
+        if (token) await saveIosToken(token)
       })
+
+      // Fallback: poll for __fcmToken in case the event was dispatched
+      // before this listener was attached (timing race with AppDelegate)
+      if (!iosTokenSaved) {
+        let pollCount = 0
+        const poll = setInterval(async () => {
+          pollCount++
+          const token = (window as any).__fcmToken
+          if (token) {
+            clearInterval(poll)
+            await saveIosToken(token)
+          } else if (pollCount >= 15) {
+            clearInterval(poll)
+          }
+        }, 2000)
+      }
     }
 
     PushNotifications.addListener('registrationError', () => {
