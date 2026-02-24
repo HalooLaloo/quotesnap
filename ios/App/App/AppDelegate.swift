@@ -86,7 +86,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, MessagingDelegate {
             webView.evaluateJavaScript(js) { [weak self] result, error in
                 let status = result as? String
                 if error != nil || status != "ok" {
-                    self.attemptTokenInjection(attempt: attempt + 1)
+                    self?.attemptTokenInjection(attempt: attempt + 1)
                 } else {
                     self?.pendingFCMToken = nil
                 }
