@@ -104,12 +104,9 @@ export default async function InvoiceDetailPage({
         </div>
       </div>
 
-      {/* Actions with PDF preview (full width for draft) */}
-      <div className="max-w-4xl mx-auto mb-6">
-        <InvoiceActions invoice={invoice} />
-      </div>
-
       <div className="max-w-2xl mx-auto space-y-6">
+        {/* Actions */}
+        <InvoiceActions invoice={invoice} />
         {/* Client Info */}
         <div className="card">
           <h2 className="text-lg font-semibold text-white mb-4">Client</h2>

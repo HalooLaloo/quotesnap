@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { DownloadPDFButton } from '@/components/DownloadPDFButton'
 
 interface Invoice {
   id: string
@@ -146,31 +145,23 @@ export function InvoiceActions({ invoice }: InvoiceActionsProps) {
   }
 
   return (
-    <div className="space-y-6">
-      {/* PDF Preview for draft invoices */}
-      {invoice.status === 'draft' && (
-        <div className="card">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-white">PDF Preview</h2>
-            <DownloadPDFButton
-              url={pdfUrl}
-              fileName={`invoice-${invoice.invoice_number || invoice.id}.pdf`}
-              className="btn-secondary text-sm inline-flex items-center gap-2"
-            />
-          </div>
-          <div className="bg-white rounded-lg overflow-hidden" style={{ height: '500px' }}>
-            <iframe
-              src={`${pdfUrl}#toolbar=0`}
-              className="w-full h-full"
-              title="Invoice PDF Preview"
-            />
-          </div>
-        </div>
-      )}
-
     <div className="card">
       <h2 className="text-lg font-semibold text-white mb-4">Actions</h2>
       <div className="space-y-3">
+        {/* Preview PDF */}
+        <a
+          href={pdfUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="btn-secondary w-full flex items-center justify-center gap-2"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+          </svg>
+          Preview PDF
+        </a>
+
         {invoice.status === 'draft' && (
           <>
             {invoice.client_email && (
@@ -315,7 +306,6 @@ export function InvoiceActions({ invoice }: InvoiceActionsProps) {
           </>
         )}
       </div>
-    </div>
     </div>
   )
 }

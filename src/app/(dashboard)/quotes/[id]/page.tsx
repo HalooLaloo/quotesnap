@@ -128,12 +128,6 @@ export default async function QuoteDetailPage({
         </div>
       </div>
 
-      {/* Preview & Send (draft quotes) */}
-      <QuoteActions
-        quote={{ id: quote.id, status: quote.status, token: quote.token, request_id: quote.request_id }}
-        clientEmail={quote.qs_quote_requests?.client_email || null}
-      />
-
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Main content */}
         <div className="lg:col-span-2 space-y-6">
@@ -221,6 +215,12 @@ export default async function QuoteDetailPage({
 
         {/* Sidebar */}
         <div className="space-y-6">
+          {/* Actions (draft only) */}
+          <QuoteActions
+            quote={{ id: quote.id, status: quote.status, token: quote.token, request_id: quote.request_id }}
+            clientEmail={quote.qs_quote_requests?.client_email || null}
+          />
+
           {/* Summary */}
           <div className="card">
             <h2 className="text-lg font-semibold text-white mb-4">Summary</h2>
