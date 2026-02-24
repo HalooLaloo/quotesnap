@@ -7,6 +7,7 @@ import { Service, UNITS, QuoteItem } from '@/lib/types'
 
 export interface ExistingQuote {
   id: string
+  token: string
   items: QuoteItem[]
   notes: string | null
   discount_percent: number
@@ -326,6 +327,82 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
   const totalGross = totalNet + vatAmount
   const total = showVat ? totalGross : totalNet
 
+  // Preview: save as draft, open client-facing page in new tab
+  const handlePreview = async () => {
+    if (items.length === 0) {
+      setError('Add at least one service to the quote')
+      return
+    }
+    const customWithoutPrice = items.filter(i => i.isCustom && i.unit_price === 0)
+    if (customWithoutPrice.length > 0) {
+      setError('Enter price for all custom services')
+      return
+    }
+
+    setError('')
+    setLoading(true)
+
+    const validUntil = new Date()
+    validUntil.setDate(validUntil.getDate() + validDays)
+
+    const quoteData = {
+      items: items,
+      subtotal: subtotal,
+      discount_percent: discountPercent,
+      vat_percent: showVat ? vatPercent : 0,
+      total_net: totalNet,
+      total_gross: totalGross,
+      total: total,
+      notes: clientAnswer ? `---CLIENT_ANSWER---\n${clientAnswer}` : null,
+      valid_until: validUntil.toISOString().split('T')[0],
+      available_from: availableFrom || null,
+      status: 'draft' as const,
+      currency: currency,
+    }
+
+    let token: string | null = null
+
+    if (isEditMode) {
+      token = existingQuote.token
+      const { error: updateError } = await supabase
+        .from('qs_quotes')
+        .update(quoteData)
+        .eq('id', existingQuote.id)
+        .eq('user_id', userId)
+
+      if (updateError) {
+        setError(updateError.message)
+        setLoading(false)
+        return
+      }
+    } else {
+      const { data: insertedQuote, error: insertError } = await supabase
+        .from('qs_quotes')
+        .insert({
+          ...quoteData,
+          request_id: request?.id || null,
+          user_id: userId,
+          materials: [],
+          sent_at: null,
+        })
+        .select('id, token')
+        .single()
+
+      if (insertError) {
+        setError(insertError.message)
+        setLoading(false)
+        return
+      }
+      token = insertedQuote.token
+    }
+
+    setLoading(false)
+
+    if (token) {
+      window.open(`/quote/${token}`, '_blank')
+    }
+  }
+
   // Zapisz wycenę
   const handleSubmit = async (status: 'draft' | 'sent') => {
     if (items.length === 0) {
@@ -370,6 +447,7 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
     }
 
     let quoteId: string
+    let quoteToken: string | null = null
 
     if (isEditMode) {
       // UPDATE existing quote
@@ -399,7 +477,7 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
           materials: [],
           sent_at: status === 'sent' ? new Date().toISOString() : null,
         })
-        .select('id')
+        .select('id, token')
         .single()
 
       if (insertError) {
@@ -408,6 +486,7 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
         return
       }
       quoteId = insertedQuote.id
+      quoteToken = insertedQuote.token
     }
 
     // Send email if status is 'sent'
@@ -1056,6 +1135,17 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
                 </button>
               </>
             )}
+            <button
+              onClick={handlePreview}
+              disabled={loading || items.length === 0 || success !== null || (!isEditMode && !profileComplete)}
+              className="btn-secondary w-full flex items-center justify-center gap-2"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+              Preview Quote
+            </button>
             <button
               onClick={() => handleSubmit('draft')}
               disabled={loading || items.length === 0 || success !== null || (!isEditMode && !profileComplete)}

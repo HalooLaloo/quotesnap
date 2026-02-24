@@ -87,6 +87,7 @@ export default async function EditQuotePage({
         measurementSystem={country.measurementSystem}
         existingQuote={{
           id: quote.id,
+          token: quote.token,
           items: quote.items || [],
           notes: quote.notes,
           discount_percent: quote.discount_percent || 0,
