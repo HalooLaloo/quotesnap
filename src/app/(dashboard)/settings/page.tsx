@@ -691,7 +691,7 @@ export default function SettingsPage() {
             )}
 
             {/* Trial info */}
-            {subscriptionStatus === 'trialing' && periodEnd && (
+            {subscriptionStatus === 'trialing' && (
               <div className="mt-3 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
                 <div className="flex items-start gap-2">
                   <svg className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -699,7 +699,7 @@ export default function SettingsPage() {
                   </svg>
                   <div>
                     <p className="text-blue-300 text-sm font-medium">
-                      Free trial until {new Date(periodEnd).toLocaleDateString()}
+                      Free trial{periodEnd ? ` until ${new Date(periodEnd).toLocaleDateString()}` : ''}
                     </p>
                     <p className="text-slate-400 text-xs mt-0.5">
                       Then {getPlanPrice() || '$29/month'}. Cancel anytime from Manage Subscription.

@@ -52,3 +52,52 @@ export const PLANS = {
 } as const
 
 export type PlanType = keyof typeof PLANS
+
+// Billing Portal configuration with plan switching enabled
+let _portalConfigId: string | null = null
+
+export async function getPortalConfigId(): Promise<string | undefined> {
+  if (_portalConfigId) return _portalConfigId
+
+  const stripe = getStripe()
+  const monthlyPriceId = PLANS.monthly.priceId
+  const yearlyPriceId = PLANS.yearly.priceId
+
+  if (!monthlyPriceId || !yearlyPriceId) return undefined
+
+  // Check existing configs first to avoid creating duplicates
+  const configs = await stripe.billingPortal.configurations.list({ limit: 100 })
+  const existing = configs.data.find(c =>
+    c.active && c.features.subscription_update.enabled
+  )
+  if (existing) {
+    _portalConfigId = existing.id
+    return _portalConfigId
+  }
+
+  // Get product ID from monthly price
+  const price = await stripe.prices.retrieve(monthlyPriceId)
+  const productId = typeof price.product === 'string' ? price.product : price.product.id
+
+  const config = await stripe.billingPortal.configurations.create({
+    features: {
+      subscription_update: {
+        enabled: true,
+        default_allowed_updates: ['price'],
+        products: [{
+          product: productId,
+          prices: [monthlyPriceId, yearlyPriceId],
+        }],
+      },
+      subscription_cancel: { enabled: true, mode: 'at_period_end' },
+      payment_method_update: { enabled: true },
+      invoice_history: { enabled: true },
+    },
+    business_profile: {
+      headline: 'Manage your BrickQuote subscription',
+    },
+  })
+
+  _portalConfigId = config.id
+  return config.id
+}

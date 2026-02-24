@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getStripe } from '@/lib/stripe'
+import { getStripe, getPortalConfigId } from '@/lib/stripe'
 import { createClient } from '@/lib/supabase/server'
 
 export async function POST(request: NextRequest) {
@@ -33,9 +33,11 @@ export async function POST(request: NextRequest) {
     }
 
     const origin = request.headers.get('origin') || 'https://brickquote.app'
+    const configId = await getPortalConfigId()
     const session = await getStripe().billingPortal.sessions.create({
       customer: customerId,
       return_url: `${origin}/settings`,
+      ...(configId && { configuration: configId }),
     })
 
     return NextResponse.json({ url: session.url })
