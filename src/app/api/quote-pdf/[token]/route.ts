@@ -257,7 +257,7 @@ export async function GET(
     return new NextResponse(pdfBuffer, {
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="quote-${clientName.replace(/\s+/g, '-')}.pdf"`,
+        'Content-Disposition': `inline; filename="quote-${clientName.replace(/\s+/g, '-')}.pdf"`,
       },
     })
   } catch (error) {

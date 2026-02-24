@@ -167,110 +167,121 @@ export function initCapacitor() {
 }
 
 async function initPushNotifications() {
+  // Wait for user to be logged in before registering push
+  const supabase = createClient()
+  let user: any = null
+
   try {
-    // Wait for user to be logged in before registering push
-    const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      // Not logged in yet — listen for auth change and retry
-      supabase.auth.onAuthStateChange((event) => {
-        if (event === 'SIGNED_IN') {
-          initPushNotifications()
+    const { data } = await supabase.auth.getUser()
+    user = data?.user
+  } catch {
+    // Auth check failed
+  }
+
+  if (!user) {
+    // Not logged in yet — listen for auth change and retry
+    supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_IN') {
+        initPushNotifications()
+      }
+    })
+    return
+  }
+
+  // Clear FCM token on sign out so notifications don't go to wrong account
+  supabase.auth.onAuthStateChange(async (event) => {
+    if (event === 'SIGNED_OUT') {
+      await clearFcmToken(user.id)
+    }
+  })
+
+  const platform = Capacitor.getPlatform() // 'android' | 'ios'
+
+  // iOS: Firebase SDK injects FCM token via native AppDelegate.
+  // This MUST run independently of Capacitor PushNotifications plugin
+  // because the plugin bridge doesn't work in remote URL mode on iOS.
+  if (platform === 'ios') {
+    initIosPushToken(user.id)
+  }
+
+  // Android: Use Capacitor PushNotifications plugin
+  if (platform === 'android') {
+    try {
+      let permStatus = await PushNotifications.checkPermissions()
+
+      if (permStatus.receive === 'prompt') {
+        permStatus = await PushNotifications.requestPermissions()
+      }
+
+      if (permStatus.receive !== 'granted') {
+        return
+      }
+
+      PushNotifications.addListener('registration', async (token: any) => {
+        await saveFcmToken(user.id, token.value, platform)
+      })
+
+      PushNotifications.addListener('registrationError', () => {
+        // Registration failed — silent
+      })
+
+      await PushNotifications.register()
+
+      PushNotifications.addListener('pushNotificationReceived', () => {
+        // Notification is shown automatically by the system
+      })
+
+      PushNotifications.addListener('pushNotificationActionPerformed', (notification: any) => {
+        const url = notification.notification.data?.url
+        if (url && typeof url === 'string') {
+          window.location.href = url
         }
       })
-      return
+    } catch {
+      // Capacitor bridge issue — silent fail
     }
-
-    // Clear FCM token on sign out so notifications don't go to wrong account
-    supabase.auth.onAuthStateChange(async (event) => {
-      if (event === 'SIGNED_OUT') {
-        await clearFcmToken(user.id)
-      }
-    })
-
-    // Check/request permission
-    let permStatus = await PushNotifications.checkPermissions()
-
-    if (permStatus.receive === 'prompt') {
-      permStatus = await PushNotifications.requestPermissions()
-    }
-
-    if (permStatus.receive !== 'granted') {
-      return
-    }
-
-    const platform = Capacitor.getPlatform() // 'android' | 'ios'
-
-    // Listen for registration token BEFORE calling register
-    PushNotifications.addListener('registration', async (token: any) => {
-      // On Android this is the FCM token; on iOS we ignore this (APNs token)
-      // and use the FCM token injected by Firebase SDK via custom event instead
-      if (platform !== 'ios') {
-        await saveFcmToken(user.id, token.value, platform)
-      }
-    })
-
-    // iOS: Firebase SDK injects FCM token via native AppDelegate
-    if (platform === 'ios') {
-      let iosTokenSaved = false
-
-      const saveIosToken = async (token: string) => {
-        if (iosTokenSaved) return
-        iosTokenSaved = true
-        await saveFcmToken(user.id, token, platform)
-      }
-
-      // Check if token was already injected before listener was set up
-      const existingToken = (window as any).__fcmToken
-      if (existingToken) {
-        await saveIosToken(existingToken)
-      }
-
-      // Listen for future token updates from AppDelegate
-      window.addEventListener('fcmToken', async (e: Event) => {
-        const token = (e as CustomEvent).detail
-        if (token) await saveIosToken(token)
-      })
-
-      // Fallback: poll for __fcmToken in case the event was dispatched
-      // before this listener was attached (timing race with AppDelegate)
-      if (!iosTokenSaved) {
-        let pollCount = 0
-        const poll = setInterval(async () => {
-          pollCount++
-          const token = (window as any).__fcmToken
-          if (token) {
-            clearInterval(poll)
-            await saveIosToken(token)
-          } else if (pollCount >= 15) {
-            clearInterval(poll)
-          }
-        }, 2000)
-      }
-    }
-
-    PushNotifications.addListener('registrationError', () => {
-      // Registration failed — silent
-    })
-
-    // Register for push
-    await PushNotifications.register()
-
-    // Notification received while app is in foreground
-    PushNotifications.addListener('pushNotificationReceived', () => {
-      // Notification is shown automatically by the system
-    })
-
-    // User tapped on notification
-    PushNotifications.addListener('pushNotificationActionPerformed', (notification: any) => {
-      const url = notification.notification.data?.url
-      if (url && typeof url === 'string') {
-        window.location.href = url
-      }
-    })
-  } catch {
-    // Silent fail — push notifications are non-critical
   }
+}
+
+/**
+ * iOS-specific push token handling.
+ * Runs independently of Capacitor PushNotifications plugin.
+ * Gets FCM token from AppDelegate injection (window.__fcmToken / fcmToken event).
+ */
+function initIosPushToken(userId: string) {
+  let iosTokenSaved = false
+
+  const saveIosToken = async (token: string) => {
+    if (iosTokenSaved) return
+    iosTokenSaved = true
+    await saveFcmToken(userId, token, 'ios')
+  }
+
+  // Check if token was already injected before this code ran
+  const existingToken = (window as any).__fcmToken
+  if (existingToken) {
+    saveIosToken(existingToken)
+    return
+  }
+
+  // Listen for token injection from AppDelegate
+  window.addEventListener('fcmToken', (e: Event) => {
+    const token = (e as CustomEvent).detail
+    if (token) saveIosToken(token)
+  })
+
+  // Fallback: poll for __fcmToken (timing race with AppDelegate injection)
+  let pollCount = 0
+  const poll = setInterval(() => {
+    pollCount++
+    const token = (window as any).__fcmToken
+    if (token) {
+      clearInterval(poll)
+      saveIosToken(token)
+    } else if (pollCount >= 30) {
+      clearInterval(poll)
+    }
+  }, 2000)
 }
 
 interface StoredToken {

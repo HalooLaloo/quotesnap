@@ -345,7 +345,7 @@ export async function GET(
     return new NextResponse(pdfBuffer, {
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="${invoice.invoice_number}-${clientName.replace(/\s+/g, '-')}.pdf"`,
+        'Content-Disposition': `inline; filename="${invoice.invoice_number}-${clientName.replace(/\s+/g, '-')}.pdf"`,
       },
     })
   } catch (error) {

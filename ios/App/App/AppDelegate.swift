@@ -42,9 +42,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, MessagingDelegate {
     }
 
     private func attemptTokenInjection(attempt: Int) {
-        guard let token = pendingFCMToken, attempt < 20 else { return }
+        guard let token = pendingFCMToken, attempt < 30 else { return }
 
-        let delay: TimeInterval = attempt == 0 ? 2.0 : 2.0
+        // First attempt: wait 5s for page to fully load and auth cookies to be set.
+        // Subsequent attempts: retry every 3s.
+        let delay: TimeInterval = attempt == 0 ? 5.0 : 3.0
         DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
             guard let self = self else { return }
             guard let vc = self.window?.rootViewController as? CAPBridgeViewController,
@@ -54,18 +56,29 @@ class AppDelegate: UIResponder, UIApplicationDelegate, MessagingDelegate {
             }
 
             let escaped = token.replacingOccurrences(of: "'", with: "\\'")
-            // Inject token into WebView AND call API directly with session cookies
+            // Inject token into WebView AND call API directly with session cookies.
+            // The API call saves the token server-side as a belt-and-suspenders approach.
+            // Retry the API call with delay if it fails (auth cookies may not be ready yet).
             let js = """
             (function() {
                 if (document.readyState !== 'complete') return 'loading';
                 window.__fcmToken = '\(escaped)';
                 window.dispatchEvent(new CustomEvent('fcmToken', {detail: '\(escaped)'}));
-                fetch('/api/save-fcm-token', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    credentials: 'same-origin',
-                    body: JSON.stringify({token: '\(escaped)', platform: 'ios'})
-                }).catch(function(){});
+                var saveToken = function() {
+                    fetch('/api/save-fcm-token', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        credentials: 'same-origin',
+                        body: JSON.stringify({token: '\(escaped)', platform: 'ios'})
+                    }).then(function(r) {
+                        if (!r.ok && r.status === 401) {
+                            setTimeout(saveToken, 5000);
+                        }
+                    }).catch(function() {
+                        setTimeout(saveToken, 5000);
+                    });
+                };
+                saveToken();
                 return 'ok';
             })();
             """
@@ -73,7 +86,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, MessagingDelegate {
             webView.evaluateJavaScript(js) { [weak self] result, error in
                 let status = result as? String
                 if error != nil || status != "ok" {
-                    self?.attemptTokenInjection(attempt: attempt + 1)
+                    self.attemptTokenInjection(attempt: attempt + 1)
                 } else {
                     self?.pendingFCMToken = nil
                 }
