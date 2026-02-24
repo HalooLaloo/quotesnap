@@ -11,11 +11,12 @@ function InvoiceForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const quoteId = searchParams.get('from_quote')
+  const editInvoiceId = searchParams.get('edit')
 
   const supabase = useMemo(() => createClient(), [])
 
   const [loading, setLoading] = useState(false)
-  const [loadingQuote, setLoadingQuote] = useState(!!quoteId)
+  const [loadingQuote, setLoadingQuote] = useState(!!quoteId || !!editInvoiceId)
   const [error, setError] = useState('')
 
   // Currency from profile
@@ -75,12 +76,62 @@ function InvoiceForm() {
     loadProfile()
   }, [supabase])
 
-  // Load quote data if from_quote param exists
+  // Notes
+  const [notes, setNotes] = useState('')
+
+  // Load quote or existing invoice data
   useEffect(() => {
-    if (quoteId) {
+    if (editInvoiceId) {
+      loadInvoiceData(editInvoiceId)
+    } else if (quoteId) {
       loadQuoteData(quoteId)
     }
-  }, [quoteId])
+  }, [quoteId, editInvoiceId])
+
+  const loadInvoiceData = async (invoiceId: string) => {
+    setLoadingQuote(true)
+    try {
+      const { data: invoice, error: invoiceError } = await supabase
+        .from('qs_invoices')
+        .select('*')
+        .eq('id', invoiceId)
+        .single()
+
+      if (invoiceError || !invoice) {
+        setError('Could not load invoice')
+        return
+      }
+
+      // Only allow editing draft invoices
+      if (invoice.status !== 'draft') {
+        setError('Only draft invoices can be edited')
+        return
+      }
+
+      setClientName(invoice.client_name || '')
+      setClientEmail(invoice.client_email || '')
+      setClientPhone(invoice.client_phone || '')
+      setClientAddress(invoice.client_address || '')
+      setDiscountPercent(invoice.discount_percent || 0)
+      setVatPercent(invoice.vat_percent || 0)
+      setDueDate(invoice.due_date || '')
+      setPaymentTerms(invoice.payment_terms || '')
+      setNotes(invoice.notes || '')
+      if (invoice.bank_name) setBankName(invoice.bank_name)
+      if (invoice.bank_account) setBankAccount(invoice.bank_account)
+      if (invoice.bank_routing) setBankRouting(invoice.bank_routing)
+
+      const invoiceItems = (invoice.items || []) as InvoiceItem[]
+      if (invoiceItems.length > 0) {
+        setItems(invoiceItems)
+      }
+    } catch (err) {
+      console.error('Error loading invoice:', err)
+      setError('Failed to load invoice')
+    } finally {
+      setLoadingQuote(false)
+    }
+  }
 
   const loadQuoteData = async (qId: string) => {
     setLoadingQuote(true)
@@ -190,67 +241,85 @@ function InvoiceForm() {
         return
       }
 
-      // Atomic invoice counter: read, increment, and verify no conflict
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('invoice_counter')
-        .eq('id', user.id)
-        .single()
-
-      const counter = (profile?.invoice_counter || 0) + 1
-      const invoiceNumber = `INV-${String(counter).padStart(4, '0')}`
-
-      // Optimistic lock: only update if counter hasn't changed since we read it
-      const { data: updated, error: counterError } = await supabase
-        .from('profiles')
-        .update({ invoice_counter: counter })
-        .eq('id', user.id)
-        .eq('invoice_counter', profile?.invoice_counter || 0)
-        .select('invoice_counter')
-        .single()
-
-      if (counterError || !updated) {
-        setError('Invoice number conflict — please try again.')
-        return
-      }
-
       // Filter out empty items
       const validItems = items.filter(item => item.description.trim())
 
-      // Create invoice
-      const { data: invoice, error: insertError } = await supabase
-        .from('qs_invoices')
-        .insert({
-          user_id: user.id,
-          quote_id: quoteId || null,
-          invoice_number: invoiceNumber,
-          items: validItems,
-          subtotal,
-          discount_percent: discountPercent,
-          vat_percent: vatPercent,
-          total_net: totalNet,
-          total_gross: totalGross,
-          due_date: dueDate || null,
-          payment_terms: paymentTerms || null,
-          status: 'draft',
-          sent_at: null,
-          client_name: clientName,
-          client_email: clientEmail || null,
-          client_phone: clientPhone || null,
-          client_address: clientAddress || null,
-          currency: currency,
-          bank_name: bankName || null,
-          bank_account: bankAccount || null,
-          bank_routing: bankRouting || null,
-          ...(invoiceDate ? { created_at: new Date(invoiceDate + 'T12:00:00').toISOString() } : {}),
-        })
-        .select()
-        .single()
+      const invoiceData = {
+        items: validItems,
+        subtotal,
+        discount_percent: discountPercent,
+        vat_percent: vatPercent,
+        total_net: totalNet,
+        total_gross: totalGross,
+        due_date: dueDate || null,
+        payment_terms: paymentTerms || null,
+        client_name: clientName,
+        client_email: clientEmail || null,
+        client_phone: clientPhone || null,
+        client_address: clientAddress || null,
+        currency: currency,
+        bank_name: bankName || null,
+        bank_account: bankAccount || null,
+        bank_routing: bankRouting || null,
+        notes: notes || null,
+      }
 
-      if (insertError) throw insertError
+      if (editInvoiceId) {
+        // UPDATE existing invoice
+        const { error: updateError } = await supabase
+          .from('qs_invoices')
+          .update(invoiceData)
+          .eq('id', editInvoiceId)
+          .eq('user_id', user.id)
 
-      router.push(`/invoices/${invoice.id}`)
-      router.refresh()
+        if (updateError) throw updateError
+
+        router.push(`/invoices/${editInvoiceId}`)
+        router.refresh()
+      } else {
+        // Atomic invoice counter for new invoices
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('invoice_counter')
+          .eq('id', user.id)
+          .single()
+
+        const counter = (profile?.invoice_counter || 0) + 1
+        const invoiceNumber = `INV-${String(counter).padStart(4, '0')}`
+
+        // Optimistic lock: only update if counter hasn't changed since we read it
+        const { data: updated, error: counterError } = await supabase
+          .from('profiles')
+          .update({ invoice_counter: counter })
+          .eq('id', user.id)
+          .eq('invoice_counter', profile?.invoice_counter || 0)
+          .select('invoice_counter')
+          .single()
+
+        if (counterError || !updated) {
+          setError('Invoice number conflict — please try again.')
+          return
+        }
+
+        const { data: invoice, error: insertError } = await supabase
+          .from('qs_invoices')
+          .insert({
+            ...invoiceData,
+            user_id: user.id,
+            quote_id: quoteId || null,
+            invoice_number: invoiceNumber,
+            status: 'draft',
+            sent_at: null,
+            ...(invoiceDate ? { created_at: new Date(invoiceDate + 'T12:00:00').toISOString() } : {}),
+          })
+          .select()
+          .single()
+
+        if (insertError) throw insertError
+
+        router.push(`/invoices/${invoice.id}`)
+        router.refresh()
+      }
 
     } catch (err) {
       console.error('Error creating invoice:', err)
@@ -278,10 +347,10 @@ function InvoiceForm() {
           ← Back to Invoices
         </Link>
         <h1 className="text-3xl font-bold text-white">
-          {quoteId ? 'Create Invoice from Quote' : 'New Invoice'}
+          {editInvoiceId ? 'Edit Invoice' : quoteId ? 'Create Invoice from Quote' : 'New Invoice'}
         </h1>
         <p className="text-slate-400 mt-1">
-          {quoteId ? 'Review and adjust items before creating the invoice.' : 'Create a new invoice for completed work.'}
+          {editInvoiceId ? 'Update items, quantities, and pricing.' : quoteId ? 'Review and adjust items before creating the invoice.' : 'Create a new invoice for completed work.'}
         </p>
       </div>
 
@@ -615,7 +684,7 @@ function InvoiceForm() {
           disabled={loading}
           className="btn-primary flex-1"
         >
-          {loading ? 'Creating...' : 'Create Invoice'}
+          {loading ? 'Saving...' : editInvoiceId ? 'Save Changes' : 'Create Invoice'}
         </button>
       </div>
     </div>

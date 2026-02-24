@@ -82,11 +82,24 @@ export default async function InvoiceDetailPage({
             <span className={`px-3 py-1 rounded-full text-sm font-medium ${statusColors[invoice.status] || 'bg-slate-500/20 text-slate-400'}`}>
               {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
             </span>
-            <DownloadPDFButton
-              url={`/api/invoice-pdf/${invoice.token}`}
-              fileName={`invoice-${invoice.invoice_number || invoice.id}.pdf`}
-              className="btn-secondary inline-flex items-center gap-2 text-sm"
-            />
+            <div className="flex items-center gap-2">
+              {invoice.status === 'draft' && (
+                <Link
+                  href={`/invoices/new?edit=${invoice.id}`}
+                  className="btn-secondary inline-flex items-center gap-2 text-sm"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                  Edit
+                </Link>
+              )}
+              <DownloadPDFButton
+                url={`/api/invoice-pdf/${invoice.token}`}
+                fileName={`invoice-${invoice.invoice_number || invoice.id}.pdf`}
+                className="btn-secondary inline-flex items-center gap-2 text-sm"
+              />
+            </div>
           </div>
         </div>
       </div>

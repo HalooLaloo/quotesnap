@@ -5,6 +5,17 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Service, UNITS, QuoteItem } from '@/lib/types'
 
+export interface ExistingQuote {
+  id: string
+  items: QuoteItem[]
+  notes: string | null
+  discount_percent: number
+  vat_percent: number
+  valid_until: string | null
+  available_from: string | null
+  status: string
+}
+
 interface QuoteFormProps {
   request: {
     id: string
@@ -19,6 +30,7 @@ interface QuoteFormProps {
   defaultTaxPercent: number
   profileComplete: boolean
   measurementSystem: 'imperial' | 'metric'
+  existingQuote?: ExistingQuote
 }
 
 interface CustomServiceForm {
@@ -32,9 +44,14 @@ interface AiSuggestion extends QuoteItem {
   selected: boolean
 }
 
-export function QuoteForm({ request, services, userId, currency, currencySymbol, taxLabel, defaultTaxPercent, profileComplete, measurementSystem }: QuoteFormProps) {
+export function QuoteForm({ request, services, userId, currency, currencySymbol, taxLabel, defaultTaxPercent, profileComplete, measurementSystem, existingQuote }: QuoteFormProps) {
   const router = useRouter()
   const supabase = createClient()
+  const isEditMode = !!existingQuote
+
+  // Parse existing quote notes
+  const existingNotes = existingQuote?.notes || ''
+  const [existingGeneralNotes, existingClientAnswer] = existingNotes.split('---CLIENT_ANSWER---').map(s => s.trim())
 
   // AI suggestions state
   const [aiSuggestions, setAiSuggestions] = useState<AiSuggestion[]>([])
@@ -42,17 +59,17 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
   const [aiNotes, setAiNotes] = useState<string | null>(null)
   const [aiLoaded, setAiLoaded] = useState(false)
 
-  // Manual items (added by worker)
-  const [manualItems, setManualItems] = useState<QuoteItem[]>([])
+  // Manual items (added by worker) — in edit mode, pre-fill with existing items
+  const [manualItems, setManualItems] = useState<QuoteItem[]>(existingQuote?.items || [])
 
-  const [clientAnswer, setClientAnswer] = useState('')
+  const [clientAnswer, setClientAnswer] = useState(existingClientAnswer || '')
   const [personalMessage, setPersonalMessage] = useState('')
   const [showPersonalMessage, setShowPersonalMessage] = useState(false)
-  const [discountPercent, setDiscountPercent] = useState(0)
-  const [vatPercent, setVatPercent] = useState(defaultTaxPercent)
-  const [showVat, setShowVat] = useState(defaultTaxPercent > 0)
+  const [discountPercent, setDiscountPercent] = useState(existingQuote?.discount_percent || 0)
+  const [vatPercent, setVatPercent] = useState(existingQuote?.vat_percent ?? defaultTaxPercent)
+  const [showVat, setShowVat] = useState((existingQuote?.vat_percent ?? defaultTaxPercent) > 0)
   const [validDays, setValidDays] = useState(2)
-  const [availableFrom, setAvailableFrom] = useState('')
+  const [availableFrom, setAvailableFrom] = useState(existingQuote?.available_from || '')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState<'sent' | 'draft' | null>(null)
@@ -83,9 +100,9 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
     unit_price: 0,
   })
 
-  // Auto-load AI suggestions when page loads with request
+  // Auto-load AI suggestions when page loads with request (not in edit mode)
   useEffect(() => {
-    if (request?.description && !aiLoaded) {
+    if (request?.description && !aiLoaded && !isEditMode) {
       loadAiSuggestions()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -335,36 +352,62 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
     const validUntil = new Date()
     validUntil.setDate(validUntil.getDate() + validDays)
 
-    // Save quote and get its ID
-    const { data: insertedQuote, error: insertError } = await supabase
-      .from('qs_quotes')
-      .insert({
-        request_id: request?.id || null,
-        user_id: userId,
-        items: items,
-        materials: [],
-        subtotal: subtotal,
-        discount_percent: discountPercent,
-        vat_percent: showVat ? vatPercent : 0,
-        total_net: totalNet,
-        total_gross: totalGross,
-        total: total,
-        notes: clientAnswer
-          ? `---CLIENT_ANSWER---\n${clientAnswer}`
-          : null,
-        valid_until: validUntil.toISOString().split('T')[0],
-        available_from: availableFrom || null,
-        status: status,
-        sent_at: status === 'sent' ? new Date().toISOString() : null,
-        currency: currency,
-      })
-      .select('id')
-      .single()
+    const quoteData = {
+      items: items,
+      subtotal: subtotal,
+      discount_percent: discountPercent,
+      vat_percent: showVat ? vatPercent : 0,
+      total_net: totalNet,
+      total_gross: totalGross,
+      total: total,
+      notes: clientAnswer
+        ? `---CLIENT_ANSWER---\n${clientAnswer}`
+        : null,
+      valid_until: validUntil.toISOString().split('T')[0],
+      available_from: availableFrom || null,
+      status: status,
+      currency: currency,
+    }
 
-    if (insertError) {
-      setError(insertError.message)
-      setLoading(false)
-      return
+    let quoteId: string
+
+    if (isEditMode) {
+      // UPDATE existing quote
+      const { error: updateError } = await supabase
+        .from('qs_quotes')
+        .update({
+          ...quoteData,
+          ...(status === 'sent' && { sent_at: new Date().toISOString() }),
+        })
+        .eq('id', existingQuote.id)
+        .eq('user_id', userId)
+
+      if (updateError) {
+        setError(updateError.message)
+        setLoading(false)
+        return
+      }
+      quoteId = existingQuote.id
+    } else {
+      // INSERT new quote
+      const { data: insertedQuote, error: insertError } = await supabase
+        .from('qs_quotes')
+        .insert({
+          ...quoteData,
+          request_id: request?.id || null,
+          user_id: userId,
+          materials: [],
+          sent_at: status === 'sent' ? new Date().toISOString() : null,
+        })
+        .select('id')
+        .single()
+
+      if (insertError) {
+        setError(insertError.message)
+        setLoading(false)
+        return
+      }
+      quoteId = insertedQuote.id
     }
 
     // Aktualizuj status zapytania i wyślij email jeśli status = sent
@@ -384,7 +427,7 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          quoteId: insertedQuote.id,
+          quoteId,
           ...(personalMessage.trim() && { personalMessage: personalMessage.trim() }),
         }),
       }).catch(() => {})
@@ -981,7 +1024,9 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
               </svg>
               <div>
                 <p className={`font-medium ${success === 'sent' ? 'text-green-400' : 'text-blue-400'}`}>
-                  {success === 'sent' ? 'Quote sent to client!' : 'Draft saved!'}
+                  {success === 'sent'
+                    ? (isEditMode ? 'Quote updated & sent!' : 'Quote sent to client!')
+                    : (isEditMode ? 'Quote updated!' : 'Draft saved!')}
                 </p>
                 <p className="text-slate-400 text-sm">Redirecting...</p>
               </div>
@@ -1000,14 +1045,14 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
               disabled={loading || items.length === 0 || success !== null || !profileComplete}
               className="btn-primary w-full"
             >
-              {loading ? 'Saving...' : 'Send to Client'}
+              {loading ? 'Saving...' : isEditMode ? 'Update & Send' : 'Send to Client'}
             </button>
             <button
               onClick={() => handleSubmit('draft')}
               disabled={loading || items.length === 0 || success !== null}
               className="btn-secondary w-full"
             >
-              Save as Draft
+              {isEditMode ? 'Save Changes' : 'Save as Draft'}
             </button>
           </div>
         </div>
