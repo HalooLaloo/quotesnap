@@ -77,6 +77,31 @@ workflows:
           # Generate fresh RSA key for new distribution certificate
           CERT_KEY=$(openssl genrsa 2048 2>/dev/null)
 
+          # Revoke all existing distribution certificates to avoid Apple's limit
+          # (each build creates a fresh key so old certs are unusable anyway)
+          python3 << 'PYEOF'
+          import subprocess, json
+          try:
+              for cert_type in ['DISTRIBUTION', 'IOS_DISTRIBUTION']:
+                  r = subprocess.run(
+                      ['app-store-connect', 'certificates', 'list',
+                       '--type', cert_type, '--json'],
+                      capture_output=True, text=True, timeout=30
+                  )
+                  if r.returncode == 0 and r.stdout.strip():
+                      certs = json.loads(r.stdout)
+                      for cert in certs:
+                          cid = cert.get('id', '')
+                          if cid:
+                              print(f"Revoking certificate {cid}")
+                              subprocess.run(
+                                  ['app-store-connect', 'certificates', 'delete', cid],
+                                  capture_output=True, timeout=30
+                              )
+          except Exception as e:
+              print(f"Certificate cleanup: {e}")
+          PYEOF
+
           # Fetch/create App Store distribution certificate + provisioning profile
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_STORE \
