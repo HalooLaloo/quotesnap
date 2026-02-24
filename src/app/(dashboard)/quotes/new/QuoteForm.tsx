@@ -327,6 +327,12 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
   const totalGross = totalNet + vatAmount
   const total = showVat ? totalGross : totalNet
 
+  // Track saved quote so we UPDATE instead of creating duplicates
+  const [savedQuote, setSavedQuote] = useState<{ id: string; token: string } | null>(null)
+  const effectiveEditMode = isEditMode || !!savedQuote
+  const effectiveQuoteId = isEditMode ? existingQuote.id : savedQuote?.id
+  const effectiveQuoteToken = isEditMode ? existingQuote.token : savedQuote?.token
+
   // Preview: save as draft, open client-facing page in new tab
   const [previewing, setPreviewing] = useState(false)
 
@@ -364,12 +370,12 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
 
     let token: string | null = null
 
-    if (isEditMode) {
-      token = existingQuote.token
+    if (effectiveEditMode && effectiveQuoteId) {
+      token = effectiveQuoteToken || null
       const { error: updateError } = await supabase
         .from('qs_quotes')
         .update(quoteData)
-        .eq('id', existingQuote.id)
+        .eq('id', effectiveQuoteId)
         .eq('user_id', userId)
 
       if (updateError) {
@@ -396,12 +402,12 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
         return
       }
       token = insertedQuote.token
+      setSavedQuote({ id: insertedQuote.id, token: insertedQuote.token })
     }
 
     setPreviewing(false)
 
     if (token) {
-      // Navigate to client-facing quote page with preview flag
       router.push(`/quote/${token}?preview=1`)
     }
   }
@@ -450,9 +456,8 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
     }
 
     let quoteId: string
-    let quoteToken: string | null = null
 
-    if (isEditMode) {
+    if (effectiveEditMode && effectiveQuoteId) {
       // UPDATE existing quote
       const { error: updateError } = await supabase
         .from('qs_quotes')
@@ -460,7 +465,7 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
           ...quoteData,
           ...(status === 'sent' && { sent_at: new Date().toISOString() }),
         })
-        .eq('id', existingQuote.id)
+        .eq('id', effectiveQuoteId)
         .eq('user_id', userId)
 
       if (updateError) {
@@ -468,7 +473,7 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
         setLoading(false)
         return
       }
-      quoteId = existingQuote.id
+      quoteId = effectiveQuoteId
     } else {
       // INSERT new quote
       const { data: insertedQuote, error: insertError } = await supabase
@@ -489,7 +494,7 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
         return
       }
       quoteId = insertedQuote.id
-      quoteToken = insertedQuote.token
+      setSavedQuote({ id: insertedQuote.id, token: insertedQuote.token })
     }
 
     // Send email if status is 'sent'
