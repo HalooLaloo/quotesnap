@@ -5,6 +5,7 @@ import { QuoteActions } from './QuoteActions'
 import { TrackQuoteView } from './TrackQuoteView'
 import { COUNTRIES } from '@/lib/countries'
 import { DownloadPDFButton } from '@/components/DownloadPDFButton'
+import { PreviewBanner } from './PreviewBanner'
 
 // Helper to get currency symbol from currency code
 function getCurrencySymbol(currencyCode: string): string {
@@ -80,6 +81,7 @@ export default async function PublicQuotePage({
 
   return (
     <div className="min-h-screen bg-[#0a1628] py-8 px-4">
+      <PreviewBanner />
       <TrackQuoteView token={token} status={quote.status} />
       <div className="max-w-3xl mx-auto">
         {/* Header */}

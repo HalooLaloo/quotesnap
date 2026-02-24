@@ -401,8 +401,8 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
     setPreviewing(false)
 
     if (token) {
-      // Navigate to client-facing quote page (use back button to return)
-      router.push(`/quote/${token}`)
+      // Navigate to client-facing quote page with preview flag
+      router.push(`/quote/${token}?preview=1`)
     }
   }
 
