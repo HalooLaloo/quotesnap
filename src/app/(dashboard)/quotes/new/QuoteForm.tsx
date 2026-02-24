@@ -328,6 +328,8 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
   const total = showVat ? totalGross : totalNet
 
   // Preview: save as draft, open client-facing page in new tab
+  const [previewing, setPreviewing] = useState(false)
+
   const handlePreview = async () => {
     if (items.length === 0) {
       setError('Add at least one service to the quote')
@@ -340,7 +342,10 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
     }
 
     setError('')
-    setLoading(true)
+    setPreviewing(true)
+
+    // Open window immediately (user gesture) to avoid popup blocker
+    const previewWindow = window.open('', '_blank')
 
     const validUntil = new Date()
     validUntil.setDate(validUntil.getDate() + validDays)
@@ -372,7 +377,8 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
 
       if (updateError) {
         setError(updateError.message)
-        setLoading(false)
+        setPreviewing(false)
+        previewWindow?.close()
         return
       }
     } else {
@@ -390,16 +396,17 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
 
       if (insertError) {
         setError(insertError.message)
-        setLoading(false)
+        setPreviewing(false)
+        previewWindow?.close()
         return
       }
       token = insertedQuote.token
     }
 
-    setLoading(false)
+    setPreviewing(false)
 
-    if (token) {
-      window.open(`/quote/${token}`, '_blank')
+    if (token && previewWindow) {
+      previewWindow.location.href = `/quote/${token}`
     }
   }
 
@@ -1116,7 +1123,7 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
                 )}
                 <button
                   onClick={() => handleSubmit('sent')}
-                  disabled={loading || items.length === 0 || success !== null || !profileComplete}
+                  disabled={loading || previewing || items.length === 0 || success !== null || !profileComplete}
                   className="btn-primary w-full flex items-center justify-center gap-2"
                 >
                   {loading ? (
@@ -1137,18 +1144,27 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
             )}
             <button
               onClick={handlePreview}
-              disabled={loading || items.length === 0 || success !== null || (!isEditMode && !profileComplete)}
+              disabled={loading || previewing || items.length === 0 || success !== null || (!isEditMode && !profileComplete)}
               className="btn-secondary w-full flex items-center justify-center gap-2"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-              </svg>
-              Preview Quote
+              {previewing ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                  Preview Quote
+                </>
+              )}
             </button>
             <button
               onClick={() => handleSubmit('draft')}
-              disabled={loading || items.length === 0 || success !== null || (!isEditMode && !profileComplete)}
+              disabled={loading || previewing || items.length === 0 || success !== null || (!isEditMode && !profileComplete)}
               className={`${request && !isEditMode ? 'btn-secondary' : 'btn-primary'} w-full`}
             >
               {loading ? 'Saving...' : isEditMode ? 'Save Changes' : 'Save as Draft'}
