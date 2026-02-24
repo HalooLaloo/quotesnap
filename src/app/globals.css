@@ -134,3 +134,10 @@ body {
     @apply block text-sm font-medium text-slate-300 mb-1;
   }
 }
+
+/* Prevent iOS/Android auto-zoom on input focus (triggers when font-size < 16px) */
+@media screen and (max-width: 768px) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+}
