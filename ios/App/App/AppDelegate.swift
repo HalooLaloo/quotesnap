@@ -14,15 +14,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate, MessagingDelegate {
         Messaging.messaging().delegate = self
         UNUserNotificationCenter.current().delegate = self
 
-        // Register for push directly in native — don't rely on Capacitor bridge
-        // which may not work reliably in remote URL mode
-        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { granted, _ in
-            if granted {
-                DispatchQueue.main.async {
-                    UIApplication.shared.registerForRemoteNotifications()
-                }
-            }
-        }
+        // Always register for remote notifications to get APNs token → FCM token.
+        // This works even before permission is granted (notifications just won't display).
+        // Don't rely on Capacitor bridge which doesn't work in remote URL mode.
+        application.registerForRemoteNotifications()
+
+        // Request display permission separately
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { _, _ in }
 
         return true
     }
@@ -44,9 +42,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, MessagingDelegate {
     }
 
     private func attemptTokenInjection(attempt: Int) {
-        guard let token = pendingFCMToken, attempt < 15 else { return }
+        guard let token = pendingFCMToken, attempt < 20 else { return }
 
-        let delay: TimeInterval = attempt == 0 ? 1.5 : 2.0
+        let delay: TimeInterval = attempt == 0 ? 2.0 : 2.0
         DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
             guard let self = self else { return }
             guard let vc = self.window?.rootViewController as? CAPBridgeViewController,
@@ -56,11 +54,18 @@ class AppDelegate: UIResponder, UIApplicationDelegate, MessagingDelegate {
             }
 
             let escaped = token.replacingOccurrences(of: "'", with: "\\'")
+            // Inject token into WebView AND call API directly with session cookies
             let js = """
             (function() {
                 if (document.readyState !== 'complete') return 'loading';
                 window.__fcmToken = '\(escaped)';
                 window.dispatchEvent(new CustomEvent('fcmToken', {detail: '\(escaped)'}));
+                fetch('/api/save-fcm-token', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    credentials: 'same-origin',
+                    body: JSON.stringify({token: '\(escaped)', platform: 'ios'})
+                }).catch(function(){});
                 return 'ok';
             })();
             """
