@@ -3,9 +3,11 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { DownloadPDFButton } from '@/components/DownloadPDFButton'
 
 interface Invoice {
   id: string
+  invoice_number: string
   status: string
   client_email: string | null
   token: string
@@ -137,11 +139,35 @@ export function InvoiceActions({ invoice }: InvoiceActionsProps) {
     alert('Invoice link copied!')
   }
 
+  const pdfUrl = `/api/invoice-pdf/${invoice.token}`
+
   if (invoice.status === 'paid') {
     return null
   }
 
   return (
+    <div className="space-y-6">
+      {/* PDF Preview for draft invoices */}
+      {invoice.status === 'draft' && (
+        <div className="card">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-white">PDF Preview</h2>
+            <DownloadPDFButton
+              url={pdfUrl}
+              fileName={`invoice-${invoice.invoice_number || invoice.id}.pdf`}
+              className="btn-secondary text-sm inline-flex items-center gap-2"
+            />
+          </div>
+          <div className="bg-white rounded-lg overflow-hidden" style={{ height: '500px' }}>
+            <iframe
+              src={`${pdfUrl}#toolbar=0`}
+              className="w-full h-full"
+              title="Invoice PDF Preview"
+            />
+          </div>
+        </div>
+      )}
+
     <div className="card">
       <h2 className="text-lg font-semibold text-white mb-4">Actions</h2>
       <div className="space-y-3">
@@ -289,6 +315,7 @@ export function InvoiceActions({ invoice }: InvoiceActionsProps) {
           </>
         )}
       </div>
+    </div>
     </div>
   )
 }

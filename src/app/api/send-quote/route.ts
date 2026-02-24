@@ -130,6 +130,20 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Update quote status to 'sent' and mark request as 'quoted'
+    await supabase
+      .from('qs_quotes')
+      .update({ status: 'sent', sent_at: new Date().toISOString() })
+      .eq('id', quoteId)
+      .eq('user_id', user.id)
+
+    if (quote.request_id) {
+      await supabase
+        .from('qs_quote_requests')
+        .update({ status: 'quoted' })
+        .eq('id', quote.request_id)
+    }
+
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Send quote API error:', error)

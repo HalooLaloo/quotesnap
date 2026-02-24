@@ -63,8 +63,6 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
   const [manualItems, setManualItems] = useState<QuoteItem[]>(existingQuote?.items || [])
 
   const [clientAnswer, setClientAnswer] = useState(existingClientAnswer || '')
-  const [personalMessage, setPersonalMessage] = useState('')
-  const [showPersonalMessage, setShowPersonalMessage] = useState(false)
   const [discountPercent, setDiscountPercent] = useState(existingQuote?.discount_percent || 0)
   const [vatPercent, setVatPercent] = useState(existingQuote?.vat_percent ?? defaultTaxPercent)
   const [showVat, setShowVat] = useState((existingQuote?.vat_percent ?? defaultTaxPercent) > 0)
@@ -410,37 +408,16 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
       quoteId = insertedQuote.id
     }
 
-    // Aktualizuj status zapytania i wyślij email jeśli status = sent
-    if (request && status === 'sent') {
-      // Update request status (don't await - fire and forget)
-      supabase
-        .from('qs_quote_requests')
-        .update({ status: 'quoted' })
-        .eq('id', request.id)
-        .then(
-          () => {},
-          (err) => console.error('Update request status error:', err)
-        )
-
-      // Send email to client (don't await - fire and forget)
-      fetch('/api/send-quote', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          quoteId,
-          ...(personalMessage.trim() && { personalMessage: personalMessage.trim() }),
-        }),
-      }).catch(() => {})
-    }
+    // Note: sending email is now done from the quote detail page (QuoteActions)
 
     setLoading(false)
     setSuccess(status)
 
-    // Redirect after short delay so user sees the confirmation
+    // Redirect to detail page for preview before sending
     setTimeout(() => {
-      router.push('/quotes')
+      router.push(`/quotes/${quoteId}`)
       router.refresh()
-    }, 2000)
+    }, 1500)
   }
 
   return (
@@ -982,37 +959,6 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
           </div>
         </div>
 
-        {/* Personal message for client (optional) */}
-        <div className="card">
-          <button
-            type="button"
-            onClick={() => setShowPersonalMessage(!showPersonalMessage)}
-            className="w-full text-left"
-          >
-            <div className="flex items-center gap-2">
-              <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-              </svg>
-              <span className="text-sm font-medium text-white">Personal Message</span>
-              <span className="text-slate-500 text-xs">(optional)</span>
-              <svg className={`w-4 h-4 text-slate-400 ml-auto transition-transform ${showPersonalMessage ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </div>
-          </button>
-          {showPersonalMessage && (
-            <div className="mt-3">
-              <textarea
-                value={personalMessage}
-                onChange={(e) => setPersonalMessage(e.target.value)}
-                className="input min-h-[80px] resize-y text-sm"
-                placeholder="Add a personal note to the client email..."
-              />
-              <p className="text-slate-500 text-xs mt-1">Shown in the email only, not on the quote page.</p>
-            </div>
-          )}
-        </div>
-
         {/* Actions */}
         <div className="card">
           {success && (
@@ -1041,19 +987,15 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
 
           <div className="space-y-3">
             <button
-              onClick={() => handleSubmit('sent')}
-              disabled={loading || items.length === 0 || success !== null || !profileComplete}
+              onClick={() => handleSubmit('draft')}
+              disabled={loading || items.length === 0 || success !== null || (!isEditMode && !profileComplete)}
               className="btn-primary w-full"
             >
-              {loading ? 'Saving...' : isEditMode ? 'Update & Send' : 'Send to Client'}
+              {loading ? 'Saving...' : isEditMode ? 'Save Changes' : 'Generate Quote'}
             </button>
-            <button
-              onClick={() => handleSubmit('draft')}
-              disabled={loading || items.length === 0 || success !== null}
-              className="btn-secondary w-full"
-            >
-              {isEditMode ? 'Save Changes' : 'Save as Draft'}
-            </button>
+            <p className="text-slate-500 text-xs text-center">
+              {isEditMode ? 'Updates the quote. You can send it from the detail page.' : 'Preview the quote before sending it to the client.'}
+            </p>
           </div>
         </div>
       </div>

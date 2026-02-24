@@ -5,6 +5,7 @@ import { QuoteItem } from '@/lib/types'
 import { CollapsibleDescription } from './CollapsibleDescription'
 import { ExportPDFButton } from '@/components/ExportPDFButton'
 import { StatusTimeline, getQuoteTimelineSteps } from '@/components/StatusTimeline'
+import { QuoteActions } from './QuoteActions'
 import { COUNTRIES } from '@/lib/countries'
 
 function getCurrencySymbol(currencyCode: string): string {
@@ -126,6 +127,12 @@ export default async function QuoteDetailPage({
           </div>
         </div>
       </div>
+
+      {/* Preview & Send (draft quotes) */}
+      <QuoteActions
+        quote={{ id: quote.id, status: quote.status, token: quote.token, request_id: quote.request_id }}
+        clientEmail={quote.qs_quote_requests?.client_email || null}
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Main content */}

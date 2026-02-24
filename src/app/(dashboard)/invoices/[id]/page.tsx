@@ -104,6 +104,11 @@ export default async function InvoiceDetailPage({
         </div>
       </div>
 
+      {/* Actions with PDF preview (full width for draft) */}
+      <div className="max-w-4xl mx-auto mb-6">
+        <InvoiceActions invoice={invoice} />
+      </div>
+
       <div className="max-w-2xl mx-auto space-y-6">
         {/* Client Info */}
         <div className="card">
@@ -141,9 +146,6 @@ export default async function InvoiceDetailPage({
             )}
           </div>
         </div>
-
-        {/* Actions */}
-        <InvoiceActions invoice={invoice} />
 
         {/* Status Timeline */}
         <StatusTimeline steps={getInvoiceTimelineSteps(invoice)} />
