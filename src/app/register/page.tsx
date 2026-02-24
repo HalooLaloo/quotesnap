@@ -1,10 +1,24 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Suspense } from 'react'
+
+function useKeyboardScrollFix() {
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.visualViewport) return
+    const onResize = () => {
+      const el = document.activeElement
+      if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA')) {
+        setTimeout(() => el.scrollIntoView({ block: 'center', behavior: 'smooth' }), 100)
+      }
+    }
+    window.visualViewport.addEventListener('resize', onResize)
+    return () => window.visualViewport?.removeEventListener('resize', onResize)
+  }, [])
+}
 
 function RegisterForm() {
   const [email, setEmail] = useState('')
@@ -17,6 +31,7 @@ function RegisterForm() {
   const searchParams = useSearchParams()
   const utmSource = searchParams.get('utm_source')
   const supabase = createClient()
+  useKeyboardScrollFix()
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -63,7 +78,7 @@ function RegisterForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
+    <div className="min-h-dvh flex items-center justify-center px-4 py-8 overflow-y-auto">
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">

@@ -5,6 +5,27 @@ import { createClient } from '@/lib/supabase/client'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 
+/**
+ * On Android, the keyboard can cover inputs when the page uses
+ * flex vertical centering. Scroll the focused input into view
+ * whenever the visual viewport shrinks (keyboard opens).
+ */
+function useKeyboardScrollFix() {
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.visualViewport) return
+
+    const onResize = () => {
+      const el = document.activeElement
+      if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA')) {
+        setTimeout(() => el.scrollIntoView({ block: 'center', behavior: 'smooth' }), 100)
+      }
+    }
+
+    window.visualViewport.addEventListener('resize', onResize)
+    return () => window.visualViewport?.removeEventListener('resize', onResize)
+  }, [])
+}
+
 function LoginForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -16,6 +37,7 @@ function LoginForm() {
   const searchParams = useSearchParams()
   const supabase = createClient()
   const isNativeApp = useMemo(() => typeof navigator !== 'undefined' && navigator.userAgent.includes('BrickQuoteApp'), [])
+  useKeyboardScrollFix()
 
   useEffect(() => {
     if (searchParams.get('verified') === 'true') {
@@ -201,7 +223,7 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
+    <div className="min-h-dvh flex items-center justify-center px-4 py-8 overflow-y-auto">
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
