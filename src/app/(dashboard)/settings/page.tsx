@@ -340,6 +340,7 @@ export default function SettingsPage() {
   }
 
   const getPlanName = () => {
+    if (subscriptionStatus === 'trialing') return 'Free Trial'
     if (!stripePriceId) return 'No plan'
     if (stripePriceId === process.env.NEXT_PUBLIC_STRIPE_MONTHLY_PRICE_ID) return 'Pro Monthly'
     if (stripePriceId === process.env.NEXT_PUBLIC_STRIPE_YEARLY_PRICE_ID) return 'Pro Yearly'
@@ -347,6 +348,7 @@ export default function SettingsPage() {
   }
 
   const getPlanPrice = () => {
+    if (subscriptionStatus === 'trialing' && !stripePriceId) return '$29/month'
     if (!stripePriceId) return null
     const isYearly = stripePriceId === process.env.NEXT_PUBLIC_STRIPE_YEARLY_PRICE_ID
     return isYearly ? '$249/year' : '$29/month'
@@ -658,7 +660,7 @@ export default function SettingsPage() {
             {isActive && !isCanceled && (
               <div className="mt-3 p-3 bg-[#1e3a5f]/40 rounded-lg">
                 {isYearlyPlan ? (
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div>
                       <p className="text-slate-300 text-sm">Want more flexibility?</p>
                       <p className="text-slate-500 text-xs">Switch to monthly billing at $29/month</p>
@@ -666,23 +668,23 @@ export default function SettingsPage() {
                     <button
                       onClick={() => handleSwitchPlan('monthly')}
                       disabled={switchingPlan}
-                      className="btn-secondary text-sm px-4 py-2 shrink-0"
+                      className="btn-secondary text-sm px-4 py-2 shrink-0 w-full sm:w-auto text-center"
                     >
                       {switchingPlan ? 'Switching...' : 'Switch to Monthly'}
                     </button>
                   </div>
                 ) : (
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div>
                       <p className="text-green-400 text-sm font-medium">Save $99/year with annual billing</p>
-                      <p className="text-slate-500 text-xs">$249/year ($20.75/month) instead of $29/month</p>
+                      <p className="text-slate-500 text-xs">$249/yr ($20.75/mo) instead of $29/mo</p>
                     </div>
                     <button
                       onClick={() => handleSwitchPlan('yearly')}
                       disabled={switchingPlan}
-                      className="px-4 py-2 bg-green-600/20 hover:bg-green-600/30 text-green-400 border border-green-500/30 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 shrink-0"
+                      className="px-4 py-2 bg-green-600/20 hover:bg-green-600/30 text-green-400 border border-green-500/30 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 shrink-0 w-full sm:w-auto text-center"
                     >
-                      {switchingPlan ? 'Switching...' : 'Switch to Yearly — Save $99'}
+                      {switchingPlan ? 'Switching...' : 'Switch to Yearly'}
                     </button>
                   </div>
                 )}
@@ -746,12 +748,14 @@ export default function SettingsPage() {
               <div className="mt-3 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
                 <div className="flex items-start gap-2">
                   <svg className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                   <div>
-                    <p className="text-blue-300 text-sm font-medium">Free trial active</p>
+                    <p className="text-blue-300 text-sm font-medium">
+                      Free trial until {new Date(periodEnd).toLocaleDateString()}
+                    </p>
                     <p className="text-slate-400 text-xs mt-0.5">
-                      Your trial ends on {new Date(periodEnd).toLocaleDateString()}. After that, you&apos;ll be charged {getPlanPrice()}.
+                      Then {getPlanPrice() || '$29/month'}. Cancel anytime from Manage Subscription.
                     </p>
                   </div>
                 </div>
@@ -909,15 +913,15 @@ export default function SettingsPage() {
               )}
             </button>
 
-            <a
-              href="/api/auth/signout"
+            <button
+              onClick={() => { window.location.href = '/api/auth/signout' }}
               className="btn-secondary flex items-center gap-2 text-sm text-red-400 hover:text-red-300"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
               </svg>
               Sign Out
-            </a>
+            </button>
           </div>
         </div>
       </div>
