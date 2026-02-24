@@ -344,9 +344,6 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
     setError('')
     setPreviewing(true)
 
-    // Open window immediately (user gesture) to avoid popup blocker
-    const previewWindow = window.open('', '_blank')
-
     const validUntil = new Date()
     validUntil.setDate(validUntil.getDate() + validDays)
 
@@ -378,7 +375,6 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
       if (updateError) {
         setError(updateError.message)
         setPreviewing(false)
-        previewWindow?.close()
         return
       }
     } else {
@@ -397,7 +393,6 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
       if (insertError) {
         setError(insertError.message)
         setPreviewing(false)
-        previewWindow?.close()
         return
       }
       token = insertedQuote.token
@@ -405,8 +400,9 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
 
     setPreviewing(false)
 
-    if (token && previewWindow) {
-      previewWindow.location.href = `/quote/${token}`
+    if (token) {
+      // Navigate to client-facing quote page (use back button to return)
+      router.push(`/quote/${token}`)
     }
   }
 
