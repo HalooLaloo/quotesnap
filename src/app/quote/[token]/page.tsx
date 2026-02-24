@@ -81,9 +81,9 @@ export default async function PublicQuotePage({
 
   return (
     <div className="min-h-screen bg-[#0a1628] py-8 px-4">
-      <PreviewBanner />
       <TrackQuoteView token={token} status={quote.status} />
       <div className="max-w-3xl mx-auto">
+        <PreviewBanner />
         {/* Header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 mb-4">
