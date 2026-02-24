@@ -17,7 +17,7 @@ export function ArchiveButton({ requestId, isArchived }: ArchiveButtonProps) {
   const handleToggleArchive = async () => {
     setLoading(true)
 
-    const newStatus = isArchived ? 'accepted' : 'archived'
+    const newStatus = isArchived ? 'new' : 'archived'
 
     const { error } = await supabase
       .from('qs_quote_requests')
