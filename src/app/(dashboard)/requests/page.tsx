@@ -143,11 +143,6 @@ export default async function RequestsPage({
                           {new Date(request.created_at).toLocaleDateString('en-US')}
                           {request.client_phone && ` • ${request.client_phone}`}
                         </p>
-                        {request.status === 'new' && (
-                          <span className="btn-primary text-xs py-1 px-2.5">
-                            Quote
-                          </span>
-                        )}
                       </div>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
