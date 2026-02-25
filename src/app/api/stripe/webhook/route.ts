@@ -15,10 +15,12 @@ function getSupabaseAdmin() {
   )
 }
 
-// Helper to safely get subscription end date
-function getSubscriptionEndDate(sub: Stripe.Subscription): string {
+// Helper to safely get subscription end date (uses trial_end as fallback for trial subs)
+function getSubscriptionEndDate(sub: Stripe.Subscription): string | null {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const endTimestamp = (sub as any).current_period_end as number
+  const rawSub = sub as any
+  const endTimestamp = rawSub.current_period_end || rawSub.trial_end
+  if (!endTimestamp) return null
   return new Date(endTimestamp * 1000).toISOString()
 }
 

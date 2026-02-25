@@ -45,8 +45,10 @@ export async function POST() {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const endTimestamp = (sub as any).current_period_end as number
-    const periodEnd = new Date(endTimestamp * 1000).toISOString()
+    const rawSub = sub as any
+    // Use current_period_end, fall back to trial_end for trial subscriptions
+    const endTimestamp = rawSub.current_period_end || rawSub.trial_end
+    const periodEnd = endTimestamp ? new Date(endTimestamp * 1000).toISOString() : null
     const priceId = sub.items.data[0]?.price.id || null
 
     // Update profile with real Stripe data
@@ -56,7 +58,7 @@ export async function POST() {
         stripe_subscription_id: sub.id,
         stripe_price_id: priceId,
         subscription_status: sub.status,
-        subscription_current_period_end: periodEnd,
+        ...(periodEnd && { subscription_current_period_end: periodEnd }),
       })
       .eq('id', user.id)
 
