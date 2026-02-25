@@ -335,6 +335,18 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
   const effectiveQuoteId = isEditMode ? existingQuote.id : savedQuote?.id
   const effectiveQuoteToken = isEditMode ? existingQuote.token : savedQuote?.token
 
+  // Track which custom services were saved to price list
+  const [savedToServices, setSavedToServices] = useState<Set<string>>(new Set())
+
+  const addToMyServices = async (name: string, unit: string, price: number) => {
+    const { error: insertError } = await supabase
+      .from('qs_services')
+      .insert({ user_id: userId, name, unit, price })
+    if (!insertError) {
+      setSavedToServices(prev => new Set(prev).add(name))
+    }
+  }
+
   // Preview overlay (no DB save — just shows what client will see)
   const [showPreview, setShowPreview] = useState(false)
 
@@ -631,12 +643,35 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
                       </span>
                     </div>
 
-                    {suggestion.isCustom && suggestion.unit_price === 0 && suggestion.selected && (
-                      <div className="mt-2 ml-7 text-amber-400 text-xs flex items-center gap-1">
-                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                        </svg>
-                        Enter unit price
+                    {suggestion.isCustom && suggestion.selected && (
+                      <div className="mt-2 ml-7 flex items-center gap-3">
+                        {suggestion.unit_price === 0 && (
+                          <span className="text-amber-400 text-xs flex items-center gap-1">
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                            Enter unit price
+                          </span>
+                        )}
+                        {suggestion.unit_price > 0 && !savedToServices.has(suggestion.service_name) && !services.some(s => s.name === suggestion.service_name) && (
+                          <button
+                            onClick={() => addToMyServices(suggestion.service_name, suggestion.unit, suggestion.unit_price)}
+                            className="text-blue-400 hover:text-blue-300 text-xs flex items-center gap-1 transition-colors"
+                          >
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                            </svg>
+                            Save to price list
+                          </button>
+                        )}
+                        {savedToServices.has(suggestion.service_name) && (
+                          <span className="text-green-400 text-xs flex items-center gap-1">
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                            </svg>
+                            Saved
+                          </span>
+                        )}
                       </div>
                     )}
                   </div>
@@ -731,6 +766,25 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
                       </svg>
                       Enter unit price
                     </div>
+                  )}
+                  {item.isCustom && item.unit_price > 0 && !savedToServices.has(item.service_name) && !services.some(s => s.name === item.service_name) && (
+                    <button
+                      onClick={() => addToMyServices(item.service_name, item.unit, item.unit_price)}
+                      className="mt-2 text-blue-400 hover:text-blue-300 text-xs flex items-center gap-1 transition-colors"
+                    >
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      </svg>
+                      Save to price list
+                    </button>
+                  )}
+                  {item.isCustom && savedToServices.has(item.service_name) && (
+                    <span className="mt-2 text-green-400 text-xs flex items-center gap-1">
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                      </svg>
+                      Saved
+                    </span>
                   )}
                 </div>
               ))}
