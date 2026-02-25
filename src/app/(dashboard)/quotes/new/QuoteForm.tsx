@@ -153,16 +153,16 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
           selected: true, // domyślnie zaznaczone
         }))
 
-        // Mapuj custom sugestie (usługi spoza cennika)
-        const customSuggestions: AiSuggestion[] = (data.customItems || []).map((item: QuoteItem & { reason?: string }) => ({
+        // Mapuj custom sugestie (API may have matched some to price list)
+        const customSuggestions: AiSuggestion[] = (data.customItems || []).map((item: QuoteItem & { reason?: string; isCustom?: boolean }) => ({
           service_name: item.service_name,
           quantity: item.quantity,
           unit: item.unit,
-          unit_price: 0, // Worker wpisze cenę
-          total: 0,
-          isCustom: true,
+          unit_price: item.unit_price || 0,
+          total: item.total || 0,
+          isCustom: item.isCustom !== false,
           reason: item.reason,
-          selected: true, // domyślnie zaznaczone
+          selected: true,
         }))
 
         setAiSuggestions([...priceListSuggestions, ...customSuggestions])

@@ -315,16 +315,38 @@ ${priceList}`
       }
     }).filter(Boolean) || []
 
-    // Map custom suggestions (no price - worker will enter)
-    const customItems = parsed.custom_suggestions?.map((suggestion: { name: string; quantity: number; unit: string; reason: string }) => ({
-      service_name: suggestion.name,
-      quantity: suggestion.quantity,
-      unit: suggestion.unit,
-      unit_price: 0, // Worker will enter price
-      total: 0,
-      reason: suggestion.reason,
-      isCustom: true,
-    })) || []
+    // Map custom suggestions - check if any match price list services
+    const customItems = parsed.custom_suggestions?.map((suggestion: { name: string; quantity: number; unit: string; reason: string }) => {
+      const sugName = suggestion.name.toLowerCase().trim()
+      // Try to find a matching service: exact match, or service name contained in suggestion or vice versa
+      const matchedService = servicesList.find((s: Service) => {
+        const sName = s.name.toLowerCase().trim()
+        return sName === sugName || sName.includes(sugName) || sugName.includes(sName)
+      })
+
+      if (matchedService) {
+        // Found in price list — use the service price
+        return {
+          service_name: matchedService.name,
+          quantity: suggestion.quantity,
+          unit: matchedService.unit,
+          unit_price: matchedService.price,
+          total: suggestion.quantity * matchedService.price,
+          reason: suggestion.reason,
+          isCustom: false,
+        }
+      }
+
+      return {
+        service_name: suggestion.name,
+        quantity: suggestion.quantity,
+        unit: suggestion.unit,
+        unit_price: 0, // Worker will enter price
+        total: 0,
+        reason: suggestion.reason,
+        isCustom: true,
+      }
+    }) || []
 
     return NextResponse.json({
       items,
