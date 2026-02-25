@@ -170,24 +170,26 @@ export default function SubscribePage() {
             </div>
 
             {/* Early adopter pricing */}
-            <div className="bg-[#132039] border border-[#1e3a5f] rounded-xl overflow-hidden mb-5">
-              <div className="p-5 flex items-center justify-between">
+            <div className="bg-[#132039] border border-[#1e3a5f] rounded-xl p-6 mb-5">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-1.5 h-1.5 rounded-full bg-orange-400" />
+                <span className="text-orange-400 text-xs font-medium uppercase tracking-wider">Early Adopter Pricing</span>
+              </div>
+
+              <div className="flex items-end justify-between mb-4">
                 <div>
-                  <span className="bg-orange-500/20 text-orange-400 text-xs font-semibold px-2 py-0.5 rounded-full">Early Adopter Price</span>
-                  <div className="flex items-baseline gap-1.5 mt-2">
-                    <span className="text-4xl font-bold text-white">$0</span>
-                    <span className="text-slate-500">for 3 days</span>
+                  <p className="text-slate-400 text-sm mb-1">3-day free trial</p>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-3xl font-bold text-white">$29</span>
+                    <span className="text-slate-400 text-sm">/month after</span>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-slate-500 text-xs">then</p>
-                  <p className="text-xl font-semibold text-white">$29<span className="text-sm text-slate-400 font-normal">/mo</span></p>
-                  <p className="text-orange-400/80 text-xs">locked in for you</p>
-                </div>
+                <span className="text-xs text-slate-500 bg-slate-800 px-2.5 py-1 rounded-md">Price locked for you</span>
               </div>
-              <div className="px-5 py-2.5 bg-orange-500/5 border-t border-orange-500/10 flex items-center justify-between">
+
+              <div className="flex items-center justify-between pt-3 border-t border-slate-700/50">
                 <span className="text-slate-500 text-xs">Price may increase for future users</span>
-                <span className="text-green-400/80 text-xs font-medium">Switch to yearly &rarr; save $99</span>
+                <span className="text-blue-400 text-xs font-medium">Save $99/yr with annual &rarr;</span>
               </div>
             </div>
 
@@ -197,7 +199,7 @@ export default function SubscribePage() {
               disabled={loading}
               className="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-4 px-6 rounded-xl text-lg transition disabled:opacity-50 disabled:cursor-not-allowed mb-3"
             >
-              {loading ? 'Redirecting...' : 'Get Instant Access — Free'}
+              {loading ? 'Redirecting...' : 'Start Free Trial'}
             </button>
 
             {/* Cancel reassurance — prominent */}

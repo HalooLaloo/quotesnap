@@ -8,15 +8,28 @@ import { Suspense } from 'react'
 
 function useKeyboardScrollFix() {
   useEffect(() => {
-    if (typeof window === 'undefined' || !window.visualViewport) return
-    const onResize = () => {
+    if (typeof window === 'undefined') return
+
+    const scrollToActive = () => {
       const el = document.activeElement
       if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA')) {
-        setTimeout(() => el.scrollIntoView({ block: 'center', behavior: 'smooth' }), 100)
+        setTimeout(() => el.scrollIntoView({ block: 'center', behavior: 'smooth' }), 150)
       }
     }
-    window.visualViewport.addEventListener('resize', onResize)
-    return () => window.visualViewport?.removeEventListener('resize', onResize)
+
+    const onFocus = (e: FocusEvent) => {
+      const el = e.target as HTMLElement
+      if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+        setTimeout(() => el.scrollIntoView({ block: 'center', behavior: 'smooth' }), 300)
+      }
+    }
+
+    window.visualViewport?.addEventListener('resize', scrollToActive)
+    document.addEventListener('focusin', onFocus)
+    return () => {
+      window.visualViewport?.removeEventListener('resize', scrollToActive)
+      document.removeEventListener('focusin', onFocus)
+    }
   }, [])
 }
 
@@ -78,8 +91,8 @@ function RegisterForm() {
   }
 
   return (
-    <div className="min-h-dvh flex items-center justify-center px-4 py-8 overflow-y-auto">
-      <div className="w-full max-w-md">
+    <div className="min-h-dvh px-4 pt-[max(2rem,8vh)] pb-[40vh] overflow-y-auto">
+      <div className="w-full max-w-md mx-auto">
         {/* Logo */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2">
