@@ -155,18 +155,19 @@ export default function SettingsPage() {
 
           initialValues.current = vals
 
-          // Auto-sync with Stripe if status seems stale
-          if (profile.stripe_customer_id && (!profile.subscription_status || profile.subscription_status === 'inactive')) {
-            try {
-              const res = await fetch('/api/stripe/verify', { method: 'POST' })
+          // Always sync with Stripe to ensure subscription data is up to date
+          // (handles webhook failures, stale data, etc.)
+          try {
+            const res = await fetch('/api/stripe/verify', { method: 'POST' })
+            if (res.ok) {
               const verifyData = await res.json()
-              if (verifyData.status && verifyData.status !== profile.subscription_status) {
+              if (verifyData.status) {
                 setSubscriptionStatus(verifyData.status)
-                if (verifyData.period_end) setPeriodEnd(verifyData.period_end)
-                if (verifyData.price_id) setStripePriceId(verifyData.price_id)
               }
-            } catch { /* silent — non-critical */ }
-          }
+              if (verifyData.period_end) setPeriodEnd(verifyData.period_end)
+              if (verifyData.price_id) setStripePriceId(verifyData.price_id)
+            }
+          } catch { /* silent — non-critical */ }
         }
       } catch {
         setError('Failed to load profile')

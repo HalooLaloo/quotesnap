@@ -12,20 +12,27 @@ export async function POST() {
 
     const { data: profile } = await supabase
       .from('profiles')
-      .select('stripe_customer_id, subscription_status')
+      .select('stripe_customer_id, subscription_status, stripe_price_id, subscription_current_period_end')
       .eq('id', user.id)
       .single()
 
-    // Already active — no need to check Stripe
-    if (profile?.subscription_status === 'active' || profile?.subscription_status === 'trialing') {
-      return NextResponse.json({ status: profile.subscription_status })
+    // Already active/trialing AND has full data — return cached DB values
+    if (
+      (profile?.subscription_status === 'active' || profile?.subscription_status === 'trialing') &&
+      profile?.subscription_current_period_end
+    ) {
+      return NextResponse.json({
+        status: profile.subscription_status,
+        period_end: profile.subscription_current_period_end,
+        price_id: profile.stripe_price_id,
+      })
     }
 
     if (!profile?.stripe_customer_id) {
       return NextResponse.json({ status: 'inactive' })
     }
 
-    // Check Stripe directly for active subscriptions
+    // Check Stripe directly — handles webhook failures, stale data, etc.
     const subscriptions = await getStripe().subscriptions.list({
       customer: profile.stripe_customer_id,
       status: 'all',
@@ -39,22 +46,24 @@ export async function POST() {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const endTimestamp = (sub as any).current_period_end as number
+    const periodEnd = new Date(endTimestamp * 1000).toISOString()
+    const priceId = sub.items.data[0]?.price.id || null
 
     // Update profile with real Stripe data
     await supabase
       .from('profiles')
       .update({
         stripe_subscription_id: sub.id,
-        stripe_price_id: sub.items.data[0]?.price.id || null,
+        stripe_price_id: priceId,
         subscription_status: sub.status,
-        subscription_current_period_end: new Date(endTimestamp * 1000).toISOString(),
+        subscription_current_period_end: periodEnd,
       })
       .eq('id', user.id)
 
     return NextResponse.json({
       status: sub.status,
-      period_end: new Date(endTimestamp * 1000).toISOString(),
-      price_id: sub.items.data[0]?.price.id || null,
+      period_end: periodEnd,
+      price_id: priceId,
     })
   } catch (error) {
     console.error('Verify subscription error:', error)
