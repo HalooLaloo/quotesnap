@@ -658,26 +658,32 @@ export default function SettingsPage() {
             )}
 
             {/* Switch plan tip */}
-            {isActive && !isCanceled && !isYearlyPlan && (
-              <div className="mt-3 p-3 bg-green-500/10 border border-green-500/20 rounded-lg flex items-center justify-between gap-3">
-                <p className="text-green-400 text-sm">
-                  Save $99/year with annual billing ($249/yr)
+            {isActive && !isCanceled && (
+              <div className={`mt-3 p-3 ${isYearlyPlan ? 'bg-slate-500/10 border-slate-500/20' : 'bg-green-500/10 border-green-500/20'} border rounded-lg flex items-center justify-between gap-3`}>
+                <p className={`${isYearlyPlan ? 'text-slate-400' : 'text-green-400'} text-sm`}>
+                  {isYearlyPlan
+                    ? 'Switch to monthly billing ($29/mo)'
+                    : 'Save $99/year with annual billing ($249/yr)'}
                 </p>
                 <button
                   onClick={async () => {
+                    const targetPlan = isYearlyPlan ? 'monthly' : 'yearly'
                     setSwitchingPlan(true)
                     setError('')
                     try {
                       const res = await fetch('/api/stripe/switch-plan', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ plan: 'yearly' }),
+                        body: JSON.stringify({ plan: targetPlan }),
                       })
                       const data = await res.json()
                       if (res.ok) {
                         setStripePriceId(data.price_id || null)
-                        setSuccess('Switched to yearly plan!')
-                        setTimeout(() => setSuccess(''), 3000)
+                        setSuccess(targetPlan === 'yearly'
+                          ? 'Plan changed to Pro Yearly ($249/yr) — you save $99/year!'
+                          : 'Plan changed to Pro Monthly ($29/mo)')
+                        window.scrollTo({ top: 0, behavior: 'smooth' })
+                        setTimeout(() => setSuccess(''), 5000)
                       } else {
                         setError(data.error || 'Failed to switch plan')
                       }
@@ -688,7 +694,7 @@ export default function SettingsPage() {
                     }
                   }}
                   disabled={switchingPlan}
-                  className="shrink-0 px-3 py-1.5 bg-green-500/20 hover:bg-green-500/30 text-green-400 rounded-lg text-xs font-medium transition-colors disabled:opacity-50"
+                  className={`shrink-0 px-3 py-1.5 ${isYearlyPlan ? 'bg-slate-500/20 hover:bg-slate-500/30 text-slate-300' : 'bg-green-500/20 hover:bg-green-500/30 text-green-400'} rounded-lg text-xs font-medium transition-colors disabled:opacity-50`}
                 >
                   {switchingPlan ? 'Switching...' : 'Switch'}
                 </button>
