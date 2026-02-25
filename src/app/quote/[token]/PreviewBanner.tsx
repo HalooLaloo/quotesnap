@@ -1,10 +1,10 @@
 'use client'
 
-import { useSearchParams, useRouter } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
+import Link from 'next/link'
 
-export function PreviewBanner() {
+export function PreviewBanner({ quoteId }: { quoteId?: string }) {
   const searchParams = useSearchParams()
-  const router = useRouter()
 
   if (searchParams.get('preview') !== '1') return null
 
@@ -17,15 +17,15 @@ export function PreviewBanner() {
         </svg>
         <span className="font-medium text-sm">Preview — this is what your client will see</span>
       </div>
-      <button
-        onClick={() => router.back()}
+      <Link
+        href={quoteId ? `/quotes/${quoteId}/edit` : '/quotes'}
         className="flex items-center gap-1 px-3 py-1.5 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-medium transition-colors"
       >
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
         </svg>
         Go Back
-      </button>
+      </Link>
     </div>
   )
 }
