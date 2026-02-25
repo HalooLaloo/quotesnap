@@ -59,7 +59,6 @@ export default function SettingsPage() {
   const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null)
   const [stripePriceId, setStripePriceId] = useState<string | null>(null)
   const [periodEnd, setPeriodEnd] = useState<string | null>(null)
-  const [managingSubscription, setManagingSubscription] = useState(false)
   const [cancelingSubscription, setCancelingSubscription] = useState(false)
   const [showCancelConfirm, setShowCancelConfirm] = useState(false)
   const [cancelReason, setCancelReason] = useState('')
@@ -254,30 +253,6 @@ export default function SettingsPage() {
   }
 
 
-  const handleManageSubscription = async () => {
-    setManagingSubscription(true)
-    setError('')
-    try {
-      const response = await fetch('/api/stripe/portal', { method: 'POST' })
-      const data = await response.json()
-      if (data.url) {
-        // Use link click instead of window.location for Capacitor compatibility
-        const link = document.createElement('a')
-        link.href = data.url
-        link.target = '_blank'
-        link.rel = 'noopener noreferrer'
-        document.body.appendChild(link)
-        link.click()
-        document.body.removeChild(link)
-      } else {
-        setError(data.error || 'Failed to open subscription management')
-      }
-    } catch {
-      setError('Failed to open subscription management')
-    } finally {
-      setTimeout(() => setManagingSubscription(false), 2000)
-    }
-  }
 
   const handleCancelSubscription = async () => {
     if (!cancelReason) {
@@ -657,9 +632,9 @@ export default function SettingsPage() {
               <div className="mt-3 p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
                 <p className="text-green-400 text-sm">
                   Save $99/year by switching to annual billing ($249/yr).{' '}
-                  <button onClick={handleManageSubscription} className="underline hover:text-green-300">
+                  <a href="/api/stripe/portal" className="underline hover:text-green-300">
                     Switch plan
-                  </button>
+                  </a>
                 </p>
               </div>
             )}
@@ -762,26 +737,16 @@ export default function SettingsPage() {
 
           {/* Action buttons */}
           <div className="flex flex-wrap gap-3">
-            {/* Manage Subscription — opens Stripe portal for all states */}
-            <button
-              onClick={handleManageSubscription}
-              disabled={managingSubscription}
+            {/* Manage Subscription — direct GET redirect to Stripe portal */}
+            <a
+              href="/api/stripe/portal"
               className="btn-primary flex items-center gap-2 text-sm"
             >
-              {managingSubscription ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Loading...
-                </>
-              ) : (
-                <>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                  </svg>
-                  Manage Subscription
-                </>
-              )}
-            </button>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+              </svg>
+              Manage Subscription
+            </a>
           </div>
 
           {/* Cancel confirmation with feedback */}
