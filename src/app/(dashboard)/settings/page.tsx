@@ -59,6 +59,7 @@ export default function SettingsPage() {
   // Subscription
   const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null)
   const [stripePriceId, setStripePriceId] = useState<string | null>(null)
+  const [planType, setPlanType] = useState<'monthly' | 'yearly' | null>(null)
   const [periodEnd, setPeriodEnd] = useState<string | null>(null)
   const [cancelingSubscription, setCancelingSubscription] = useState(false)
   const [showCancelConfirm, setShowCancelConfirm] = useState(false)
@@ -168,6 +169,7 @@ export default function SettingsPage() {
               }
               if (verifyData.period_end) setPeriodEnd(verifyData.period_end)
               if (verifyData.price_id) setStripePriceId(verifyData.price_id)
+              if (verifyData.plan) setPlanType(verifyData.plan)
             }
           } catch { /* silent — non-critical */ }
         }
@@ -321,20 +323,18 @@ export default function SettingsPage() {
   const getPlanName = () => {
     if (subscriptionStatus === 'trialing') return 'Free Trial'
     if (!subscriptionStatus || subscriptionStatus === 'inactive') return 'No active plan'
-    if (!stripePriceId) return 'Pro'
-    if (stripePriceId === process.env.NEXT_PUBLIC_STRIPE_MONTHLY_PRICE_ID) return 'Pro Monthly'
-    if (stripePriceId === process.env.NEXT_PUBLIC_STRIPE_YEARLY_PRICE_ID) return 'Pro Yearly'
+    if (planType === 'yearly') return 'Pro Yearly'
+    if (planType === 'monthly') return 'Pro Monthly'
     return 'Pro'
   }
 
   const getPlanPrice = () => {
-    if (subscriptionStatus === 'trialing' && !stripePriceId) return '$29/month'
-    if (!stripePriceId) return null
-    const isYearly = stripePriceId === process.env.NEXT_PUBLIC_STRIPE_YEARLY_PRICE_ID
-    return isYearly ? '$249/year' : '$29/month'
+    if (subscriptionStatus === 'trialing' && !planType) return '$29/month'
+    if (!planType && !stripePriceId) return null
+    return planType === 'yearly' ? '$249/year' : '$29/month'
   }
 
-  const isYearlyPlan = stripePriceId === process.env.NEXT_PUBLIC_STRIPE_YEARLY_PRICE_ID
+  const isYearlyPlan = planType === 'yearly'
   const isActive = subscriptionStatus === 'active' || subscriptionStatus === 'trialing'
   const isCanceled = subscriptionStatus === 'canceled'
 
@@ -679,6 +679,7 @@ export default function SettingsPage() {
                       const data = await res.json()
                       if (res.ok) {
                         setStripePriceId(data.price_id || null)
+                        setPlanType(targetPlan)
                         setSuccess(targetPlan === 'yearly'
                           ? 'Plan changed to Pro Yearly ($249/yr) — you save $99/year!'
                           : 'Plan changed to Pro Monthly ($29/mo)')

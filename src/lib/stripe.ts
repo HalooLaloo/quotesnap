@@ -53,6 +53,14 @@ export const PLANS = {
 
 export type PlanType = keyof typeof PLANS
 
+/** Resolve a Stripe price ID to a plan type ('monthly' | 'yearly') */
+export function getPlanTypeFromPriceId(priceId: string | null): PlanType | null {
+  if (!priceId) return null
+  if (priceId === PLANS.monthly.priceId) return 'monthly'
+  if (priceId === PLANS.yearly.priceId) return 'yearly'
+  return null
+}
+
 // Billing Portal configuration with plan switching enabled
 // NOTE: Not currently used — plan switching is handled by /api/stripe/switch-plan inline
 let _portalConfigId: string | null = null

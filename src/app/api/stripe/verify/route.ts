@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getStripe } from '@/lib/stripe'
+import { getStripe, getPlanTypeFromPriceId } from '@/lib/stripe'
 import { createClient } from '@/lib/supabase/server'
 
 export async function POST() {
@@ -25,6 +25,7 @@ export async function POST() {
         status: profile.subscription_status,
         period_end: profile.subscription_current_period_end,
         price_id: profile.stripe_price_id,
+        plan: getPlanTypeFromPriceId(profile.stripe_price_id),
       })
     }
 
@@ -66,6 +67,7 @@ export async function POST() {
       status: sub.status,
       period_end: periodEnd,
       price_id: priceId,
+      plan: getPlanTypeFromPriceId(priceId),
     })
   } catch (error) {
     console.error('Verify subscription error:', error)
