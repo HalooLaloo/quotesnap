@@ -77,24 +77,16 @@ export default function ClientRequestPage() {
     const update = () => {
       if (containerRef.current) {
         containerRef.current.style.height = `${vv.height}px`
-        containerRef.current.style.transform = `translateY(${vv.offsetTop}px)`
+        containerRef.current.style.top = `${vv.offsetTop}px`
       }
     }
 
-    // Scroll input into view only on resize (keyboard open/close), not on every scroll
-    const onResize = () => {
-      update()
-      setTimeout(() => {
-        if (document.activeElement === inputRef.current) {
-          inputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
-        }
-      }, 100)
-    }
-
     update()
-    vv.addEventListener('resize', onResize)
+    vv.addEventListener('resize', update)
+    vv.addEventListener('scroll', update)
     return () => {
-      vv.removeEventListener('resize', onResize)
+      vv.removeEventListener('resize', update)
+      vv.removeEventListener('scroll', update)
     }
   }, [])
 
@@ -103,18 +95,9 @@ export default function ClientRequestPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  // Focus na input po załadowaniu + scroll when focused
+  // Focus na input po załadowaniu
   useEffect(() => {
     inputRef.current?.focus()
-    const input = inputRef.current
-    if (!input) return
-    const handleFocus = () => {
-      setTimeout(() => {
-        input.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
-      }, 300)
-    }
-    input.addEventListener('focus', handleFocus)
-    return () => input.removeEventListener('focus', handleFocus)
   }, [])
 
   // Kompresja i konwersja obrazu do base64
@@ -434,7 +417,7 @@ export default function ClientRequestPage() {
   }
 
   return (
-    <div ref={containerRef} className="flex flex-col" style={{ height: '100dvh' }}>
+    <div ref={containerRef} className="fixed inset-x-0 top-0 flex flex-col" style={{ height: '100dvh' }}>
       {/* Header */}
       <header className="shrink-0 bg-[#132039] border-b border-[#1e3a5f] px-4 py-4">
         <div className="max-w-2xl mx-auto flex items-center gap-3">
