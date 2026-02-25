@@ -66,6 +66,7 @@ export default function SettingsPage() {
   const [cancelDetails, setCancelDetails] = useState('')
   const [resumingSubscription, setResumingSubscription] = useState(false)
   const [startingTrial, setStartingTrial] = useState(false)
+  const [switchingPlan, setSwitchingPlan] = useState(false)
 
   // Profile fields
   const [fullName, setFullName] = useState('')
@@ -658,13 +659,39 @@ export default function SettingsPage() {
 
             {/* Switch plan tip */}
             {isActive && !isCanceled && !isYearlyPlan && (
-              <div className="mt-3 p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
+              <div className="mt-3 p-3 bg-green-500/10 border border-green-500/20 rounded-lg flex items-center justify-between gap-3">
                 <p className="text-green-400 text-sm">
-                  Save $99/year by switching to annual billing ($249/yr).{' '}
-                  <a href="/api/stripe/portal" className="underline hover:text-green-300">
-                    Switch plan
-                  </a>
+                  Save $99/year with annual billing ($249/yr)
                 </p>
+                <button
+                  onClick={async () => {
+                    setSwitchingPlan(true)
+                    setError('')
+                    try {
+                      const res = await fetch('/api/stripe/switch-plan', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ plan: 'yearly' }),
+                      })
+                      const data = await res.json()
+                      if (res.ok) {
+                        setStripePriceId(data.price_id || null)
+                        setSuccess('Switched to yearly plan!')
+                        setTimeout(() => setSuccess(''), 3000)
+                      } else {
+                        setError(data.error || 'Failed to switch plan')
+                      }
+                    } catch {
+                      setError('Failed to switch plan')
+                    } finally {
+                      setSwitchingPlan(false)
+                    }
+                  }}
+                  disabled={switchingPlan}
+                  className="shrink-0 px-3 py-1.5 bg-green-500/20 hover:bg-green-500/30 text-green-400 rounded-lg text-xs font-medium transition-colors disabled:opacity-50"
+                >
+                  {switchingPlan ? 'Switching...' : 'Switch'}
+                </button>
               </div>
             )}
 

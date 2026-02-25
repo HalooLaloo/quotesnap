@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getStripe, getPortalConfigId } from '@/lib/stripe'
+import { getStripe } from '@/lib/stripe'
 import { createClient } from '@/lib/supabase/server'
 
 async function createPortalSession(request: NextRequest) {
@@ -28,19 +28,9 @@ async function createPortalSession(request: NextRequest) {
       .eq('id', user.id)
   }
 
-  const returnUrl = `${request.nextUrl.origin}/settings`
-
-  let configId: string | undefined
-  try {
-    configId = await getPortalConfigId()
-  } catch (err) {
-    console.error('Portal config error (falling back to default):', err instanceof Error ? err.message : err)
-  }
-
   return getStripe().billingPortal.sessions.create({
     customer: customerId,
-    return_url: returnUrl,
-    ...(configId && { configuration: configId }),
+    return_url: `${request.nextUrl.origin}/settings`,
   })
 }
 
