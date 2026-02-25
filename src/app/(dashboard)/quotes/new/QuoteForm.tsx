@@ -342,12 +342,15 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
 
   const addToMyServices = async (name: string, unit: string, price: number) => {
     setSavingService(name)
+    // Map display units back to DB format
+    const unitMap: Record<string, string> = { 'sq ft': 'sqft', 'm²': 'm2', 'lf': 'lft' }
+    const dbUnit = unitMap[unit] || unit
     try {
       const { data: { user } } = await supabase.auth.getUser()
       const uid = user?.id || userId
       const { error: insertError } = await supabase
         .from('qs_services')
-        .insert({ user_id: uid, name, unit, price })
+        .insert({ user_id: uid, name, unit: dbUnit, price })
       if (insertError) {
         console.error('Failed to save service:', insertError)
         setError(`Failed to save "${name}": ${insertError.message}`)
