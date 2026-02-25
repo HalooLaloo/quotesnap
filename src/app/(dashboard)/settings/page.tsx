@@ -68,6 +68,7 @@ export default function SettingsPage() {
   const [resumingSubscription, setResumingSubscription] = useState(false)
   const [startingTrial, setStartingTrial] = useState(false)
   const [switchingPlan, setSwitchingPlan] = useState(false)
+  const [openingPortal, setOpeningPortal] = useState(false)
 
   // Profile fields
   const [fullName, setFullName] = useState('')
@@ -783,15 +784,28 @@ export default function SettingsPage() {
           {/* Action buttons */}
           <div className="flex flex-wrap gap-3">
             {isActive || isCanceled || subscriptionStatus === 'past_due' ? (
-              <a
-                href="/api/stripe/portal"
+              <button
+                onClick={() => {
+                  setOpeningPortal(true)
+                  window.location.href = '/api/stripe/portal'
+                }}
+                disabled={openingPortal}
                 className="btn-primary flex items-center gap-2 text-sm"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                </svg>
-                Manage Subscription
-              </a>
+                {openingPortal ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Opening...
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                    </svg>
+                    Manage Subscription
+                  </>
+                )}
+              </button>
             ) : (
               <button
                 onClick={async () => {
