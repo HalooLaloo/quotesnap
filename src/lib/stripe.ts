@@ -54,6 +54,7 @@ export const PLANS = {
 export type PlanType = keyof typeof PLANS
 
 // Billing Portal configuration with plan switching enabled
+// NOTE: Not currently used — plan switching is handled by /api/stripe/switch-plan inline
 let _portalConfigId: string | null = null
 
 export async function getPortalConfigId(): Promise<string | undefined> {
@@ -65,20 +66,28 @@ export async function getPortalConfigId(): Promise<string | undefined> {
 
   if (!monthlyPriceId || !yearlyPriceId) return undefined
 
-  // Get product ID from monthly price
-  const price = await stripe.prices.retrieve(monthlyPriceId)
-  const productId = typeof price.product === 'string' ? price.product : price.product.id
+  // Get product IDs for both prices (they may be on different products)
+  const [monthlyPrice, yearlyPrice] = await Promise.all([
+    stripe.prices.retrieve(monthlyPriceId),
+    stripe.prices.retrieve(yearlyPriceId),
+  ])
+  const monthlyProductId = typeof monthlyPrice.product === 'string' ? monthlyPrice.product : monthlyPrice.product.id
+  const yearlyProductId = typeof yearlyPrice.product === 'string' ? yearlyPrice.product : yearlyPrice.product.id
 
-  // Always create a fresh config to ensure correct products/prices
+  // Build products array — handle same or different products
+  const products = monthlyProductId === yearlyProductId
+    ? [{ product: monthlyProductId, prices: [monthlyPriceId, yearlyPriceId] }]
+    : [
+        { product: monthlyProductId, prices: [monthlyPriceId] },
+        { product: yearlyProductId, prices: [yearlyPriceId] },
+      ]
+
   const config = await stripe.billingPortal.configurations.create({
     features: {
       subscription_update: {
         enabled: true,
         default_allowed_updates: ['price'],
-        products: [{
-          product: productId,
-          prices: [monthlyPriceId, yearlyPriceId],
-        }],
+        products,
       },
       subscription_cancel: { enabled: true, mode: 'at_period_end' },
       payment_method_update: { enabled: true },

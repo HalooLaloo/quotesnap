@@ -62,6 +62,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       status: updated.status,
       plan: plan,
+      price_id: newPlan.priceId,
     })
   } catch (error) {
     console.error('Switch plan error:', error)
