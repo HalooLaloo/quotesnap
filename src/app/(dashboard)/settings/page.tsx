@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { COUNTRIES, COUNTRY_LIST, DEFAULT_COUNTRY } from '@/lib/countries'
 
 const COUNTRY_FLAGS: Record<string, string> = {
@@ -39,6 +39,7 @@ const COMPLETENESS_FIELDS = [
 
 export default function SettingsPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const supabase = useMemo(() => createClient(), [])
 
   const [loading, setLoading] = useState(true)
@@ -178,6 +179,16 @@ export default function SettingsPage() {
 
     loadProfile()
   }, [supabase, router])
+
+  // Show portal/redirect errors from URL params
+  useEffect(() => {
+    const urlError = searchParams.get('error')
+    if (urlError) {
+      setError(`Stripe: ${urlError}`)
+      // Clean up URL
+      window.history.replaceState({}, '', '/settings')
+    }
+  }, [searchParams])
 
   const handleSave = async () => {
     setSaving(true)
@@ -594,11 +605,7 @@ export default function SettingsPage() {
                     <span className="text-white font-semibold">{getPlanName()}</span>
                     {getStatusBadge()}
                   </div>
-                  {subscriptionStatus === 'trialing' ? (
-                    <p className="text-slate-400 text-sm">
-                      Free until {periodEnd ? new Date(periodEnd).toLocaleDateString() : '—'}, then {getPlanPrice() || '$29/month'}
-                    </p>
-                  ) : getPlanPrice() ? (
+                  {getPlanPrice() && subscriptionStatus !== 'trialing' ? (
                     <p className="text-slate-400 text-sm">{getPlanPrice()}</p>
                   ) : null}
                 </div>
@@ -626,6 +633,25 @@ export default function SettingsPage() {
                   <span className="text-slate-400">
                     Billing cycle: <span className="text-white">{isYearlyPlan ? 'Yearly' : 'Monthly'}</span>
                   </span>
+                </div>
+              </div>
+            )}
+
+            {/* Trial info */}
+            {subscriptionStatus === 'trialing' && (
+              <div className="mt-3 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+                <div className="flex items-start gap-2">
+                  <svg className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <div>
+                    <p className="text-blue-300 text-sm font-medium">
+                      Free trial{periodEnd ? ` until ${new Date(periodEnd).toLocaleDateString()}` : ''}
+                    </p>
+                    <p className="text-slate-400 text-xs mt-0.5">
+                      Then {getPlanPrice() || '$29/month'}. Cancel anytime from Manage Subscription.
+                    </p>
+                  </div>
                 </div>
               </div>
             )}
@@ -694,24 +720,6 @@ export default function SettingsPage() {
               </div>
             )}
 
-            {/* Trial info */}
-            {subscriptionStatus === 'trialing' && (
-              <div className="mt-3 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
-                <div className="flex items-start gap-2">
-                  <svg className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <div>
-                    <p className="text-blue-300 text-sm font-medium">
-                      Free trial{periodEnd ? ` until ${new Date(periodEnd).toLocaleDateString()}` : ''}
-                    </p>
-                    <p className="text-slate-400 text-xs mt-0.5">
-                      Then {getPlanPrice() || '$29/month'}. Cancel anytime from Manage Subscription.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
 
           {/* Features */}

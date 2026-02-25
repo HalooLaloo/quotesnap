@@ -28,11 +28,19 @@ async function createPortalSession(request: NextRequest) {
       .eq('id', user.id)
   }
 
-  const origin = request.headers.get('origin') || request.nextUrl.origin || 'https://brickquote.app'
-  const configId = await getPortalConfigId()
+  const returnUrl = `${request.nextUrl.origin}/settings`
+
+  // Try with full portal config (plan switching), fall back to simple portal
+  let configId: string | undefined
+  try {
+    configId = await getPortalConfigId()
+  } catch {
+    // Non-critical — portal works without config, just no plan switching UI
+  }
+
   return getStripe().billingPortal.sessions.create({
     customer: customerId,
-    return_url: `${origin}/settings`,
+    return_url: returnUrl,
     ...(configId && { configuration: configId }),
   })
 }
@@ -63,7 +71,8 @@ export async function GET(request: NextRequest) {
     }
     return NextResponse.redirect(session.url)
   } catch (error) {
-    console.error('Stripe portal redirect error:', error)
-    return NextResponse.redirect(new URL('/settings?error=portal', request.url))
+    const msg = error instanceof Error ? error.message : 'Unknown error'
+    console.error('Stripe portal redirect error:', msg)
+    return NextResponse.redirect(new URL(`/settings?error=${encodeURIComponent(msg)}`, request.url))
   }
 }
