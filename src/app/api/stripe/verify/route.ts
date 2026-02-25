@@ -51,7 +51,11 @@ export async function POST() {
       })
       .eq('id', user.id)
 
-    return NextResponse.json({ status: sub.status })
+    return NextResponse.json({
+      status: sub.status,
+      period_end: new Date(endTimestamp * 1000).toISOString(),
+      price_id: sub.items.data[0]?.price.id || null,
+    })
   } catch (error) {
     console.error('Verify subscription error:', error)
     return NextResponse.json({ error: 'Failed to verify' }, { status: 500 })

@@ -154,6 +154,19 @@ export default function SettingsPage() {
           setPeriodEnd(profile.subscription_current_period_end)
 
           initialValues.current = vals
+
+          // Auto-sync with Stripe if status seems stale
+          if (profile.stripe_customer_id && (!profile.subscription_status || profile.subscription_status === 'inactive')) {
+            try {
+              const res = await fetch('/api/stripe/verify', { method: 'POST' })
+              const verifyData = await res.json()
+              if (verifyData.status && verifyData.status !== profile.subscription_status) {
+                setSubscriptionStatus(verifyData.status)
+                if (verifyData.period_end) setPeriodEnd(verifyData.period_end)
+                if (verifyData.price_id) setStripePriceId(verifyData.price_id)
+              }
+            } catch { /* silent — non-critical */ }
+          }
         }
       } catch {
         setError('Failed to load profile')
@@ -248,14 +261,21 @@ export default function SettingsPage() {
       const response = await fetch('/api/stripe/portal', { method: 'POST' })
       const data = await response.json()
       if (data.url) {
-        window.location.href = data.url
+        // Use link click instead of window.location for Capacitor compatibility
+        const link = document.createElement('a')
+        link.href = data.url
+        link.target = '_blank'
+        link.rel = 'noopener noreferrer'
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
       } else {
         setError(data.error || 'Failed to open subscription management')
-        setManagingSubscription(false)
       }
     } catch {
       setError('Failed to open subscription management')
-      setManagingSubscription(false)
+    } finally {
+      setTimeout(() => setManagingSubscription(false), 2000)
     }
   }
 
@@ -582,8 +602,12 @@ export default function SettingsPage() {
           <div className="p-4 bg-[#1e3a5f]/30 rounded-lg">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-blue-600/20 rounded-lg flex items-center justify-center shrink-0">
-                  <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${
+                  subscriptionStatus === 'trialing' ? 'bg-blue-600/20' : isActive ? 'bg-green-600/20' : 'bg-slate-600/20'
+                }`}>
+                  <svg className={`w-5 h-5 ${
+                    subscriptionStatus === 'trialing' ? 'text-blue-400' : isActive ? 'text-green-400' : 'text-slate-400'
+                  }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
                   </svg>
                 </div>
@@ -592,39 +616,41 @@ export default function SettingsPage() {
                     <span className="text-white font-semibold">{getPlanName()}</span>
                     {getStatusBadge()}
                   </div>
-                  {getPlanPrice() && (
+                  {subscriptionStatus === 'trialing' ? (
+                    <p className="text-slate-400 text-sm">
+                      Free until {periodEnd ? new Date(periodEnd).toLocaleDateString() : '—'}, then {getPlanPrice() || '$29/month'}
+                    </p>
+                  ) : getPlanPrice() ? (
                     <p className="text-slate-400 text-sm">{getPlanPrice()}</p>
-                  )}
+                  ) : null}
                 </div>
               </div>
             </div>
 
-            {/* Billing info */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
-              {periodEnd && (
+            {/* Billing info — hide redundant row for trial since it's shown above */}
+            {subscriptionStatus !== 'trialing' && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
+                {periodEnd && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <svg className="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span className="text-slate-400">
+                      {isCanceled ? 'Access until' : 'Next billing'}:{' '}
+                      <span className="text-white">{new Date(periodEnd).toLocaleDateString()}</span>
+                    </span>
+                  </div>
+                )}
                 <div className="flex items-center gap-2 text-sm">
                   <svg className="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                   <span className="text-slate-400">
-                    {isCanceled
-                      ? 'Access until'
-                      : subscriptionStatus === 'trialing'
-                        ? 'Trial ends'
-                        : 'Next billing'}:{' '}
-                    <span className="text-white">{new Date(periodEnd).toLocaleDateString()}</span>
+                    Billing cycle: <span className="text-white">{isYearlyPlan ? 'Yearly' : 'Monthly'}</span>
                   </span>
                 </div>
-              )}
-              <div className="flex items-center gap-2 text-sm">
-                <svg className="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span className="text-slate-400">
-                  Billing cycle: <span className="text-white">{isYearlyPlan ? 'Yearly' : 'Monthly'}</span>
-                </span>
               </div>
-            </div>
+            )}
 
             {/* Switch plan tip */}
             {isActive && !isCanceled && !isYearlyPlan && (
