@@ -1,10 +1,10 @@
 import crypto from 'crypto'
 
-const HMAC_SECRET = process.env.SUPABASE_SERVICE_ROLE_KEY || 'fallback-secret'
+const HMAC_SECRET = process.env.UNSUBSCRIBE_SECRET || process.env.NEXTAUTH_SECRET || crypto.randomBytes(32).toString('hex')
 
 /** Generate HMAC token for unsubscribe link */
 export function generateUnsubscribeToken(userId: string): string {
-  return crypto.createHmac('sha256', HMAC_SECRET).update(userId).digest('hex').slice(0, 16)
+  return crypto.createHmac('sha256', HMAC_SECRET).update(userId).digest('hex').slice(0, 32)
 }
 
 /** Verify HMAC token for unsubscribe link */

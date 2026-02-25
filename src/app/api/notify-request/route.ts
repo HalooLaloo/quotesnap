@@ -38,6 +38,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Validate UUID format
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(contractorId)) {
+      return NextResponse.json(
+        { error: 'Invalid contractor ID' },
+        { status: 400 }
+      )
+    }
+
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL,
       process.env.SUPABASE_SERVICE_ROLE_KEY

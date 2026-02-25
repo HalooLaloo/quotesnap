@@ -108,7 +108,9 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const { description, measurementSystem = 'imperial' } = await request.json()
+    const body = await request.json()
+    const { description } = body
+    const measurementSystem = body.measurementSystem === 'metric' ? 'metric' : 'imperial'
 
     if (!process.env.OPENAI_API_KEY) {
       return NextResponse.json(
