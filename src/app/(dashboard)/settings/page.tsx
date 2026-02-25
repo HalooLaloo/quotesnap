@@ -64,6 +64,7 @@ export default function SettingsPage() {
   const [cancelReason, setCancelReason] = useState('')
   const [cancelDetails, setCancelDetails] = useState('')
   const [resumingSubscription, setResumingSubscription] = useState(false)
+  const [startingTrial, setStartingTrial] = useState(false)
 
   // Profile fields
   const [fullName, setFullName] = useState('')
@@ -306,7 +307,8 @@ export default function SettingsPage() {
 
   const getPlanName = () => {
     if (subscriptionStatus === 'trialing') return 'Free Trial'
-    if (!stripePriceId) return 'No plan'
+    if (!subscriptionStatus || subscriptionStatus === 'inactive') return 'No active plan'
+    if (!stripePriceId) return 'Pro'
     if (stripePriceId === process.env.NEXT_PUBLIC_STRIPE_MONTHLY_PRICE_ID) return 'Pro Monthly'
     if (stripePriceId === process.env.NEXT_PUBLIC_STRIPE_YEARLY_PRICE_ID) return 'Pro Yearly'
     return 'Pro'
@@ -334,7 +336,7 @@ export default function SettingsPage() {
       case 'canceled':
         return <span className="px-2 py-1 bg-slate-500/20 text-slate-400 rounded-full text-xs font-medium">Canceled</span>
       default:
-        return <span className="px-2 py-1 bg-slate-500/20 text-slate-400 rounded-full text-xs font-medium">Inactive</span>
+        return null
     }
   }
 
@@ -602,8 +604,8 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            {/* Billing info — hide redundant row for trial since it's shown above */}
-            {subscriptionStatus !== 'trialing' && (
+            {/* Billing info — hide for trial (shown in subtitle) and inactive (no data) */}
+            {subscriptionStatus !== 'trialing' && isActive && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
                 {periodEnd && (
                   <div className="flex items-center gap-2 text-sm">
@@ -676,15 +678,15 @@ export default function SettingsPage() {
 
             {/* Inactive notice */}
             {!isActive && !isCanceled && subscriptionStatus !== 'past_due' && (
-              <div className="mt-3 p-3 bg-slate-500/10 border border-slate-500/30 rounded-lg">
+              <div className="mt-3 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
                 <div className="flex items-start gap-2">
-                  <svg className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <svg className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                   <div>
-                    <p className="text-slate-300 text-sm font-medium">No active subscription</p>
+                    <p className="text-blue-300 text-sm font-medium">Start your free 3-day trial</p>
                     <p className="text-slate-400 text-xs mt-0.5">
-                      Subscribe to unlock unlimited quotes, invoices, AI features, and more.
+                      Try all features free for 3 days, then $29/month. Cancel anytime.
                     </p>
                   </div>
                 </div>
@@ -737,16 +739,57 @@ export default function SettingsPage() {
 
           {/* Action buttons */}
           <div className="flex flex-wrap gap-3">
-            {/* Manage Subscription — direct GET redirect to Stripe portal */}
-            <a
-              href="/api/stripe/portal"
-              className="btn-primary flex items-center gap-2 text-sm"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-              </svg>
-              Manage Subscription
-            </a>
+            {isActive || isCanceled || subscriptionStatus === 'past_due' ? (
+              <a
+                href="/api/stripe/portal"
+                className="btn-primary flex items-center gap-2 text-sm"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                </svg>
+                Manage Subscription
+              </a>
+            ) : (
+              <button
+                onClick={async () => {
+                  setStartingTrial(true)
+                  setError('')
+                  try {
+                    const res = await fetch('/api/stripe/checkout', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ plan: 'monthly' }),
+                    })
+                    const data = await res.json()
+                    if (data.url) {
+                      window.location.href = data.url
+                    } else {
+                      setError(data.error || 'Failed to start checkout')
+                      setStartingTrial(false)
+                    }
+                  } catch {
+                    setError('Failed to start checkout')
+                    setStartingTrial(false)
+                  }
+                }}
+                disabled={startingTrial}
+                className="btn-primary flex items-center gap-2 text-sm"
+              >
+                {startingTrial ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Loading...
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    Start Free Trial
+                  </>
+                )}
+              </button>
+            )}
           </div>
 
           {/* Cancel confirmation with feedback */}
