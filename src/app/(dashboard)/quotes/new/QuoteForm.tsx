@@ -338,12 +338,27 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
   // Track which custom services were saved to price list
   const [savedToServices, setSavedToServices] = useState<Set<string>>(new Set())
 
+  const [savingService, setSavingService] = useState<string | null>(null)
+
   const addToMyServices = async (name: string, unit: string, price: number) => {
-    const { error: insertError } = await supabase
-      .from('qs_services')
-      .insert({ user_id: userId, name, unit, price })
-    if (!insertError) {
-      setSavedToServices(prev => new Set(prev).add(name))
+    setSavingService(name)
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      const uid = user?.id || userId
+      const { error: insertError } = await supabase
+        .from('qs_services')
+        .insert({ user_id: uid, name, unit, price })
+      if (insertError) {
+        console.error('Failed to save service:', insertError)
+        setError(`Failed to save "${name}": ${insertError.message}`)
+      } else {
+        setSavedToServices(prev => new Set(prev).add(name))
+      }
+    } catch (err) {
+      console.error('Failed to save service:', err)
+      setError(`Failed to save "${name}" to price list`)
+    } finally {
+      setSavingService(null)
     }
   }
 
@@ -655,13 +670,19 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
                         )}
                         {suggestion.unit_price > 0 && !savedToServices.has(suggestion.service_name) && !services.some(s => s.name === suggestion.service_name) && (
                           <button
+                            type="button"
                             onClick={() => addToMyServices(suggestion.service_name, suggestion.unit, suggestion.unit_price)}
-                            className="text-blue-400 hover:text-blue-300 text-xs flex items-center gap-1 transition-colors"
+                            disabled={savingService === suggestion.service_name}
+                            className="text-blue-400 hover:text-blue-300 text-xs flex items-center gap-1 transition-colors disabled:opacity-50"
                           >
-                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                            </svg>
-                            Save to price list
+                            {savingService === suggestion.service_name ? (
+                              <div className="w-3 h-3 border border-blue-400/30 border-t-blue-400 rounded-full animate-spin" />
+                            ) : (
+                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                              </svg>
+                            )}
+                            {savingService === suggestion.service_name ? 'Saving...' : 'Save to price list'}
                           </button>
                         )}
                         {savedToServices.has(suggestion.service_name) && (
@@ -769,13 +790,19 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
                   )}
                   {item.isCustom && item.unit_price > 0 && !savedToServices.has(item.service_name) && !services.some(s => s.name === item.service_name) && (
                     <button
+                      type="button"
                       onClick={() => addToMyServices(item.service_name, item.unit, item.unit_price)}
-                      className="mt-2 text-blue-400 hover:text-blue-300 text-xs flex items-center gap-1 transition-colors"
+                      disabled={savingService === item.service_name}
+                      className="mt-2 text-blue-400 hover:text-blue-300 text-xs flex items-center gap-1 transition-colors disabled:opacity-50"
                     >
-                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                      </svg>
-                      Save to price list
+                      {savingService === item.service_name ? (
+                        <div className="w-3 h-3 border border-blue-400/30 border-t-blue-400 rounded-full animate-spin" />
+                      ) : (
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                        </svg>
+                      )}
+                      {savingService === item.service_name ? 'Saving...' : 'Save to price list'}
                     </button>
                   )}
                   {item.isCustom && savedToServices.has(item.service_name) && (
