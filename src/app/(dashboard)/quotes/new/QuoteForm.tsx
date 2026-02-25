@@ -1096,7 +1096,7 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
           )}
 
           <div className="space-y-3">
-            {request && !isEditMode && (
+            {request && (
               <>
                 <button
                   type="button"
@@ -1166,7 +1166,7 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
             <button
               onClick={() => handleSubmit('draft')}
               disabled={loading || previewing || items.length === 0 || success !== null || (!isEditMode && !profileComplete)}
-              className={`${request && !isEditMode ? 'btn-secondary' : 'btn-primary'} w-full`}
+              className={`${request ? 'btn-secondary' : 'btn-primary'} w-full`}
             >
               {loading ? 'Saving...' : isEditMode ? 'Save Changes' : 'Save as Draft'}
             </button>

@@ -4,14 +4,16 @@ import { useState } from 'react'
 
 interface QuoteActionsProps {
   token: string
+  disabled?: boolean
 }
 
-export function QuoteActions({ token }: QuoteActionsProps) {
+export function QuoteActions({ token, disabled }: QuoteActionsProps) {
   const [loading, setLoading] = useState<'accept' | 'reject' | null>(null)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
 
   const handleAction = async (action: 'accept' | 'reject') => {
+    if (disabled) return
     setLoading(action)
     setError('')
     setSuccess(false)
@@ -63,7 +65,7 @@ export function QuoteActions({ token }: QuoteActionsProps) {
   }
 
   return (
-    <div className="card">
+    <div className={`card ${disabled ? 'opacity-60' : ''}`}>
       <h3 className="font-medium text-white mb-4 text-center">Your decision</h3>
 
       {error && (
@@ -75,42 +77,24 @@ export function QuoteActions({ token }: QuoteActionsProps) {
       <div className="flex gap-4">
         <button
           onClick={() => handleAction('reject')}
-          disabled={loading !== null || success}
-          className="btn-secondary flex-1 flex items-center justify-center gap-2 disabled:opacity-50"
+          disabled={disabled || loading !== null || success}
+          className="btn-secondary flex-1 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {loading === 'reject' ? (
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              <span>Processing...</span>
-            </div>
-          ) : (
-            <>
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-              Reject
-            </>
-          )}
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+          Reject
         </button>
 
         <button
           onClick={() => handleAction('accept')}
-          disabled={loading !== null || success}
-          className="btn-primary flex-1 flex items-center justify-center gap-2 disabled:opacity-50"
+          disabled={disabled || loading !== null || success}
+          className="btn-primary flex-1 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {loading === 'accept' ? (
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              <span>Processing...</span>
-            </div>
-          ) : (
-            <>
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-              Accept Quote
-            </>
-          )}
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          </svg>
+          Accept Quote
         </button>
       </div>
 

@@ -19,10 +19,14 @@ export const revalidate = 0
 
 export default async function PublicQuotePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ token: string }>
+  searchParams: Promise<{ preview?: string }>
 }) {
   const { token } = await params
+  const { preview } = await searchParams
+  const isPreview = preview === '1'
 
   // Use service role for public access
   const supabase = createClient(
@@ -75,8 +79,8 @@ export default async function PublicQuotePage({
     quote.status === 'sent' && quote.valid_until && new Date(quote.valid_until) < new Date()
   )
 
-  // If sent and viewed, show as viewed
-  const displayStatus = quote.status === 'sent' && quote.viewed_at ? 'viewed' : quote.status
+  // If sent and viewed, show as viewed. In preview, show as "Pending" (how client will see it)
+  const displayStatus = isPreview ? 'sent' : (quote.status === 'sent' && quote.viewed_at ? 'viewed' : quote.status)
   const status = statusInfo[displayStatus as keyof typeof statusInfo] || statusInfo.draft
 
   return (
@@ -290,9 +294,11 @@ export default async function PublicQuotePage({
           </div>
         </div>
 
-        {/* Actions - show only for active (non-expired) sent quotes */}
-        {quote.status === 'sent' && !isExpired && (
+        {/* Actions - show for sent quotes or as disabled mockup in preview */}
+        {quote.status === 'sent' && !isExpired ? (
           <QuoteActions token={token} />
+        ) : quote.status === 'draft' && (
+          <QuoteActions token={token} disabled />
         )}
 
         {/* Download PDF */}
