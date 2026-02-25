@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { hapticNotification } from '@/lib/capacitor'
 
 export function PreviewBanner({ quoteId }: { quoteId?: string }) {
   const searchParams = useSearchParams()
@@ -24,6 +25,7 @@ export function PreviewBanner({ quoteId }: { quoteId?: string }) {
       })
       if (res.ok) {
         setSent(true)
+        hapticNotification('success')
         setTimeout(() => {
           router.push(`/quotes/${quoteId}`)
         }, 1500)

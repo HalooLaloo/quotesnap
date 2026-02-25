@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { hapticNotification } from '@/lib/capacitor'
 
 interface QuoteActionsProps {
   token: string
@@ -40,6 +41,7 @@ export function QuoteActions({ token, disabled }: QuoteActionsProps) {
       }
 
       setSuccess(true)
+      hapticNotification(action === 'accept' ? 'success' : 'warning')
       // Wait a moment then refresh
       setTimeout(() => {
         window.location.reload()

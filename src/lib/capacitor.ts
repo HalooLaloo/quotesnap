@@ -1,6 +1,9 @@
 import { Capacitor } from '@capacitor/core'
 import { StatusBar, Style } from '@capacitor/status-bar'
 import { App } from '@capacitor/app'
+import { Haptics, ImpactStyle, NotificationType } from '@capacitor/haptics'
+import { Network } from '@capacitor/network'
+import { Share } from '@capacitor/share'
 import { createClient } from '@/lib/supabase/client'
 
 /**
@@ -121,6 +124,29 @@ function setupNativeBridge() {
           { name: 'removeAllListeners', rtype: 'promise' },
         ],
       },
+      {
+        name: 'Haptics',
+        methods: [
+          { name: 'impact', rtype: 'promise' },
+          { name: 'notification', rtype: 'promise' },
+          { name: 'vibrate', rtype: 'promise' },
+        ],
+      },
+      {
+        name: 'Network',
+        methods: [
+          { name: 'getStatus', rtype: 'promise' },
+          { name: 'addListener' },
+          { name: 'removeAllListeners', rtype: 'promise' },
+        ],
+      },
+      {
+        name: 'Share',
+        methods: [
+          { name: 'share', rtype: 'promise' },
+          { name: 'canShare', rtype: 'promise' },
+        ],
+      },
     ]
   }
 }
@@ -162,8 +188,43 @@ export function initCapacitor() {
     }
   })
 
+  // Monitor network status — show offline page when disconnected
+  Network.addListener('networkStatusChange', (status) => {
+    if (!status.connected) {
+      window.location.href = '/offline.html'
+    }
+  })
+
   // Initialize push notifications
   initPushNotifications()
+}
+
+// Native haptic feedback
+export async function hapticImpact(style: 'light' | 'medium' | 'heavy' = 'medium') {
+  if (!Capacitor.isNativePlatform()) return
+  try {
+    const map = { light: ImpactStyle.Light, medium: ImpactStyle.Medium, heavy: ImpactStyle.Heavy }
+    await Haptics.impact({ style: map[style] })
+  } catch { /* silent */ }
+}
+
+export async function hapticNotification(type: 'success' | 'warning' | 'error' = 'success') {
+  if (!Capacitor.isNativePlatform()) return
+  try {
+    const map = { success: NotificationType.Success, warning: NotificationType.Warning, error: NotificationType.Error }
+    await Haptics.notification({ type: map[type] })
+  } catch { /* silent */ }
+}
+
+// Native share sheet
+export async function nativeShare(opts: { title: string; text?: string; url: string }): Promise<boolean> {
+  if (!Capacitor.isNativePlatform()) return false
+  try {
+    await Share.share(opts)
+    return true
+  } catch {
+    return false
+  }
 }
 
 async function initPushNotifications() {

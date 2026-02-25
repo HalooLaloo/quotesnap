@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { nativeShare, hapticImpact, hapticNotification, isNative } from '@/lib/capacitor'
 
 interface ShareLinkButtonProps {
   url: string
@@ -14,13 +15,27 @@ export function ShareLinkButton({ url, variant = 'default' }: ShareLinkButtonPro
   const handleCopy = async () => {
     await navigator.clipboard.writeText(url)
     setCopied(true)
+    hapticNotification('success')
     setTimeout(() => setCopied(false), 2000)
+  }
+
+  const handleShare = async () => {
+    if (isNative()) {
+      hapticImpact('light')
+      const shared = await nativeShare({
+        title: 'Request a Quote',
+        text: 'Request a quote with photos:',
+        url,
+      })
+      if (shared) return
+    }
+    setShowModal(true)
   }
 
   return (
     <>
       <button
-        onClick={() => setShowModal(true)}
+        onClick={handleShare}
         className={variant === 'primary'
           ? 'btn-primary inline-flex items-center gap-2 text-sm'
           : 'flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors text-xs font-medium'
