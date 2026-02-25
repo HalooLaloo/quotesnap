@@ -31,6 +31,8 @@ interface QuoteFormProps {
   defaultTaxPercent: number
   profileComplete: boolean
   measurementSystem: 'imperial' | 'metric'
+  contractorName: string
+  contractorPhone: string
   existingQuote?: ExistingQuote
 }
 
@@ -45,7 +47,7 @@ interface AiSuggestion extends QuoteItem {
   selected: boolean
 }
 
-export function QuoteForm({ request, services, userId, currency, currencySymbol, taxLabel, defaultTaxPercent, profileComplete, measurementSystem, existingQuote }: QuoteFormProps) {
+export function QuoteForm({ request, services, userId, currency, currencySymbol, taxLabel, defaultTaxPercent, profileComplete, measurementSystem, contractorName, contractorPhone, existingQuote }: QuoteFormProps) {
   const router = useRouter()
   const supabase = createClient()
   const isEditMode = !!existingQuote
@@ -333,10 +335,10 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
   const effectiveQuoteId = isEditMode ? existingQuote.id : savedQuote?.id
   const effectiveQuoteToken = isEditMode ? existingQuote.token : savedQuote?.token
 
-  // Preview: save as draft, open client-facing page in new tab
-  const [previewing, setPreviewing] = useState(false)
+  // Preview overlay (no DB save — just shows what client will see)
+  const [showPreview, setShowPreview] = useState(false)
 
-  const handlePreview = async () => {
+  const handlePreview = () => {
     if (items.length === 0) {
       setError('Add at least one service to the quote')
       return
@@ -346,70 +348,8 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
       setError('Enter price for all custom services')
       return
     }
-
     setError('')
-    setPreviewing(true)
-
-    const validUntil = new Date()
-    validUntil.setDate(validUntil.getDate() + validDays)
-
-    const quoteData = {
-      items: items,
-      subtotal: subtotal,
-      discount_percent: discountPercent,
-      vat_percent: showVat ? vatPercent : 0,
-      total_net: totalNet,
-      total_gross: totalGross,
-      total: total,
-      notes: clientAnswer ? `---CLIENT_ANSWER---\n${clientAnswer}` : null,
-      valid_until: validUntil.toISOString().split('T')[0],
-      available_from: availableFrom || null,
-      status: 'draft' as const,
-      currency: currency,
-    }
-
-    let token: string | null = null
-
-    if (effectiveEditMode && effectiveQuoteId) {
-      token = effectiveQuoteToken || null
-      const { error: updateError } = await supabase
-        .from('qs_quotes')
-        .update(quoteData)
-        .eq('id', effectiveQuoteId)
-        .eq('user_id', userId)
-
-      if (updateError) {
-        setError(updateError.message)
-        setPreviewing(false)
-        return
-      }
-    } else {
-      const { data: insertedQuote, error: insertError } = await supabase
-        .from('qs_quotes')
-        .insert({
-          ...quoteData,
-          request_id: request?.id || null,
-          user_id: userId,
-          materials: [],
-          sent_at: null,
-        })
-        .select('id, token')
-        .single()
-
-      if (insertError) {
-        setError(insertError.message)
-        setPreviewing(false)
-        return
-      }
-      token = insertedQuote.token
-      setSavedQuote({ id: insertedQuote.id, token: insertedQuote.token })
-    }
-
-    setPreviewing(false)
-
-    if (token) {
-      router.push(`/quote/${token}?preview=1`)
-    }
+    setShowPreview(true)
   }
 
   // Zapisz wycenę
@@ -1124,7 +1064,7 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
                 )}
                 <button
                   onClick={() => handleSubmit('sent')}
-                  disabled={loading || previewing || items.length === 0 || success !== null || !profileComplete}
+                  disabled={loading || items.length === 0 || success !== null || !profileComplete}
                   className="btn-primary w-full flex items-center justify-center gap-2"
                 >
                   {loading ? (
@@ -1145,27 +1085,18 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
             )}
             <button
               onClick={handlePreview}
-              disabled={loading || previewing || items.length === 0 || success !== null || (!isEditMode && !profileComplete)}
+              disabled={loading || items.length === 0 || success !== null || (!isEditMode && !profileComplete)}
               className="btn-secondary w-full flex items-center justify-center gap-2"
             >
-              {previewing ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                  </svg>
-                  Preview Quote
-                </>
-              )}
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+              Preview Quote
             </button>
             <button
               onClick={() => handleSubmit('draft')}
-              disabled={loading || previewing || items.length === 0 || success !== null || (!isEditMode && !profileComplete)}
+              disabled={loading || items.length === 0 || success !== null || (!isEditMode && !profileComplete)}
               className={`${request ? 'btn-secondary' : 'btn-primary'} w-full`}
             >
               {loading ? 'Saving...' : isEditMode ? 'Save Changes' : 'Save as Draft'}
@@ -1174,6 +1105,193 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
         </div>
       </div>
     </div>
+
+    {/* Full-screen preview overlay — exact client view, no DB save */}
+    {showPreview && (() => {
+      const validUntil = new Date()
+      validUntil.setDate(validUntil.getDate() + validDays)
+      const effectiveVat = showVat ? vatPercent : 0
+
+      return (
+        <div className="fixed inset-0 z-[100] bg-[#0a1628] overflow-y-auto">
+          <div className="py-8 px-4">
+            <div className="max-w-3xl mx-auto">
+              {/* Preview banner */}
+              <div className="bg-amber-600 text-white px-4 py-3 rounded-lg mb-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                  <span className="font-medium text-sm">Preview — this is what your client will see</span>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setShowPreview(false)}
+                    className="flex-1 flex items-center justify-center gap-1 px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-medium transition-colors"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                    Edit Quote
+                  </button>
+                  <button
+                    onClick={() => { setShowPreview(false); handleSubmit('sent') }}
+                    disabled={!availableFrom}
+                    className="flex-1 flex items-center justify-center gap-1 px-3 py-2 bg-white text-amber-700 hover:bg-white/90 rounded-lg text-sm font-bold transition-colors disabled:opacity-50"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    Send to Client
+                  </button>
+                </div>
+                {!availableFrom && (
+                  <p className="text-amber-200 text-xs mt-2 text-center">Set a start date before sending</p>
+                )}
+              </div>
+
+              {/* Header */}
+              <div className="text-center mb-8">
+                <div className="inline-flex items-center gap-2 mb-4">
+                  <div className="w-10 h-10 bg-[#132039] rounded-lg flex items-center justify-center">
+                    <svg className="w-6 h-6 text-orange-500" viewBox="0 0 24 24" fill="currentColor">
+                      <rect x="2" y="6" width="9" height="5" rx="0.5" />
+                      <rect x="13" y="6" width="9" height="5" rx="0.5" />
+                      <rect x="6" y="13" width="9" height="5" rx="0.5" />
+                      <rect x="17" y="13" width="5" height="5" rx="0.5" />
+                      <rect x="2" y="13" width="2" height="5" rx="0.5" />
+                    </svg>
+                  </div>
+                  <span className="text-2xl font-bold text-white">BrickQuote</span>
+                </div>
+                <h1 className="text-3xl font-bold text-white">Quote from {contractorName || 'Contractor'}</h1>
+                {request && <p className="text-slate-400 mt-2">For {request.client_name}</p>}
+              </div>
+
+              {/* Quote card */}
+              <div className="card mb-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-lg font-semibold text-white">Quote Details</h2>
+                  <span className="px-3 py-1 rounded-full text-sm font-medium bg-blue-500/20 text-blue-400">Pending</span>
+                </div>
+
+                <div className="space-y-3 mb-6">
+                  {items.map((item, index) => (
+                    <div key={index} className="flex items-center justify-between p-4 bg-slate-700/50 rounded-lg">
+                      <div className="flex-1">
+                        <span className="font-medium text-white">{item.service_name}</span>
+                        {item.reason && <p className="text-sm text-slate-400 mt-1">{item.reason}</p>}
+                      </div>
+                      <div className="text-right ml-4">
+                        <div className="text-slate-400 text-sm">{item.quantity} {item.unit} x {currencySymbol}{item.unit_price.toFixed(2)}</div>
+                        <div className="font-semibold text-white">{currencySymbol}{item.total.toFixed(2)}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="border-t border-slate-700 pt-4 space-y-2">
+                  <div className="flex justify-between text-slate-300">
+                    <span>Subtotal</span>
+                    <span>{currencySymbol}{subtotal.toFixed(2)}</span>
+                  </div>
+                  {discountPercent > 0 && (
+                    <div className="flex justify-between text-slate-300">
+                      <span>Discount ({discountPercent}%)</span>
+                      <span className="text-red-400">-{currencySymbol}{discount.toFixed(2)}</span>
+                    </div>
+                  )}
+                  {effectiveVat > 0 && (
+                    <>
+                      <div className="flex justify-between text-slate-300">
+                        <span>Net</span>
+                        <span>{currencySymbol}{totalNet.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between text-slate-300">
+                        <span>{taxLabel} ({effectiveVat}%)</span>
+                        <span>{currencySymbol}{vatAmount.toFixed(2)}</span>
+                      </div>
+                    </>
+                  )}
+                  <div className="flex justify-between text-xl font-bold text-white pt-2 border-t border-slate-700">
+                    <span>Estimate</span>
+                    <span>{currencySymbol}{total.toFixed(2)}</span>
+                  </div>
+                  <p className="text-slate-500 text-xs mt-2">Price may vary slightly after on-site assessment</p>
+                </div>
+              </div>
+
+              {/* Dates */}
+              <div className="card mb-6">
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p className="text-slate-400">Valid until</p>
+                    <p className="text-white font-medium">{validUntil.toLocaleDateString()}</p>
+                  </div>
+                  {availableFrom && (
+                    <div>
+                      <p className="text-slate-400">Available from</p>
+                      <p className="text-white font-medium">{new Date(availableFrom).toLocaleDateString()}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Contact */}
+              {contractorPhone && (
+                <div className="card mb-6">
+                  <h3 className="font-medium text-white mb-3">Contact {contractorName}</h3>
+                  <div className="btn-secondary w-full text-center flex items-center justify-center gap-2 pointer-events-none opacity-60">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                    </svg>
+                    {contractorPhone}
+                  </div>
+                </div>
+              )}
+
+              {/* Info box */}
+              <div className="card mb-6 bg-blue-600/10 border-blue-500/30">
+                <div className="flex gap-3">
+                  <svg className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <p className="text-slate-300 text-sm">
+                    <strong className="text-blue-400">Note:</strong> This quote is an estimate prepared based on the provided description. The final price may vary slightly after an on-site assessment of the work scope.
+                  </p>
+                </div>
+              </div>
+
+              {/* Accept/Reject mockup (disabled) */}
+              <div className="card mb-6 opacity-60">
+                <h3 className="font-medium text-white mb-4 text-center">Your decision</h3>
+                <div className="flex gap-4">
+                  <button disabled className="btn-secondary flex-1 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    Reject
+                  </button>
+                  <button disabled className="btn-primary flex-1 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    Accept Quote
+                  </button>
+                </div>
+                <p className="text-slate-500 text-xs text-center mt-4">
+                  By accepting, you agree to proceed with the work. The contractor will be notified.
+                </p>
+              </div>
+
+              <p className="text-center text-slate-500 text-sm mt-8">Quote generated by BrickQuote</p>
+            </div>
+          </div>
+        </div>
+      )
+    })()}
+
     </div>
   )
 }

@@ -85,6 +85,8 @@ export default async function EditQuotePage({
         defaultTaxPercent={country.defaultTaxPercent}
         profileComplete={!!(profile?.full_name && profile?.company_name && profile?.phone)}
         measurementSystem={country.measurementSystem}
+        contractorName={profile?.company_name || profile?.full_name || ''}
+        contractorPhone={profile?.phone || ''}
         existingQuote={{
           id: quote.id,
           token: quote.token,
