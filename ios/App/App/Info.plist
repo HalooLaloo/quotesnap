@@ -55,5 +55,11 @@
 	<string>UIStatusBarStyleLightContent</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<key>NSUserNotificationsUsageDescription</key>
+	<string>BrickQuote sends notifications when clients accept, decline, or view your quotes.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>BrickQuote needs camera access to take photos for quote requests.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>BrickQuote needs photo library access to attach images to quote requests.</string>
 </dict>
 </plist>
