@@ -174,13 +174,17 @@ export function ServicesList({ services, currencySymbol, measurementSystem }: Se
   const deleteService = async (id: string) => {
     if (!confirm('Delete this service?')) return
     setLoading(true)
-    const { error } = await supabase
-      .from('qs_services')
-      .delete()
-      .eq('id', id)
-
-    if (!error) {
-      router.refresh()
+    try {
+      const res = await fetch('/api/delete-service', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ serviceId: id }),
+      })
+      if (res.ok) {
+        router.refresh()
+      }
+    } catch (err) {
+      console.error('Error deleting service:', err)
     }
     setLoading(false)
   }

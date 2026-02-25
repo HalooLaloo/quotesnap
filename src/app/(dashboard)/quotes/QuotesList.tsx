@@ -45,12 +45,15 @@ export function QuotesList({ quotes }: QuotesListProps) {
     if (!deleteModal) return
     setDeleting(true)
     try {
-      const { error } = await supabase
-        .from('qs_quotes')
-        .delete()
-        .eq('id', deleteModal.id)
-
-      if (error) throw error
+      const res = await fetch('/api/delete-quote', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ quoteId: deleteModal.id }),
+      })
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.error || 'Failed to delete')
+      }
       setDeleteModal(null)
       router.refresh()
     } catch (err) {
