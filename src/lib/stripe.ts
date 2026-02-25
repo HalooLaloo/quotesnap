@@ -65,20 +65,11 @@ export async function getPortalConfigId(): Promise<string | undefined> {
 
   if (!monthlyPriceId || !yearlyPriceId) return undefined
 
-  // Check existing configs first to avoid creating duplicates
-  const configs = await stripe.billingPortal.configurations.list({ limit: 100 })
-  const existing = configs.data.find(c =>
-    c.active && c.features.subscription_update.enabled
-  )
-  if (existing) {
-    _portalConfigId = existing.id
-    return _portalConfigId
-  }
-
   // Get product ID from monthly price
   const price = await stripe.prices.retrieve(monthlyPriceId)
   const productId = typeof price.product === 'string' ? price.product : price.product.id
 
+  // Always create a fresh config to ensure correct products/prices
   const config = await stripe.billingPortal.configurations.create({
     features: {
       subscription_update: {

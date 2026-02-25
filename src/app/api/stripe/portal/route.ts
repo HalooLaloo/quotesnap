@@ -30,12 +30,11 @@ async function createPortalSession(request: NextRequest) {
 
   const returnUrl = `${request.nextUrl.origin}/settings`
 
-  // Try with full portal config (plan switching), fall back to simple portal
   let configId: string | undefined
   try {
     configId = await getPortalConfigId()
-  } catch {
-    // Non-critical — portal works without config, just no plan switching UI
+  } catch (err) {
+    console.error('Portal config error (falling back to default):', err instanceof Error ? err.message : err)
   }
 
   return getStripe().billingPortal.sessions.create({
