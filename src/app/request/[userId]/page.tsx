@@ -81,11 +81,19 @@ export default function ClientRequestPage() {
       }
     }
 
+    const onResize = () => {
+      update()
+      // Scroll chat to bottom when keyboard opens/closes
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+      }, 50)
+    }
+
     update()
-    vv.addEventListener('resize', update)
+    vv.addEventListener('resize', onResize)
     vv.addEventListener('scroll', update)
     return () => {
-      vv.removeEventListener('resize', update)
+      vv.removeEventListener('resize', onResize)
       vv.removeEventListener('scroll', update)
     }
   }, [])
