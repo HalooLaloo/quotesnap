@@ -76,7 +76,18 @@ function LoginForm() {
       setError(error.message)
       setLoading(false)
     } else {
-      window.location.href = '/requests'
+      // Check subscription before redirecting to dashboard
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('subscription_status')
+        .single()
+
+      const status = profile?.subscription_status
+      if (status === 'active' || status === 'trialing') {
+        window.location.href = '/requests'
+      } else {
+        window.location.href = '/subscribe'
+      }
     }
   }
 

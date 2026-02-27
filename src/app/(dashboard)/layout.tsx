@@ -29,11 +29,17 @@ export default async function DashboardLayout({
     { count: sentQuotesCount },
   ] = await Promise.all([
     supabase.from('qs_services').select('*', { count: 'exact', head: true }).eq('user_id', user.id),
-    supabase.from('profiles').select('company_name, phone').eq('id', user.id).single(),
+    supabase.from('profiles').select('company_name, phone, subscription_status').eq('id', user.id).single(),
     supabase.from('qs_quote_requests').select('*', { count: 'exact', head: true }).eq('contractor_id', user.id),
     supabase.from('qs_quotes').select('*', { count: 'exact', head: true }).eq('user_id', user.id),
     supabase.from('qs_quotes').select('*', { count: 'exact', head: true }).eq('user_id', user.id).in('status', ['sent', 'accepted']),
   ])
+
+  // Enforce subscription — redirect to /subscribe if not active/trialing
+  const subStatus = profile?.subscription_status
+  if (subStatus !== 'active' && subStatus !== 'trialing') {
+    redirect('/subscribe')
+  }
 
   const checklistData = {
     userId: user.id,
