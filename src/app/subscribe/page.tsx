@@ -10,6 +10,9 @@ export default function SubscribePage() {
   const [error, setError] = useState('')
   const [pastDue, setPastDue] = useState(false)
   const [portalLoading, setPortalLoading] = useState(false)
+  const [showPromo, setShowPromo] = useState(false)
+  const [promoCode, setPromoCode] = useState('')
+  const [promoLoading, setPromoLoading] = useState(false)
   const router = useRouter()
   const supabase = useMemo(() => createClient(), [])
 
@@ -68,6 +71,31 @@ export default function SubscribePage() {
       setError('Something went wrong')
     }
     setPortalLoading(false)
+  }
+
+  const handlePromo = async () => {
+    if (!promoCode.trim()) return
+    setPromoLoading(true)
+    setError('')
+
+    try {
+      const res = await fetch('/api/promo/activate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: promoCode }),
+      })
+      const data = await res.json()
+
+      if (data.success) {
+        router.push('/requests')
+      } else {
+        setError(data.error || 'Invalid promo code')
+        setPromoLoading(false)
+      }
+    } catch {
+      setError('Failed to activate promo code')
+      setPromoLoading(false)
+    }
   }
 
   const handleSubscribe = async () => {
@@ -247,6 +275,37 @@ export default function SubscribePage() {
               <span className="text-slate-400 text-sm">
                 Cancel in one click, anytime. <span className="text-white">No charge if you cancel within 3 days.</span>
               </span>
+            </div>
+
+            {/* Promo code */}
+            <div className="mb-6">
+              {!showPromo ? (
+                <button
+                  onClick={() => setShowPromo(true)}
+                  className="text-slate-500 text-sm hover:text-slate-300 transition underline underline-offset-2 w-full text-center"
+                >
+                  Have a promo code?
+                </button>
+              ) : (
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={promoCode}
+                    onChange={(e) => setPromoCode(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handlePromo()}
+                    placeholder="Enter code"
+                    className="flex-1 bg-[#0d1f35] border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
+                    autoFocus
+                  />
+                  <button
+                    onClick={handlePromo}
+                    disabled={promoLoading || !promoCode.trim()}
+                    className="bg-green-600 hover:bg-green-500 text-white font-medium px-5 py-2.5 rounded-lg text-sm transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {promoLoading ? 'Activating...' : 'Apply'}
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* What you get — compact */}
