@@ -104,7 +104,8 @@ export default async function RequestsPage({
             {requests.map((request) => {
               // Extract work type from description (TYPE OF WORK or RODZAJ PRAC)
               const workTypeMatch = request.description.match(/(?:TYPE OF WORK|RODZAJ PRAC):\s*([^\n]+)/i)
-              const workType = workTypeMatch ? workTypeMatch[1].trim() : request.description.slice(0, 80)
+              const rawWorkType = workTypeMatch ? workTypeMatch[1].trim() : request.description.slice(0, 150)
+              const workType = rawWorkType.replace(/\*\*/g, '')
 
               // Status labels
               const statusLabels: Record<string, string> = {
@@ -137,7 +138,7 @@ export default async function RequestsPage({
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
                       <p className="text-white font-medium">{request.client_name}</p>
-                      <p className="text-slate-400 text-sm truncate mt-1">{workType}</p>
+                      <p className="text-slate-400 text-sm mt-1 line-clamp-2">{workType}</p>
                       <div className="flex items-center gap-2 mt-2">
                         <p className="text-slate-500 text-xs">
                           {new Date(request.created_at).toLocaleDateString('en-US')}
