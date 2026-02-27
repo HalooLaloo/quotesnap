@@ -100,41 +100,54 @@ export async function GET(
     doc.setFont('helvetica', 'bold')
     doc.text('From:', 20, y)
     doc.setFont('helvetica', 'normal')
-    doc.text(contractorName, 20, y + 6)
+    let leftY = y + 6
+    doc.text(contractorName, 20, leftY)
     if (profile?.business_address) {
-      doc.text(toAscii(profile.business_address), 20, y + 12)
+      leftY += 5
+      const addressLines = doc.splitTextToSize(toAscii(profile.business_address), 80)
+      doc.text(addressLines, 20, leftY)
+      leftY += (addressLines.length - 1) * 5
     }
     if (profile?.phone) {
-      doc.text(`Tel: ${profile.phone}`, 20, y + 18)
+      leftY += 5
+      doc.text(`Tel: ${profile.phone}`, 20, leftY)
     }
     if (profile?.email) {
-      doc.text(`Email: ${profile.email}`, 20, y + 24)
+      leftY += 5
+      doc.text(`Email: ${profile.email}`, 20, leftY)
     }
     if (profile?.tax_id) {
-      doc.text(`${countryConfig.taxIdLabel}: ${profile.tax_id}`, 20, y + 30)
+      leftY += 5
+      doc.text(`${countryConfig.taxIdLabel}: ${profile.tax_id}`, 20, leftY)
     }
     if (countryConfig.showCompanyRegNumber && profile?.company_reg_number) {
-      const regY = profile?.tax_id ? y + 36 : y + 30
-      doc.text(`${countryConfig.companyRegLabel}: ${profile.company_reg_number}`, 20, regY)
+      leftY += 5
+      doc.text(`${countryConfig.companyRegLabel}: ${profile.company_reg_number}`, 20, leftY)
     }
 
     // Client info (right)
     doc.setFont('helvetica', 'bold')
     doc.text('Bill To:', 120, y)
     doc.setFont('helvetica', 'normal')
-    doc.text(clientName, 120, y + 6)
+    let rightY = y + 6
+    doc.text(clientName, 120, rightY)
     if (invoice.client_address) {
-      doc.text(toAscii(invoice.client_address), 120, y + 12)
+      rightY += 5
+      const clientAddrLines = doc.splitTextToSize(toAscii(invoice.client_address), 70)
+      doc.text(clientAddrLines, 120, rightY)
+      rightY += (clientAddrLines.length - 1) * 5
     }
     if (invoice.client_phone) {
-      doc.text(`Tel: ${invoice.client_phone}`, 120, y + 18)
+      rightY += 5
+      doc.text(`Tel: ${invoice.client_phone}`, 120, rightY)
     }
     if (invoice.client_email) {
-      doc.text(`Email: ${invoice.client_email}`, 120, y + 24)
+      rightY += 5
+      doc.text(`Email: ${invoice.client_email}`, 120, rightY)
     }
 
-    // Date info
-    y = 100
+    // Date info — position below the taller column
+    y = Math.max(leftY, rightY) + 12
     doc.setFontSize(10)
     doc.setTextColor(100, 100, 100)
     const createdDate = formatDate(invoice.created_at, countryCode)
@@ -146,7 +159,7 @@ export async function GET(
     }
 
     // Items table
-    y = 115
+    y += 10
     const tableData = items.map(item => [
       toAscii(item.description),
       `${item.quantity} ${toAscii(item.unit)}`,
