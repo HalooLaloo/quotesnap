@@ -22,7 +22,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate, MessagingDelegate {
         // Request display permission separately
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { _, _ in }
 
+        // Clear badge on launch
+        application.applicationIconBadgeNumber = 0
+
         return true
+    }
+
+    func applicationDidBecomeActive(_ application: UIApplication) {
+        // Clear badge every time user returns to the app
+        application.applicationIconBadgeNumber = 0
     }
 
     // APNs token received — give to Firebase for FCM registration

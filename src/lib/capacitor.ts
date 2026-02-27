@@ -175,6 +175,13 @@ export function initCapacitor() {
     }
   })
 
+  // Clear notification badge when app comes to foreground
+  App.addListener('appStateChange', ({ isActive }) => {
+    if (isActive) {
+      PushNotifications.removeAllDeliveredNotifications().catch(() => {})
+    }
+  })
+
   // Handle deep links — navigate WebView to the opened URL
   App.addListener('appUrlOpen', (event: { url: string }) => {
     try {
@@ -293,6 +300,8 @@ async function initPushNotifications() {
       })
 
       PushNotifications.addListener('pushNotificationActionPerformed', (notification: any) => {
+        // Clear badge when user taps a notification
+        PushNotifications.removeAllDeliveredNotifications().catch(() => {})
         const url = notification.notification.data?.url
         if (url && typeof url === 'string') {
           window.location.href = url
