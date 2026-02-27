@@ -63,7 +63,7 @@ export async function GET(
     // Get contractor info
     const { data: profile } = await supabase
       .from('profiles')
-      .select('full_name, company_name, phone, email, country')
+      .select('full_name, company_name, phone, email, country, business_address')
       .eq('id', quote.user_id)
       .single()
 
@@ -98,28 +98,40 @@ export async function GET(
     doc.setFont('helvetica', 'bold')
     doc.text('Contractor:', 20, y)
     doc.setFont('helvetica', 'normal')
-    doc.text(contractorName, 20, y + 6)
+    let leftY = y + 6
+    doc.text(contractorName, 20, leftY)
+    if (profile?.business_address) {
+      leftY += 5
+      const addressLines = doc.splitTextToSize(toAscii(profile.business_address), 80)
+      doc.text(addressLines, 20, leftY)
+      leftY += (addressLines.length - 1) * 5
+    }
     if (profile?.phone) {
-      doc.text(`Phone: ${profile.phone}`, 20, y + 12)
+      leftY += 5
+      doc.text(`Phone: ${profile.phone}`, 20, leftY)
     }
     if (profile?.email) {
-      doc.text(`Email: ${profile.email}`, 20, y + 18)
+      leftY += 5
+      doc.text(`Email: ${profile.email}`, 20, leftY)
     }
 
     // Right column - Client
     doc.setFont('helvetica', 'bold')
     doc.text('Client:', 120, y)
     doc.setFont('helvetica', 'normal')
-    doc.text(clientName, 120, y + 6)
+    let rightY = y + 6
+    doc.text(clientName, 120, rightY)
     if (quote.qs_quote_requests?.client_phone) {
-      doc.text(`Phone: ${quote.qs_quote_requests.client_phone}`, 120, y + 12)
+      rightY += 5
+      doc.text(`Phone: ${quote.qs_quote_requests.client_phone}`, 120, rightY)
     }
     if (quote.qs_quote_requests?.client_email) {
-      doc.text(`Email: ${quote.qs_quote_requests.client_email}`, 120, y + 18)
+      rightY += 5
+      doc.text(`Email: ${quote.qs_quote_requests.client_email}`, 120, rightY)
     }
 
-    // Date info
-    y = 85
+    // Date info — position below the taller column
+    y = Math.max(leftY, rightY) + 10
     doc.setFontSize(10)
     doc.setTextColor(100, 100, 100)
     const createdDate = new Date(quote.created_at).toLocaleDateString('en-US')
@@ -136,7 +148,7 @@ export async function GET(
     }
 
     // Items table - convert all text to ASCII
-    y = 100
+    y += 10
     const tableData = items.map(item => [
       toAscii(item.service_name),
       `${item.quantity} ${toAscii(item.unit)}`,
