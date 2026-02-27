@@ -9,5 +9,6 @@ Disallow: /services
 Disallow: /settings
 Disallow: /subscribe
 Disallow: /ix
+Disallow: /checkout-complete
 
-Sitemap: https://www.brickquote.app/sitemap.xml
+Sitemap: https://brickquote.app/sitemap.xml
