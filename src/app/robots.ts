@@ -6,7 +6,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/api/', '/requests', '/quotes', '/invoices', '/services', '/settings'],
+        disallow: ['/api/', '/auth/', '/requests', '/quotes', '/invoices', '/services', '/settings', '/subscribe', '/checkout-complete', '/ix'],
       },
     ],
     sitemap: 'https://brickquote.app/sitemap.xml',
