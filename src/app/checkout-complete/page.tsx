@@ -48,11 +48,11 @@ export default function CheckoutCompletePage() {
             <div className="bg-[#132039] border border-[#1e3a5f] rounded-xl p-6 mb-4">
               <div className="w-14 h-14 rounded-2xl bg-[#0a1628] flex items-center justify-center mx-auto mb-4">
                 <svg className="w-8 h-8 text-orange-500" viewBox="0 0 24 24" fill="currentColor">
-                  <rect x="2" y="6" width="9" height="5" rx="0.5" />
-                  <rect x="13" y="6" width="9" height="5" rx="0.5" />
-                  <rect x="6" y="13" width="9" height="5" rx="0.5" />
-                  <rect x="17" y="13" width="5" height="5" rx="0.5" />
-                  <rect x="2" y="13" width="2" height="5" rx="0.5" />
+                <rect x="2" y="6" width="9.5" height="5" rx="0.7" />
+                <rect x="12.5" y="6" width="9.5" height="5" rx="0.7" />
+                <rect x="2" y="12.5" width="3.5" height="5" rx="0.7" />
+                <rect x="6.5" y="12.5" width="9.5" height="5" rx="0.7" />
+                <rect x="17" y="12.5" width="5" height="5" rx="0.7" />
                 </svg>
               </div>
               <p className="text-white font-semibold text-lg mb-1">

@@ -431,11 +431,11 @@ export default function ClientRequestPage() {
         <div className="max-w-2xl mx-auto flex items-center gap-3">
           <div className="w-10 h-10 bg-[#132039] rounded-xl flex items-center justify-center">
             <svg className="w-6 h-6 text-orange-500" viewBox="0 0 24 24" fill="currentColor">
-              <rect x="2" y="6" width="9" height="5" rx="0.5" />
-              <rect x="13" y="6" width="9" height="5" rx="0.5" />
-              <rect x="6" y="13" width="9" height="5" rx="0.5" />
-              <rect x="17" y="13" width="5" height="5" rx="0.5" />
-              <rect x="2" y="13" width="2" height="5" rx="0.5" />
+                <rect x="2" y="6" width="9.5" height="5" rx="0.7" />
+                <rect x="12.5" y="6" width="9.5" height="5" rx="0.7" />
+                <rect x="2" y="12.5" width="3.5" height="5" rx="0.7" />
+                <rect x="6.5" y="12.5" width="9.5" height="5" rx="0.7" />
+                <rect x="17" y="12.5" width="5" height="5" rx="0.7" />
             </svg>
           </div>
           <div className="flex-1">

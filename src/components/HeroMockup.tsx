@@ -156,9 +156,11 @@ function ContractorView() {
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-lg bg-[#132039] flex items-center justify-center">
             <svg className="w-4 h-4 text-orange-500" viewBox="0 0 24 24" fill="currentColor">
-              <rect x="2" y="6" width="9" height="5" rx="0.5" />
-              <rect x="13" y="6" width="9" height="5" rx="0.5" />
-              <rect x="6" y="13" width="9" height="5" rx="0.5" />
+              <rect x="2" y="6" width="9.5" height="5" rx="0.7" />
+              <rect x="12.5" y="6" width="9.5" height="5" rx="0.7" />
+              <rect x="2" y="12.5" width="3.5" height="5" rx="0.7" />
+              <rect x="6.5" y="12.5" width="9.5" height="5" rx="0.7" />
+              <rect x="17" y="12.5" width="5" height="5" rx="0.7" />
             </svg>
           </div>
           <span className="text-sm font-bold text-white">BrickQuote</span>
@@ -341,9 +343,11 @@ function ClientView() {
       <div className="flex items-center gap-3 mb-5 pb-4 border-b border-[#1e3a5f]">
         <div className="w-10 h-10 bg-[#132039] rounded-xl flex items-center justify-center">
           <svg className="w-6 h-6 text-orange-500" viewBox="0 0 24 24" fill="currentColor">
-            <rect x="2" y="6" width="9" height="5" rx="0.5" />
-            <rect x="13" y="6" width="9" height="5" rx="0.5" />
-            <rect x="6" y="13" width="9" height="5" rx="0.5" />
+            <rect x="2" y="6" width="9.5" height="5" rx="0.7" />
+            <rect x="12.5" y="6" width="9.5" height="5" rx="0.7" />
+            <rect x="2" y="12.5" width="3.5" height="5" rx="0.7" />
+            <rect x="6.5" y="12.5" width="9.5" height="5" rx="0.7" />
+            <rect x="17" y="12.5" width="5" height="5" rx="0.7" />
           </svg>
         </div>
         <div>
