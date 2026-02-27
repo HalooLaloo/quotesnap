@@ -142,8 +142,8 @@ workflows:
     max_build_duration: 30
     instance_type: linux_x2
     environment:
-      android_signing:
-        - brickquote_keystore
+      groups:
+        - android
       vars:
         PACKAGE_NAME: "app.brickquote"
       node: "22"
@@ -155,8 +155,16 @@ workflows:
       - name: Sync Capacitor Android
         script: npx cap sync android
 
+      - name: Set up keystore
+        script: |
+          echo $CM_KEYSTORE | base64 --decode > $CM_BUILD_DIR/brickquote-release.keystore
+
       - name: Build Android AAB
         script: |
+          export KEYSTORE_PATH="$CM_BUILD_DIR/brickquote-release.keystore"
+          export KEYSTORE_PASSWORD="$CM_KEYSTORE_PASSWORD"
+          export KEY_ALIAS="$CM_KEY_ALIAS"
+          export KEY_PASSWORD="$CM_KEY_PASSWORD"
           cd android && ./gradlew bundleRelease
 
     artifacts:
@@ -169,6 +177,3 @@ workflows:
         notify:
           success: true
           failure: true
-      google_play:
-        credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
-        track: internal
