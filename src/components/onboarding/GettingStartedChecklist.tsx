@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useOnboardingDismiss, useOnboardingToggle } from './useOnboardingDismiss'
 
 export interface ChecklistData {
@@ -57,6 +57,15 @@ export function GettingStartedChecklist(props: ChecklistData) {
 
   const completedCount = steps.filter(s => props[s.field]).length
   const allDone = completedCount === steps.length
+
+  // Auto-hide checklist when all steps are completed
+  useEffect(() => {
+    if (allDone && !dismissed) {
+      const timer = setTimeout(() => dismiss(), 3000)
+      return () => clearTimeout(timer)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allDone])
 
   if (dismissed) return null
 
