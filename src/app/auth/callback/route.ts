@@ -11,35 +11,24 @@ export async function GET(request: Request) {
   const errorDescription = searchParams.get('error_description')
   const next = searchParams.get('next') ?? '/requests'
 
-  // Native app: auth callbacks must open in external browser (paywall/subscribe flow)
+  // Native app: auth callbacks must open in Chrome directly (bypass Android app link interception)
   const isNativeApp = request.headers.get('user-agent')?.includes('BrickQuoteApp')
   if (isNativeApp && (tokenHash || code)) {
-    const callbackUrl = request.url.replace('&native=1', '')
-    const escapedUrl = callbackUrl.replace(/'/g, "\\'")
+    const callbackUrl = request.url
+    // Parse URL to build intent:// URI that forces Chrome
+    const parsed = new URL(callbackUrl)
+    const intentUrl = `intent://${parsed.host}${parsed.pathname}${parsed.search}#Intent;scheme=https;package=com.android.chrome;end`
     return new Response(`<!DOCTYPE html>
 <html><head><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="background:#0a1628;color:white;font-family:system-ui;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;margin:0;padding:20px;text-align:center">
 <p style="font-size:18px;margin-bottom:12px">Confirm your email</p>
-<p style="font-size:14px;color:#94a3b8;margin-bottom:30px">Please open this link in your browser to complete signup.</p>
-<button onclick="openBrowser()" style="background:#3b82f6;color:white;padding:14px 28px;border-radius:8px;border:none;font-size:16px;cursor:pointer;margin-bottom:16px">Open in Browser</button>
-<p id="status" style="font-size:12px;color:#64748b"></p>
+<p style="font-size:14px;color:#94a3b8;margin-bottom:30px">Opening in Chrome...</p>
+<a id="btn" href="${intentUrl}" style="background:#3b82f6;color:white;padding:14px 28px;border-radius:8px;text-decoration:none;font-size:16px;display:inline-block;margin-bottom:16px">Open in Chrome</a>
+<p style="font-size:12px;color:#64748b;margin-top:20px">If Chrome doesn't open, copy this link and paste in Chrome:</p>
+<input readonly value="${callbackUrl}" style="width:100%;padding:10px;border-radius:6px;border:1px solid #334155;background:#1e293b;color:#e2e8f0;font-size:12px;margin-top:8px" onclick="this.select()">
 <script>
-function openBrowser(){
-  var url='${escapedUrl}';
-  document.getElementById('status').textContent='Opening...';
-  try{
-    if(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform()){
-      if(window.Capacitor.Plugins&&window.Capacitor.Plugins.ExternalBrowser){
-        window.Capacitor.Plugins.ExternalBrowser.open({url:url});return;
-      }
-      if(window.Capacitor.Plugins&&window.Capacitor.Plugins.Browser){
-        window.Capacitor.Plugins.Browser.open({url:url,windowName:'_system'});return;
-      }
-    }
-  }catch(e){}
-  window.open(url,'_system');
-}
-openBrowser();
+// Auto-click the intent link to open Chrome immediately
+try { document.getElementById('btn').click(); } catch(e) {}
 </script>
 </body></html>`, { headers: { 'content-type': 'text/html' } })
   }
