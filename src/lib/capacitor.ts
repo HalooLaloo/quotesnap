@@ -186,10 +186,20 @@ export function initCapacitor() {
   App.addListener('appUrlOpen', (event: { url: string }) => {
     try {
       const url = new URL(event.url)
-      // Only navigate for our own domain
-      if (url.hostname.includes('brickquote.app')) {
-        window.location.href = url.pathname + url.search
+      if (!url.hostname.includes('brickquote.app')) return
+
+      // Auth callbacks must open in external browser (paywall/confirmation flow)
+      if (url.pathname.includes('/auth/callback') || url.searchParams.has('token_hash') || url.searchParams.has('code')) {
+        import('@capacitor/browser').then(({ Browser }) => {
+          Browser.open({ url: event.url, windowName: '_system' })
+        }).catch(() => {
+          // Fallback: try custom ExternalBrowser plugin
+          ExternalBrowser.open({ url: event.url }).catch(() => {})
+        })
+        return
       }
+
+      window.location.href = url.pathname + url.search
     } catch {
       // Invalid URL — ignore
     }
