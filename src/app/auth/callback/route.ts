@@ -11,6 +11,39 @@ export async function GET(request: Request) {
   const errorDescription = searchParams.get('error_description')
   const next = searchParams.get('next') ?? '/requests'
 
+  // Native app: auth callbacks must open in external browser (paywall/subscribe flow)
+  const isNativeApp = request.headers.get('user-agent')?.includes('BrickQuoteApp')
+  if (isNativeApp && (tokenHash || code)) {
+    const callbackUrl = request.url.replace('&native=1', '')
+    const escapedUrl = callbackUrl.replace(/'/g, "\\'")
+    return new Response(`<!DOCTYPE html>
+<html><head><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="background:#0a1628;color:white;font-family:system-ui;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;margin:0;padding:20px;text-align:center">
+<p style="font-size:18px;margin-bottom:12px">Confirm your email</p>
+<p style="font-size:14px;color:#94a3b8;margin-bottom:30px">Please open this link in your browser to complete signup.</p>
+<button onclick="openBrowser()" style="background:#3b82f6;color:white;padding:14px 28px;border-radius:8px;border:none;font-size:16px;cursor:pointer;margin-bottom:16px">Open in Browser</button>
+<p id="status" style="font-size:12px;color:#64748b"></p>
+<script>
+function openBrowser(){
+  var url='${escapedUrl}';
+  document.getElementById('status').textContent='Opening...';
+  try{
+    if(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform()){
+      if(window.Capacitor.Plugins&&window.Capacitor.Plugins.ExternalBrowser){
+        window.Capacitor.Plugins.ExternalBrowser.open({url:url});return;
+      }
+      if(window.Capacitor.Plugins&&window.Capacitor.Plugins.Browser){
+        window.Capacitor.Plugins.Browser.open({url:url,windowName:'_system'});return;
+      }
+    }
+  }catch(e){}
+  window.open(url,'_system');
+}
+openBrowser();
+</script>
+</body></html>`, { headers: { 'content-type': 'text/html' } })
+  }
+
   // If Supabase sent an error (e.g. OTP expired)
   if (error) {
     if (next === '/reset-password') {
