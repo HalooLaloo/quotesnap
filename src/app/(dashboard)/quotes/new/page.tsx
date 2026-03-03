@@ -1,7 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import { QuoteForm } from './QuoteForm'
 import { COUNTRIES, DEFAULT_COUNTRY } from '@/lib/countries'
+import { FREE_QUOTE_LIMIT } from '@/lib/subscription'
 
 export default async function NewQuotePage({
   searchParams,
@@ -16,9 +17,22 @@ export default async function NewQuotePage({
   // Get user profile for currency
   const { data: profile } = await supabase
     .from('profiles')
-    .select('country, currency, full_name, company_name, phone')
+    .select('country, currency, full_name, company_name, phone, subscription_status')
     .eq('id', user?.id)
     .single()
+
+  const isPro = profile?.subscription_status === 'active' || profile?.subscription_status === 'trialing'
+
+  // Free tier: check quote limit
+  if (!isPro) {
+    const { count } = await supabase
+      .from('qs_quotes')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', user?.id)
+    if ((count || 0) >= FREE_QUOTE_LIMIT) {
+      redirect('/quotes?limit=reached')
+    }
+  }
 
   const countryCode = profile?.country || DEFAULT_COUNTRY
   const country = COUNTRIES[countryCode] || COUNTRIES[DEFAULT_COUNTRY]
@@ -69,6 +83,7 @@ export default async function NewQuotePage({
         measurementSystem={country.measurementSystem}
         contractorName={profile?.company_name || profile?.full_name || ''}
         contractorPhone={profile?.phone || ''}
+        isPro={isPro}
       />
     </div>
   )

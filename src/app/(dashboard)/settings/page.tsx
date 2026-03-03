@@ -338,6 +338,7 @@ export default function SettingsPage() {
   const isYearlyPlan = planType === 'yearly'
   const isActive = subscriptionStatus === 'active' || subscriptionStatus === 'trialing'
   const isCanceled = subscriptionStatus === 'canceled'
+  const isNativeApp = typeof navigator !== 'undefined' && navigator.userAgent.includes('BrickQuoteApp')
 
   const getStatusBadge = () => {
     switch (subscriptionStatus) {
@@ -585,8 +586,8 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* Subscription Section */}
-      <div className="card mb-6">
+      {/* Subscription Section — hidden in native app (Apple IAP compliance) */}
+      {!isNativeApp && <div className="card mb-6">
         <h2 className="text-lg font-semibold text-white mb-4">Subscription</h2>
         <div className="space-y-4">
           {/* Plan overview */}
@@ -906,7 +907,7 @@ export default function SettingsPage() {
             </div>
           )}
         </div>
-      </div>
+      </div>}
 
       {/* Account Section */}
       <div className="card mb-6">

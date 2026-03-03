@@ -1,31 +1,52 @@
 import { createClient } from '@/lib/supabase/server'
 import { QuotesList } from './QuotesList'
 import { PageGuideCard } from '@/components/onboarding/PageGuideCard'
+import { FREE_QUOTE_LIMIT } from '@/lib/subscription'
+import { FreeLimitBanner } from '@/components/FreeLimitBanner'
 
-export default async function QuotesPage() {
+export default async function QuotesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ limit?: string }>
+}) {
+  const { limit } = await searchParams
   const supabase = await createClient()
   const { data: { session } } = await supabase.auth.getSession()
   const user = session?.user
 
-  const { data: quotes } = await supabase
-    .from('qs_quotes')
-    .select(`
-      *,
-      qs_quote_requests (
-        client_name,
-        client_email,
-        description
-      )
-    `)
-    .eq('user_id', user?.id)
-    .order('created_at', { ascending: false })
+  const [{ data: quotes }, { data: profile }] = await Promise.all([
+    supabase
+      .from('qs_quotes')
+      .select(`
+        *,
+        qs_quote_requests (
+          client_name,
+          client_email,
+          description
+        )
+      `)
+      .eq('user_id', user?.id)
+      .order('created_at', { ascending: false }),
+    supabase
+      .from('profiles')
+      .select('subscription_status')
+      .eq('id', user?.id)
+      .single(),
+  ])
+
+  const isPro = profile?.subscription_status === 'active' || profile?.subscription_status === 'trialing'
 
   return (
     <div className="p-4 md:p-8">
+      {!isPro && limit === 'reached' && (
+        <FreeLimitBanner message={`You've used all ${FREE_QUOTE_LIMIT} free quotes.`} />
+      )}
+
       <div className="mb-6">
         <h1 className="text-2xl md:text-3xl font-bold text-white">Quotes</h1>
         <p className="text-slate-400 text-sm mt-1">
           View and manage all your quotes.
+          {!isPro && <span className="text-blue-400 ml-1">({(quotes || []).length}/{FREE_QUOTE_LIMIT} free quotes used)</span>}
         </p>
       </div>
 

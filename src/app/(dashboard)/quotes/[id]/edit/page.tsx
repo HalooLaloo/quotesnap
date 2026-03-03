@@ -41,9 +41,11 @@ export default async function EditQuotePage({
   // Get user profile
   const { data: profile } = await supabase
     .from('profiles')
-    .select('country, currency, full_name, company_name, phone')
+    .select('country, currency, full_name, company_name, phone, subscription_status')
     .eq('id', user.id)
     .single()
+
+  const isPro = profile?.subscription_status === 'active' || profile?.subscription_status === 'trialing'
 
   const countryCode = profile?.country || DEFAULT_COUNTRY
   const country = COUNTRIES[countryCode] || COUNTRIES[DEFAULT_COUNTRY]
@@ -87,6 +89,7 @@ export default async function EditQuotePage({
         measurementSystem={country.measurementSystem}
         contractorName={profile?.company_name || profile?.full_name || ''}
         contractorPhone={profile?.phone || ''}
+        isPro={isPro}
         existingQuote={{
           id: quote.id,
           token: quote.token,

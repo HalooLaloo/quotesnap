@@ -34,6 +34,7 @@ interface QuoteFormProps {
   contractorName: string
   contractorPhone: string
   existingQuote?: ExistingQuote
+  isPro?: boolean
 }
 
 interface CustomServiceForm {
@@ -47,7 +48,7 @@ interface AiSuggestion extends QuoteItem {
   selected: boolean
 }
 
-export function QuoteForm({ request, services, userId, currency, currencySymbol, taxLabel, defaultTaxPercent, profileComplete, measurementSystem, contractorName, contractorPhone, existingQuote }: QuoteFormProps) {
+export function QuoteForm({ request, services, userId, currency, currencySymbol, taxLabel, defaultTaxPercent, profileComplete, measurementSystem, contractorName, contractorPhone, existingQuote, isPro = true }: QuoteFormProps) {
   const router = useRouter()
   const supabase = createClient()
   const isEditMode = !!existingQuote
@@ -105,7 +106,7 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
 
   // Auto-load AI suggestions when page loads with request (not in edit mode)
   useEffect(() => {
-    if (request?.description && !aiLoaded && !isEditMode) {
+    if (isPro && request?.description && !aiLoaded && !isEditMode) {
       loadAiSuggestions()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -525,8 +526,8 @@ export function QuoteForm({ request, services, userId, currency, currencySymbol,
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
       {/* Main content */}
       <div className="lg:col-span-2 space-y-6">
-        {/* AI Suggestions Section */}
-        {request && (
+        {/* AI Suggestions Section — Pro only */}
+        {isPro && request && (
           <div className="card bg-purple-600/10 border-purple-500/30">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 bg-purple-600/20 rounded-lg flex items-center justify-center shrink-0">

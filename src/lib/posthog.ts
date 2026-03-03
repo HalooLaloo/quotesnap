@@ -3,6 +3,8 @@ import posthog from 'posthog-js'
 export function initPostHog() {
   if (typeof window === 'undefined') return
   if (!process.env.NEXT_PUBLIC_POSTHOG_KEY) return
+  // Apple ATT compliance: no tracking in native app
+  if (navigator.userAgent.includes('BrickQuoteApp')) return
   if (localStorage.getItem('bq_cookie_consent') !== 'accepted') return
 
   posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY, {

@@ -46,6 +46,20 @@ function InvoiceForm() {
   const [bankRoutingPlaceholder, setBankRoutingPlaceholder] = useState('e.g. 021000021')
   const [editingBank, setEditingBank] = useState(false)
 
+  // Pro feature gate: redirect free users
+  useEffect(() => {
+    const checkAccess = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      const { data } = await supabase.from('profiles').select('subscription_status').eq('id', user.id).single()
+      if (data?.subscription_status !== 'active' && data?.subscription_status !== 'trialing') {
+        router.replace('/invoices')
+      }
+    }
+    checkAccess()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   // Load user profile for currency settings
   useEffect(() => {
     const loadProfile = async () => {

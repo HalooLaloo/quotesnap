@@ -35,6 +35,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Pro feature gate
+    const { hasProAccess } = await import('@/lib/subscription')
+    if (!(await hasProAccess(supabase, user.id))) {
+      return NextResponse.json({ error: 'Pro feature' }, { status: 403 })
+    }
+
     // Get invoice
     const { data: invoice, error: invoiceError } = await supabase
       .from('qs_invoices')

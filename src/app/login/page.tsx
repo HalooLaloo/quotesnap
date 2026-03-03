@@ -85,6 +85,9 @@ function LoginForm() {
       const status = profile?.subscription_status
       if (status === 'active' || status === 'trialing') {
         window.location.href = '/requests'
+      } else if (isNativeApp) {
+        // Native free tier: go to dashboard with limited access
+        window.location.href = '/requests'
       } else {
         window.location.href = '/subscribe'
       }
@@ -233,12 +236,14 @@ function LoginForm() {
         </button>
       </form>
 
-      <p className="mt-6 text-center text-slate-400 text-sm">
-        Don&apos;t have an account?{' '}
-        <Link href="/register" className="text-blue-400 hover:text-blue-300">
-          Sign up
-        </Link>
-      </p>
+      {!isNativeApp && (
+        <p className="mt-6 text-center text-slate-400 text-sm">
+          Don&apos;t have an account?{' '}
+          <Link href="/register" className="text-blue-400 hover:text-blue-300">
+            Sign up
+          </Link>
+        </p>
+      )}
     </div>
   )
 }

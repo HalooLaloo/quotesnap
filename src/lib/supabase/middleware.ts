@@ -141,7 +141,14 @@ export async function updateSession(request: NextRequest) {
       && !noSubRequired.some(p => pathname.startsWith(p))
 
     if (needsSubscription && !hasAccess) {
-      return redirectWithCookies(isNativeApp ? '/login' : '/subscribe')
+      if (isNativeApp) {
+        // Native free tier: allow dashboard access with feature limits
+        supabaseResponse.cookies.set('bq_native_free', '1', {
+          maxAge: 300, httpOnly: false, path: '/', sameSite: 'lax',
+        })
+        return supabaseResponse
+      }
+      return redirectWithCookies('/subscribe')
     }
   }
 

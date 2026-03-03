@@ -8,6 +8,8 @@ export function CookieConsent() {
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
+    // Apple ATT compliance: no cookie prompt in native app
+    if (navigator.userAgent.includes('BrickQuoteApp')) return
     const consent = localStorage.getItem('bq_cookie_consent')
     if (!consent) {
       setVisible(true)

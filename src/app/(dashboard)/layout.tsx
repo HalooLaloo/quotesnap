@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { Sidebar } from '@/components/Sidebar'
 import { OnboardingWrapper } from '@/components/OnboardingWrapper'
@@ -38,7 +39,12 @@ export default async function DashboardLayout({
   // Enforce subscription — redirect to /subscribe if not active/trialing
   const subStatus = profile?.subscription_status
   if (subStatus !== 'active' && subStatus !== 'trialing') {
-    redirect('/subscribe')
+    const headersList = await headers()
+    const isNativeApp = headersList.get('user-agent')?.includes('BrickQuoteApp')
+    if (!isNativeApp) {
+      redirect('/subscribe')
+    }
+    // Native free tier: allow dashboard with feature limits
   }
 
   const checklistData = {

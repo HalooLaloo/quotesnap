@@ -4,11 +4,33 @@ import { AcceptedQuotes } from './AcceptedQuotes'
 import { SentQuotes } from './SentQuotes'
 import { InvoicesList } from './InvoicesList'
 import { PageGuideCard } from '@/components/onboarding/PageGuideCard'
+import { ProFeatureGate } from '@/components/ProFeatureGate'
 
 export default async function InvoicesPage() {
   const supabase = await createClient()
   const { data: { session } } = await supabase.auth.getSession()
   const user = session?.user
+
+  // Check subscription
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('subscription_status')
+    .eq('id', user?.id)
+    .single()
+
+  const isPro = profile?.subscription_status === 'active' || profile?.subscription_status === 'trialing'
+
+  if (!isPro) {
+    return (
+      <div className="p-4 md:p-8">
+        <div className="mb-6">
+          <h1 className="text-2xl md:text-3xl font-bold text-white">Invoices</h1>
+          <p className="text-slate-400 text-sm mt-1">Create and manage invoices for completed work.</p>
+        </div>
+        <ProFeatureGate feature="Invoices" description="Create professional invoices, send them by email, and track payments." />
+      </div>
+    )
+  }
 
   const quotesSelect = `id, total_gross, total, status, created_at, currency, qs_quote_requests (client_name, client_email)`
 
